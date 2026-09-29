@@ -1,0 +1,197 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+  "basics": {
+    "name": "Said Boudjelda",
+    "label": "Senior Lead Back-end Engineer · Software Architect",
+    "summary": "Software engineer for nearly twenty years, focused on improving systems, processes, and the experience of the people who build and use them. I specialise in back-end and distributed systems on the JVM — Java, Spring, Quarkus, Apache Kafka — with hexagonal, domain-driven, and event-driven architectures. Creator of Kates, an open-source platform for Kafka resilience testing, and an active open-source contributor. I apply AI-assisted engineering in my daily work, enjoy reviewing code, and have given workshops and talks on Spring Boot and Neo4j.",
+    "location": { "city": "Paris area", "countryCode": "FR" },
+    "profiles": [
+      { "network": "GitHub", "username": "bmscomp", "url": "https://github.com/bmscomp" },
+      { "network": "LinkedIn", "username": "bmscomp", "url": "https://www.linkedin.com/in/bmscomp/" }
+    ]
+  },
+  "work": [
+    {
+      "name": "FDJ",
+      "position": "Platform Engineer · Apache Kafka Expert",
+      "startDate": "2025-10",
+      "summary": "Reference expert for event streaming, keeping production Kafka clusters robust and solving the hardest issues.",
+      "highlights": [
+        "Designed and operate a company-wide, multi-cluster, highly available event-streaming platform on Apache Kafka.",
+        "Built Kafka Connect pipelines, Kafka Streams applications, and Schema Registry governance (Avro, compatibility policies).",
+        "Automated provisioning, deployment, and monitoring with Helm, GitLab CI, and Kubernetes; defined SLOs, alerting, and capacity planning.",
+        "Coach teams on event-driven design, topic modelling, and consumer performance; lead architecture reviews."
+      ]
+    },
+    {
+      "name": "SCIAM",
+      "position": "Technical Lead · Software Architect",
+      "startDate": "2023-06",
+      "endDate": "2025-10",
+      "summary": "NEO project: rewriting a leading French bank's core accounting system as microservices designed to last for decades.",
+      "highlights": [
+        "Java 21, GraalVM, Quarkus, Apache Ignite, Apache Kogito.",
+        "Domain-driven, hexagonal, and event-driven architecture on Apache Kafka and RocksDB.",
+        "IBM Cloud, Kubernetes, GitLab CI."
+      ]
+    },
+    {
+      "name": "Capco",
+      "position": "Engineering Manager · Lead Software Developer",
+      "startDate": "2022-09",
+      "endDate": "2023-06",
+      "summary": "Neobank project: rewriting a bank's legacy mobile and web applications as a cloud-native platform on Google Cloud.",
+      "highlights": [
+        "Java 17, Spring Boot, Vavr; DDD, TDD, CQRS and event sourcing on Kafka and Kafka Connect.",
+        "Terraform, ArgoCD, GitLab CI, Kubernetes."
+      ]
+    },
+    {
+      "name": "BNP Paribas",
+      "position": "Senior Java Software Developer",
+      "startDate": "2020-09",
+      "endDate": "2022-09",
+      "summary": "F.I.R.S.T. project: a from-scratch system routing transactional flows between BNP partners and SWIFT over SWIFTNet.",
+      "highlights": [
+        "Distributed, asynchronous, fault-tolerant design that resumes failed flows from the exact step they stopped, with a full audit trail.",
+        "Hexagonal architecture, transactional outbox, immutable domain model and functional programming with Vavr.",
+        "Java, Spring Boot, Spring Integration, MongoDB, Testcontainers."
+      ]
+    },
+    {
+      "name": "Accuity",
+      "position": "Senior Full-stack Software Developer",
+      "startDate": "2018-02",
+      "endDate": "2020-06",
+      "summary": "Real-time payment screening and transaction review applications.",
+      "highlights": [
+        "HPR: transaction-filtering REST service for PayPal with an SLA under 100 ms per request.",
+        "Continuity: multi-module web application to review and decide on flagged transactions, with audit trail, migration, and archiving modules.",
+        "Java, Spring Boot, Vue.js, Oracle, MyBatis, NGINX."
+      ]
+    },
+    {
+      "name": "ALTI",
+      "position": "Full-stack Software Developer",
+      "startDate": "2015-03",
+      "endDate": "2018-02",
+      "summary": "Paperless multi-tenant platform for borrower insurance and pensions (BPSIS), an ATM transaction-dispute application for BNP handling millions of records, and USSD value-added services for Djezzy serving 17 million users."
+    },
+    {
+      "name": "Imagine Partners",
+      "position": "Java Software Developer",
+      "startDate": "2014-10",
+      "endDate": "2015-03",
+      "summary": "Workflow management platform built on the Activiti BPMN engine."
+    },
+    {
+      "name": "Nearbee",
+      "position": "Java Web Developer",
+      "startDate": "2012-10",
+      "endDate": "2014-09",
+      "summary": "In-house framework on XWiki for knowledge-based solutions, and MyURM, a next-generation customer relationship product."
+    },
+    {
+      "name": "Baker Tilly Algeria",
+      "position": "IT Manager · Lead Software Developer",
+      "startDate": "2010-03",
+      "endDate": "2012-08",
+      "summary": "Mirador: in-house system generating and managing documents from company data."
+    },
+    {
+      "name": "Navig",
+      "position": "Java Software Developer",
+      "startDate": "2009-09",
+      "endDate": "2010-02",
+      "summary": "Start-up platform unifying email, agendas, workflows, files, and tasks, built with GWT."
+    },
+    {
+      "name": "Les Pages Maghreb",
+      "position": "Software Developer",
+      "startDate": "2008-12",
+      "endDate": "2009-12",
+      "summary": "Main company web application in Ruby on Rails, plus Python tools that collect data and build reports."
+    },
+    {
+      "name": "Kajima (COJAAL)",
+      "position": "Software Developer · Data Analyst",
+      "startDate": "2007-08",
+      "endDate": "2008-10",
+      "summary": "GPS machine-control data analysis and plugins for the Algerian East–West highway construction project."
+    }
+  ],
+  "projects": [
+    {
+      "name": "Kates",
+      "url": "https://github.com/bmscomp/kates",
+      "roles": ["Creator"],
+      "description": "Terminal-first platform for performance testing, chaos engineering, and operational resilience of Apache Kafka clusters, on a Kind-based Kubernetes environment with production-parity infrastructure."
+    },
+    {
+      "name": "Quarkus Cucumber",
+      "url": "https://github.com/quarkiverse/quarkus-cucumber",
+      "roles": ["Maintainer"],
+      "description": "Quarkus extension for running Cucumber tests."
+    },
+    {
+      "name": "Apache Kafka",
+      "url": "https://issues.apache.org/jira/browse/KAFKA-15000",
+      "roles": ["Contributor"],
+      "description": "Fixes and improvements: KAFKA-15000, KAFKA-15208, KAFKA-15222, KAFKA-15235, KAFKA-15493."
+    },
+    {
+      "name": "Spring Boot",
+      "url": "https://github.com/spring-projects/spring-boot",
+      "roles": ["Contributor"],
+      "description": "Reworked the Actuator Neo4j health indicator to report engine and kernel version instead of exposing business data."
+    },
+    {
+      "name": "Vavr",
+      "url": "https://github.com/vavr-io/vavr/pull/2729",
+      "roles": ["Contributor"],
+      "description": "Upgraded the vavr and vavr-jackson builds to JDK 17 and 19."
+    },
+    {
+      "name": "Spring Guides",
+      "url": "https://github.com/spring-guides/gs-multi-module",
+      "roles": ["Contributor"],
+      "description": "Multi-module Spring application guide."
+    },
+    {
+      "name": "JRecord",
+      "url": "https://github.com/bmTas/JRecord",
+      "roles": ["Contributor"],
+      "description": "Converting EBCDIC mainframe files to UTF-8."
+    }
+  ],
+  "education": [
+    {
+      "institution": "University Ferhat Abbas, Sétif — Institute of Technology & Science",
+      "area": "Computer Science",
+      "studyType": "Engineering degree",
+      "endDate": "2007-06"
+    }
+  ],
+  "skills": [
+    { "name": "Languages", "keywords": ["Java", "Scala", "Groovy", "JavaScript", "Python", "Rust", "Go", "C++"] },
+    { "name": "Frameworks", "keywords": ["Spring Boot", "Spring Integration", "Quarkus", "Vavr", "Node.js"] },
+    {
+      "name": "Architecture",
+      "keywords": ["Hexagonal", "Domain-Driven Design", "Event-driven", "CQRS / Event sourcing", "Microservices", "SOLID"]
+    },
+    {
+      "name": "Streaming",
+      "keywords": ["Apache Kafka", "Kafka Connect", "Kafka Streams", "Schema Registry", "RabbitMQ", "IBM MQ"]
+    },
+    { "name": "Data", "keywords": ["MongoDB", "Neo4j", "Redis", "RocksDB", "Oracle", "MySQL"] },
+    {
+      "name": "Platform",
+      "keywords": ["Kubernetes", "Helm", "Docker", "Terraform", "ArgoCD", "GitLab CI", "Jenkins"]
+    },
+    { "name": "Testing", "keywords": ["JUnit", "Mockito", "Spock", "Cucumber", "Testcontainers", "jqwik"] }
+  ],
+  "languages": [
+    { "language": "English", "fluency": "Fluent" },
+    { "language": "French", "fluency": "Fluent" }
+  ]
+}

@@ -156,7 +156,7 @@ Each phase is one PR, reviewed and merged to `main`.
 | **0. Reset** ✅ | Branch `rebuild`; delete **all** existing files including old posts, `docs/`, `test/`, `assets/`, `.idea`, Jekyll workflow. Keep only `LICENSE`, `.gitignore` (rewritten), `PLAN.md`, `TECH-STUDY.md`. Git history is kept. Switch Pages source to "GitHub Actions". | Repo contains only LICENSE, .gitignore, PLAN.md, TECH-STUDY.md |
 | **1. Skeleton** ✅ | Astro 7 + TS + Tailwind (Biome moved to phase 7), base layout, nav, dark mode, 404, deploy workflow | Empty site live at bmscomp.github.io |
 | **2. Blog** ✅ | `posts` collection, list/detail/tags, Expressive Code, KaTeX math, RSS, sitemap, OG images | 1 real post published |
-| **3. CV** | JSON Resume summary data, `/cv` page | `/cv` live |
+| **3. CV** ✅ | JSON Resume summary data, `/cv` page | `/cv` live |
 | **4. Lab** | `lab` collection, status badges, filters by category/status | ≥ 2 lab notes live |
 | **5. Reading** | `reading` data file, status filters, RSS | ≥ 5 entries live |
 | **6. Travel** | `travel` collection, PMTiles world map, per-trip route map (text + map; photos slot in later) | ≥ 1 trip live |

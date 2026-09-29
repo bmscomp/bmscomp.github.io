@@ -9,7 +9,7 @@ export async function getPosts() {
 }
 
 export function formatDate(date: Date) {
-  return date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 export function tagSlug(tag: string) {
