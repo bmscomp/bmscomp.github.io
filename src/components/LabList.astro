@@ -13,7 +13,7 @@ interface Props {
 const { notes, id } = Astro.props;
 ---
 
-<ol id={id}>
+<ol id={id} class="body-size">
   {
     notes.map((note) => (
       <li class="row entry" data-status={note.data.status} data-category={note.data.category}>

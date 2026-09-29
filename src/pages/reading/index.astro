@@ -32,7 +32,7 @@ const sections = [
   }
   {
     sections.map(({ id, title, entries }) => (
-      <Section id={id} title={title} note={`${entries.length}`}>
+      <Section id={id} title={title} note={`${entries.length}`} variant="list">
         <ul>
           {entries.map((entry) => (
             <ReadingItem entry={entry} />

@@ -24,7 +24,7 @@ export default defineConfig({
         borderRadius: '0.35rem',
         borderColor: 'var(--rule)',
         codeFontFamily: 'var(--font-mono)',
-        codeFontSize: '0.82rem',
+        codeFontSize: 'var(--code-size)',
         uiFontFamily: 'var(--font-mono)',
         uiFontSize: '0.85rem',
         frames: { frameBoxShadowCssValue: 'none' },

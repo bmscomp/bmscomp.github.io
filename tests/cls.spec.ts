@@ -4,11 +4,10 @@ import { record } from './lib/measure';
 // W2.1: layout shift while the webfont arrives, under Slow 4G and a 4x slower CPU. Median of 5 cold
 // runs per case, run serially (project "cls"), local only: shared CI runners make this noisy.
 // [path, width, height, limit]. Baselines before W2.1: 0.155, 0.089, 0.020, 0.007 and 0.191.
-// hello-world @1280 is a known residual: its title is 586.9px in a 588px column, so any fallback face
-// wraps it (the fallback is within 2% of EB Garamond on every title). Only font-display: optional
-// would remove it (owner decision O6 keeps swap), so that case is held to its baseline instead.
+// /cv/ keeps a looser limit: its synthesized fallback small caps cannot be matched by @font-face
+// overrides (tracked separately, per the plan).
 const CASES = [
-  ['/blog/hello-world/', 1280, 900, 0.155],
+  ['/blog/hello-world/', 1280, 900, 0.05],
   ['/blog/hello-world/', 768, 1024, 0.05],
   ['/', 375, 812, 0.05],
   ['/lab/astro-7-satteri/', 1280, 900, 0.05],

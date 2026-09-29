@@ -16,7 +16,7 @@ const { title, description, pubDate, updatedDate, tags } = data;
 
 <Base title={title} description={description} image={`/og/${id}.png`} type="article">
   <meta slot="head" property="article:published_time" content={pubDate.toISOString()} />
-  <article>
+  <article class="article">
     <PageHeader kicker="Blog" kickerHref="/blog/" title={title} lede={description}>
       <time slot="gutter" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
     </PageHeader>

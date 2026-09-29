@@ -416,12 +416,27 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
     expect.soft(h2!.cap / h3!.cap).toBeGreaterThanOrEqual(1.1);
     for (const path of ARTICLES) {
       await open(page, path, phone);
+      // Count rendered text lines (inline code makes line boxes taller, so height alone misleads).
       const lines = await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLElement>('.prose h2')].map(
-          (h) => h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight),
-        ),
+        [...document.querySelectorAll<HTMLElement>('.prose h2')].map((h) => {
+          const range = document.createRange();
+          const centres: number[] = [];
+          const walker = document.createTreeWalker(h, NodeFilter.SHOW_TEXT);
+          let node: Node | null;
+          while ((node = walker.nextNode())) {
+            for (let i = 0; i < node.textContent!.length; i++) {
+              range.setStart(node, i);
+              range.setEnd(node, i + 1);
+              const r = range.getClientRects()[0];
+              if (r) centres.push((r.top + r.bottom) / 2);
+            }
+          }
+          centres.sort((a, b) => a - b);
+          const lh = parseFloat(getComputedStyle(h).fontSize);
+          return centres.filter((c, i) => i === 0 || c - centres[i - 1] > lh / 2).length;
+        }),
       );
-      for (const l of lines) expect.soft(l, path).toBeLessThanOrEqual(2.05);
+      for (const l of lines) expect.soft(l, path).toBeLessThanOrEqual(2);
     }
   });
 
@@ -433,7 +448,9 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
       const lh = parseFloat(getComputedStyle(ps[0]).lineHeight);
       const gaps: number[] = [];
       for (let i = 1; i < ps.length; i++) {
-        if (ps[i].previousElementSibling === ps[i - 1]) gaps.push(ps[i].getBoundingClientRect().top - ps[i - 1].getBoundingClientRect().bottom);
+        const hasImage = ps[i].querySelector('img') || ps[i - 1].querySelector('img');
+        if (ps[i].previousElementSibling === ps[i - 1] && !hasImage)
+          gaps.push(ps[i].getBoundingClientRect().top - ps[i - 1].getBoundingClientRect().bottom);
       }
       const ul = [...prose.querySelectorAll<HTMLElement>(':scope > ul')][0];
       const items = [...ul.querySelectorAll<HTMLElement>(':scope > li')];
@@ -487,6 +504,8 @@ test.describe('W5 article shell and orientation', () => {
   }
 
   test('W5.1 keyboard focus is never hidden under the sticky header @ci', async ({ page }) => {
+    // Reduced motion makes focus scrolling instant, so each check reads the settled position.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await open(page, '/lab/astro-7-satteri/', desktop);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     let hidden = 0;

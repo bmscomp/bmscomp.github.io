@@ -26,7 +26,7 @@ const facts = [
 
 <Base title={title} description={description} image={`/og/lab/${id}.png`} type="article" noindex={noindex}>
   <meta slot="head" property="article:published_time" content={pubDate.toISOString()} />
-  <article>
+  <article class="article">
     <PageHeader kicker="Lab" kickerHref="/lab/" title={title} lede={description}>
       <time slot="gutter" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
     </PageHeader>
