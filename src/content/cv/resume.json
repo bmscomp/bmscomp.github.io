@@ -4,7 +4,7 @@
     "name": "Said Boudjelda",
     "label": "Lead Backend Engineer & Software Architect",
     "url": "https://bmscomp.github.io",
-    "summary": "Backend engineer and software architect with nearly 20 years of experience building distributed systems on the JVM — Java, Spring, Quarkus, and Apache Kafka — with hexagonal, domain-driven, and event-driven architecture. Led the design of critical banking and event-streaming platforms, coaches engineering teams, and has given workshops and talks on Spring Boot and Neo4j. Creator of Kates, an open-source platform for Kafka resilience testing, and contributor to Apache Kafka, Spring Boot, and Vavr. Applies AI-assisted engineering in daily work.",
+    "summary": "Backend engineer and software architect with nearly 20 years of experience building distributed systems on the JVM — Java, Spring, Quarkus, and Apache Kafka — with hexagonal, domain-driven, and event-driven architecture. Led the design of critical banking and event-streaming platforms and coaches engineering teams. Creator of Kates, an open-source platform for Kafka performance and resilience testing, and author of its book, Kates — The Definitive Guide. Speaker at Devoxx France 2025 and 2026, and contributor to Apache Kafka, Spring Boot, and Vavr. Applies AI-assisted engineering in daily work.",
     "location": {
       "region": "Île-de-France",
       "countryCode": "FR"
@@ -139,66 +139,6 @@
       "summary": "Analyzed GPS machine-control data and developed plugins for the East–West Highway construction project, using Python and Java."
     }
   ],
-  "projects": [
-    {
-      "name": "Kates",
-      "url": "https://github.com/bmscomp/kates",
-      "roles": [
-        "Creator"
-      ],
-      "type": "application",
-      "description": "Terminal-first platform for performance testing, chaos engineering, and operational resilience of Apache Kafka clusters on Kind-based Kubernetes with production-parity infrastructure."
-    },
-    {
-      "name": "Quarkus Cucumber",
-      "url": "https://github.com/quarkiverse/quarkus-cucumber",
-      "roles": [
-        "Maintainer"
-      ],
-      "type": "library",
-      "description": "Quarkus extension for running Cucumber tests."
-    },
-    {
-      "name": "Apache Kafka",
-      "url": "https://issues.apache.org/jira/browse/KAFKA-15000",
-      "roles": [
-        "Contributor"
-      ],
-      "description": "Fixes and improvements: KAFKA-15000, KAFKA-15208, KAFKA-15222, KAFKA-15235, KAFKA-15493."
-    },
-    {
-      "name": "Spring Boot",
-      "url": "https://github.com/spring-projects/spring-boot",
-      "roles": [
-        "Contributor"
-      ],
-      "description": "Reworked the Actuator Neo4j health indicator to report the database engine and kernel version instead of exposing business data."
-    },
-    {
-      "name": "Vavr",
-      "url": "https://github.com/vavr-io/vavr/pull/2729",
-      "roles": [
-        "Contributor"
-      ],
-      "description": "Upgraded the vavr and vavr-jackson builds to JDK 17 and 19."
-    },
-    {
-      "name": "Spring Guides",
-      "url": "https://github.com/spring-guides/gs-multi-module",
-      "roles": [
-        "Contributor"
-      ],
-      "description": "Contributed to the official guide for multi-module Spring applications."
-    },
-    {
-      "name": "JRecord",
-      "url": "https://github.com/bmTas/JRecord",
-      "roles": [
-        "Contributor"
-      ],
-      "description": "Contributed to converting EBCDIC mainframe files to UTF-8."
-    }
-  ],
   "education": [
     {
       "institution": "Ferhat Abbas University of Sétif — Institute of Technology & Science",
@@ -207,9 +147,19 @@
       "endDate": "2007-06"
     }
   ],
+  "publications": [
+    {
+      "name": "Kates — The Definitive Guide",
+      "authors": "S. Boudjelda and contributors",
+      "publisher": "Open-source online book",
+      "releaseDate": "2026",
+      "url": "https://bmscomp.github.io/kates/",
+      "summary": "A comprehensive guide to performance testing, chaos engineering, and operational resilience for Apache Kafka — from theory to practice."
+    }
+  ],
   "skills": [
     {
-      "name": "Languages",
+      "name": "Programming",
       "keywords": [
         "Java",
         "Scala",
@@ -298,9 +248,157 @@
       "fluency": "Fluent"
     }
   ],
+  "interests": [
+    {
+      "name": "Distributed systems"
+    },
+    {
+      "name": "Event streaming"
+    },
+    {
+      "name": "Software architecture"
+    },
+    {
+      "name": "Functional programming"
+    },
+    {
+      "name": "Platform engineering"
+    },
+    {
+      "name": "AI-assisted engineering"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Kates",
+      "type": "application",
+      "roles": [
+        "Creator",
+        "Maintainer"
+      ],
+      "startDate": "2025-11",
+      "url": "https://github.com/bmscomp/kates",
+      "description": "Kafka Advanced Testing & Engineering Suite: a terminal-first platform for performance testing, chaos engineering, and security auditing of Apache Kafka on Kubernetes, with production-parity infrastructure on a local Kind cluster.",
+      "highlights": [
+        "Runs eight performance-test workload types and thirteen fault types, and grades resilience runs and broker security from A to F.",
+        "Gates CI pipelines on performance, SLA, and security grades; maps security checks to CIS, SOC 2, and PCI DSS.",
+        "Built as a Go CLI, a Quarkus backend, and Helm charts, on a multi-zone Kind cluster with Strimzi and LitmusChaos."
+      ],
+      "keywords": [
+        "Apache Kafka",
+        "Kubernetes",
+        "Go",
+        "Quarkus",
+        "Helm",
+        "Strimzi",
+        "LitmusChaos"
+      ]
+    },
+    {
+      "name": "Quarkus Cucumber",
+      "url": "https://github.com/quarkiverse/quarkus-cucumber",
+      "roles": [
+        "Maintainer"
+      ],
+      "type": "library",
+      "description": "Quarkus extension for running Cucumber tests."
+    },
+    {
+      "name": "Apache Kafka",
+      "url": "https://issues.apache.org/jira/browse/KAFKA-15000",
+      "roles": [
+        "Contributor"
+      ],
+      "description": "Fixes and improvements: KAFKA-15000, KAFKA-15208, KAFKA-15222, KAFKA-15235, KAFKA-15493.",
+      "type": "contribution"
+    },
+    {
+      "name": "Spring Boot",
+      "url": "https://github.com/spring-projects/spring-boot",
+      "roles": [
+        "Contributor"
+      ],
+      "description": "Reworked the Actuator Neo4j health indicator to report the database engine and kernel version instead of exposing business data.",
+      "type": "contribution"
+    },
+    {
+      "name": "Vavr",
+      "url": "https://github.com/vavr-io/vavr/pull/2729",
+      "roles": [
+        "Contributor"
+      ],
+      "description": "Upgraded the vavr and vavr-jackson builds to JDK 17 and 19.",
+      "type": "contribution"
+    },
+    {
+      "name": "Spring Guides",
+      "url": "https://github.com/spring-guides/gs-multi-module",
+      "roles": [
+        "Contributor"
+      ],
+      "description": "Contributed to the official guide for multi-module Spring applications.",
+      "type": "contribution"
+    },
+    {
+      "name": "JRecord",
+      "url": "https://github.com/bmTas/JRecord",
+      "roles": [
+        "Contributor"
+      ],
+      "description": "Contributed to converting EBCDIC mainframe files to UTF-8.",
+      "type": "contribution"
+    },
+    {
+      "name": "Kafka avec Raft en production : une nouvelle ère pour les commit logs distribués",
+      "translation": "Kafka with Raft in production: a new era for distributed commit logs",
+      "type": "talk",
+      "entity": "Devoxx France 2026",
+      "roles": [
+        "Speaker"
+      ],
+      "startDate": "2026-04-24",
+      "url": "https://m.devoxx.com/events/devoxxfr2026/talks/12063",
+      "description": "Experience report on running Apache Kafka in KRaft mode, the Raft-based consensus that replaces ZooKeeper, in production: benefits, pitfalls, and migration paths."
+    },
+    {
+      "name": "Du Mainframe aux Microservices Quarkus",
+      "translation": "From mainframe to Quarkus microservices",
+      "type": "talk",
+      "entity": "Devoxx France 2025",
+      "roles": [
+        "Co-speaker"
+      ],
+      "with": [
+        "Charles Sabourdin",
+        "Antoine Sabot-Durand",
+        "Chaker Fezai"
+      ],
+      "startDate": "2025-04-18",
+      "url": "https://www.youtube.com/watch?v=IZxVWMmaEqU",
+      "description": "Three-hour deep dive on rewriting a 40-year-old mainframe accounting system as Quarkus microservices on Kubernetes."
+    },
+    {
+      "name": "Hands on Neo4j",
+      "type": "talk",
+      "entity": "Sfeir",
+      "roles": [
+        "Speaker"
+      ],
+      "description": "Talk presenting the Neo4j graph database to developers."
+    },
+    {
+      "name": "Neo4j workshops",
+      "type": "workshop",
+      "entity": "Sfeir",
+      "roles": [
+        "Organizer"
+      ],
+      "description": "Hands-on workshops for developers on using the Neo4j graph database in practice."
+    }
+  ],
   "meta": {
     "canonical": "https://bmscomp.github.io/cv.json",
-    "version": "v1.1.0",
+    "version": "v1.3.0",
     "lastModified": "2026-09-29"
   }
 }

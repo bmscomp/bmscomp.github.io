@@ -84,10 +84,33 @@ const cv = defineCollection({
       .array(
         z.object({
           name: z.string(),
+          /** English rendering of a non-English title (site-specific extension, allowed by the schema). */
+          translation: z.string().optional(),
           url: z.url().optional(),
           roles: z.array(z.string()).default([]),
+          /** Co-speakers or co-authors (site-specific extension, allowed by the schema). */
+          with: z.array(z.string()).default([]),
+          /** JSON Resume convention, e.g. application, library, contribution, talk, workshop. */
           type: z.string().optional(),
+          entity: z.string().optional(),
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
           description: z.string(),
+          highlights: z.array(z.string()).default([]),
+          keywords: z.array(z.string()).default([]),
+        }),
+      )
+      .default([]),
+    publications: z
+      .array(
+        z.object({
+          name: z.string(),
+          /** Author line as cited (site-specific extension, allowed by the schema). */
+          authors: z.string().optional(),
+          publisher: z.string().optional(),
+          releaseDate: z.string().optional(),
+          url: z.url().optional(),
+          summary: z.string().optional(),
         }),
       )
       .default([]),
@@ -104,6 +127,7 @@ const cv = defineCollection({
       .default([]),
     skills: z.array(z.object({ name: z.string(), keywords: z.array(z.string()).default([]) })).default([]),
     languages: z.array(z.object({ language: z.string(), fluency: z.string() })).default([]),
+    interests: z.array(z.object({ name: z.string(), keywords: z.array(z.string()).default([]) })).default([]),
     meta: z.object({ canonical: z.url(), version: z.string(), lastModified: z.string() }).optional(),
   }),
 });

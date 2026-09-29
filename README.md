@@ -58,6 +58,13 @@ validates it against the official schema (`pnpm validate:cv`), then publishes:
 Roles that started before 2015 are listed compactly under "Earlier experience" (`EARLIER_BEFORE` in
 `src/lib/cv.ts`). Update `meta.lastModified` when you change the content.
 
+- **Talks and workshops** are `projects` entries with `type: "talk"` or `"workshop"` (the JSON Resume
+  convention); `entity` is the venue, `translation` an English title, `with` the co-speakers.
+- **Publications** use the standard `publications` list; `authors` is the cited author line.
+- The page is typeset in **EB Garamond**, self-hosted from `src/assets/fonts/eb-garamond/` (OFL). It is
+  a Latin subset of the full font, because the npm/Google Fonts builds drop the small caps and
+  old-style figures; the `pyftsubset` command is at the top of `src/styles/cv.css`.
+
 ## Add to the reading list
 
 **From any device:** open a new issue on GitHub → **Reading** template → paste the link, pick a status,

@@ -1,0 +1,22 @@
+---
+// A CV section: accent bar in the gutter and a small-caps title, like LaTeX CV classes.
+interface Props {
+  id: string;
+  title: string;
+  note?: string;
+  class?: string;
+}
+
+const { id, title, note, class: className } = Astro.props;
+---
+
+<section aria-labelledby={id} class:list={['cv-section', className]}>
+  <h2 id={id} class="cv-heading">
+    <span class="cv-heading-bar" aria-hidden="true"></span>
+    <span class="cv-heading-text">
+      {title}
+      {note && <span class="cv-heading-note">{note}</span>}
+    </span>
+  </h2>
+  <slot />
+</section>
