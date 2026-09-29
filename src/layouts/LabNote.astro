@@ -1,11 +1,10 @@
 ---
-import 'katex/dist/katex.min.css';
-import PageHeader from '../components/PageHeader.astro';
+import { type CollectionEntry, render } from 'astro:content';
 import StatusBadge from '../components/StatusBadge.astro';
-import type { CollectionEntry } from 'astro:content';
-import { formatDate } from '../lib/posts';
+import { neighbours } from '../lib/articles';
+import { filterGroups, getLabNotes } from '../lib/lab';
 import { typeset } from '../lib/typeset';
-import Base from './Base.astro';
+import Article from './Article.astro';
 
 interface Props {
   note: CollectionEntry<'lab'> | CollectionEntry<'fixtures'>;
@@ -13,54 +12,93 @@ interface Props {
 }
 
 const { note, noindex } = Astro.props;
-const { id, data } = note;
-const { title, description, pubDate, updatedDate, category, status, tools, platform, verdict, repo } = data;
-const facts = [
-  { label: 'category', html: `<span class="label">${category}</span>` },
-  platform && { label: 'platform', html: typeset(platform) },
-  tools.length > 0 && { label: 'tools', html: tools.map(typeset).join(', ') },
-  repo && { label: 'code', html: `<a href="${repo}">${repo.replace(/^https?:\/\//, '')}</a>` },
-  verdict && { label: 'verdict', html: `<em>${typeset(verdict)}</em>` },
-].filter((fact): fact is { label: string; html: string } => Boolean(fact));
+const { id, body, data } = note;
+const { title, description, category, status, tools, platform, verdict, repo } = data;
+const rendered = await render(note);
+const notes = await getLabNotes();
+const { older, newer } = note.collection === 'lab' ? neighbours(notes, id) : {};
+const link = (n?: CollectionEntry<'lab'>) => n && { href: `/lab/${n.id}/`, title: n.data.title };
+
+// Status and category link to the /lab/ filters, but only to filter groups that page shows.
+const groups = filterGroups(notes);
+const statusHref = groups.status && `/lab/?status=${status}`;
+const categoryHref = groups.category && `/lab/?category=${category}`;
+const categoryName = category[0].toUpperCase() + category.slice(1);
+const toolList = tools.map(typeset).join(', ');
+const repoLink = repo && `<a href="${repo}">${repo.replace(/^https?:\/\//, '')}</a>`;
 ---
 
-<Base title={title} description={description} image={`/og/lab/${id}.png`} type="article" noindex={noindex}>
-  <meta slot="head" property="article:published_time" content={pubDate.toISOString()} />
-  <article class="article">
-    <PageHeader kicker="Lab" kickerHref="/lab/" title={title} lede={description}>
-      <time slot="gutter" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-    </PageHeader>
-
-    <dl class="space-y-1">
-      <div class="row">
-        <dt class="gutter label">status</dt>
-        <dd><StatusBadge status={status} /></dd>
-      </div>
-      {
-        facts.map(({ label, html }) => (
-          <div class="row">
-            <dt class="gutter label">{label}</dt>
-            <dd class="hyphenate" set:html={html} />
-          </div>
-        ))
-      }
-      {
-        updatedDate && (
-          <div class="row">
-            <dt class="gutter label">updated</dt>
-            <dd class="date p-0">
-              <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time>
-            </dd>
-          </div>
-        )
-      }
-    </dl>
-
-    <div class="row mt-8">
-      <span class="gutter" aria-hidden="true"></span>
-      <div class="prose prose-paper">
-        <slot />
-      </div>
+<Article
+  section="lab"
+  crumbs={[{ label: categoryName, href: categoryHref }]}
+  title={title}
+  description={description}
+  pubDate={data.pubDate}
+  updatedDate={data.updatedDate}
+  image={`/og/lab/${id}.png`}
+  rendered={rendered}
+  body={body}
+  toc={data.toc}
+  older={link(older)}
+  newer={link(newer)}
+  noindex={noindex}
+>
+  <Fragment slot="facts">
+    <div class="row facts-inline">
+      <dt class="gutter label">status</dt>
+      <dd><StatusBadge status={status} href={statusHref} /></dd>
     </div>
-  </article>
-</Base>
+    {
+      platform && (
+        <div class="row facts-inline">
+          <dt class="gutter label">platform</dt>
+          <dd class="hyphenate" set:html={typeset(platform)} />
+        </div>
+      )
+    }
+    {
+      verdict && (
+        <div class="row facts-wide">
+          <dt class="gutter label">verdict</dt>
+          <dd class="hyphenate">
+            <em set:html={typeset(verdict)} />
+          </dd>
+        </div>
+      )
+    }
+  </Fragment>
+  <Fragment slot="end">
+    <div class="row">
+      <dt class="gutter label">filed under</dt>
+      <dd>
+        <a href="/lab/">Lab</a> · {categoryHref ? <a href={categoryHref}>{categoryName}</a> : categoryName}
+      </dd>
+    </div>
+    {
+      verdict && (
+        <div class="row end-narrow">
+          <dt class="gutter label">verdict</dt>
+          <dd class="hyphenate">
+            <em set:html={typeset(verdict)} />
+          </dd>
+        </div>
+      )
+    }
+    {
+      tools.length > 0 && (
+        <div class="row">
+          <dt class="gutter label">tools</dt>
+          <dd class="hyphenate" set:html={toolList} />
+        </div>
+      )
+    }
+    {
+      repoLink && (
+        <div class="row">
+          <dt class="gutter label">code</dt>
+          <dd set:html={repoLink} />
+        </div>
+      )
+    }
+  </Fragment>
+</Article>

@@ -557,8 +557,14 @@ test.describe('W5 article shell and orientation', () => {
       const ctx = document.createElement('canvas').getContext('2d')!;
       ctx.font = `${cs.fontSize} ${cs.fontFamily}`;
       const advance = ctx.measureText('0000000000').width / 10;
-      const ps = getComputedStyle(pre.querySelector('code') ?? pre);
-      const inner = pre.clientWidth - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight) - 32;
+      // Wrap width of an unindented line. Expressive Code reserves 2rem for the copy button on the first
+      // line only, so that line is left out.
+      const lines = [...document.querySelectorAll<HTMLElement>('.expressive-code .ec-line:not(:first-child) .code')];
+      const pads = lines.map((l) => getComputedStyle(l));
+      // A hanging indent is padding plus a negative text-indent; the first visual line starts at their sum.
+      const start = Math.min(...pads.map((p) => parseFloat(p.paddingInlineStart) + parseFloat(p.textIndent)));
+      const end = Math.min(...pads.map((p) => parseFloat(p.paddingInlineEnd)));
+      const inner = pre.clientWidth - start - end;
       return { rule, frames, columns: Math.floor(inner / advance) };
     });
     record(info, 'W5.3 breakout', r);
@@ -689,7 +695,9 @@ test.describe('W6 endings and paths between articles', () => {
       const [colophon] = await computed(page, '.article-end .colophon', ['font-size']);
       expect.soft(parseFloat(colophon['font-size'])).toBeGreaterThanOrEqual(16);
     }
-    for (const label of ['Blog', 'Lab']) await expect.soft(page.locator('footer a', { hasText: label })).toHaveCount(1);
+    for (const label of ['Blog', 'Lab']) {
+      await expect.soft(page.locator('body > footer a', { hasText: new RegExp(`^${label}$`) })).toHaveCount(1);
+    }
   });
 
   test('W6.2 from the end of a note, the next one is one tap away on a phone', async ({ page }) => {

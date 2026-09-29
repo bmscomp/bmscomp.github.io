@@ -2,9 +2,11 @@
 import { GITHUB_URL, SITE_TITLE } from '../consts';
 
 const links = [
-  { href: GITHUB_URL, label: 'GitHub' },
-  { href: '/rss.xml', label: 'RSS' },
+  { href: '/blog/', label: 'Blog' },
+  { href: '/lab/', label: 'Lab' },
   { href: '/cv/', label: 'CV' },
+  { href: '/rss.xml', label: 'RSS' },
+  { href: GITHUB_URL, label: 'GitHub' },
 ];
 ---
 
@@ -13,11 +15,11 @@ const links = [
     class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 pt-2 pb-10 text-muted sm:px-4"
   >
     <p class="label">© {new Date().getFullYear()} {SITE_TITLE}</p>
-    <ul class="flex gap-x-6">
+    <ul class="flex flex-wrap gap-x-5">
       {
         links.map(({ href, label }) => (
           <li>
-            <a href={href} class="nav-link">
+            <a href={href} class="footer-link">
               {label}
             </a>
           </li>

@@ -5,7 +5,7 @@
   "private": true,
   "packageManager": "pnpm@12.6.0",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
     "dev": "astro dev",
@@ -19,7 +19,7 @@
     "measure": "pnpm build:fixtures && MEASURE=1 playwright test --project=light --project=dark"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "^0.4.2",
+    "@astrojs/markdown-satteri": "0.4.2",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource/eb-garamond": "^5.3.0",
@@ -29,6 +29,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.5",
     "astro-expressive-code": "^0.44.2",
+    "github-slugger": "^2.0.0",
     "katex": "^0.18.9",
     "satori": "^0.33.5",
     "sharp": "^0.35.5",
@@ -40,6 +41,7 @@
     "@playwright/test": "^1.63.0",
     "ajv-draft-04": "^1.0.0",
     "ajv-formats": "^3.0.1",
+    "satteri": "0.10.5",
     "typescript": "^6.0.3",
     "yaml": "^2.9.1"
   }

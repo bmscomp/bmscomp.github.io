@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { satteri } from '@astrojs/markdown-satteri';
 import expressiveCode from 'astro-expressive-code';
 import { defineConfig } from 'astro/config';
-import { katexPlugin } from './src/lib/katex';
+import { features, hastPlugins, mdastPlugins } from './src/lib/markdown/index.ts';
 
 export default defineConfig({
   site: 'https://bmscomp.github.io',
@@ -25,6 +25,8 @@ export default defineConfig({
         borderColor: 'var(--rule)',
         codeFontFamily: 'var(--font-mono)',
         codeFontSize: 'var(--code-size)',
+        // W5.3: with the frame aligned to the double rule, 1.25rem padding leaves 82 columns at ≥1024px.
+        codePaddingInline: '1.25rem',
         uiFontFamily: 'var(--font-mono)',
         uiFontSize: '0.85rem',
         frames: { frameBoxShadowCssValue: 'none' },
@@ -34,10 +36,8 @@ export default defineConfig({
     sitemap({ filter: (page) => !page.includes('/dev/') }),
   ],
   markdown: {
-    processor: satteri({
-      features: { math: true, smartPunctuation: true },
-      mdastPlugins: [katexPlugin],
-    }),
+    // Features and native plugins live in src/lib/markdown/ (tested with `pnpm test`).
+    processor: satteri({ features, mdastPlugins, hastPlugins }),
   },
   vite: { plugins: [tailwindcss()] },
 });

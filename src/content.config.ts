@@ -10,6 +10,8 @@ const posts = defineCollection({
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
+    /** Force the contents list on or off (by default: 4+ sections on a long page). */
+    toc: z.boolean().optional(),
     draft: z.boolean().default(false),
   }),
 });
@@ -27,6 +29,8 @@ const labSchema = z.object({
   /** One-line conclusion, shown on the list and at the top of the note. */
   verdict: z.string().optional(),
   repo: z.url().optional(),
+  /** Force the contents list on or off (by default: 4+ sections on a long page). */
+  toc: z.boolean().optional(),
   draft: z.boolean().default(false),
 });
 const lab = defineCollection({

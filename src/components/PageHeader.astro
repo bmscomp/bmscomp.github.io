@@ -1,28 +1,51 @@
 ---
 // Page letterhead: small-caps kicker, display title, italic lede, then a double rule.
-// The margin column (slot "gutter") can hold a date or a mark; the default slot holds actions.
+// The kicker is a plain label, or a breadcrumb ("Lab · Software") when `crumbs` is given.
+// The margin column (slot "gutter") can hold a date or a mark; it is left out when the slot is empty,
+// and follows the lede on phones. The default slot holds actions.
 import { typeset } from '../lib/typeset';
+
+interface Crumb {
+  label: string;
+  href?: string;
+}
 
 interface Props {
   kicker?: string;
   kickerHref?: string;
+  crumbs?: Crumb[];
   title: string;
   lede?: string;
 }
 
 const { kicker, kickerHref, title, lede } = Astro.props;
+const crumbs: Crumb[] = Astro.props.crumbs ?? (kicker ? [{ label: kicker, href: kickerHref }] : []);
+const hasGutter = Astro.slots.has('gutter');
 ---
 
 <header class="row items-end">
-  <div class="gutter date pb-1.5 max-sm:mb-1">
-    <slot name="gutter" />
-  </div>
-  <div>
+  {
+    hasGutter && (
+      <div class="gutter page-gutter date">
+        <slot name="gutter" />
+      </div>
+    )
+  }
+  <div class:list={[!hasGutter && 'sm:col-start-2']}>
     {
-      kicker && (
-        <p class="kicker">
-          {kickerHref ? <a href={kickerHref}>{kicker}</a> : kicker}
-        </p>
+      crumbs.length > 1 ? (
+        <nav class="kicker" aria-label="Breadcrumb">
+          {crumbs.map(({ label, href }, i) => (
+            <>
+              {i > 0 && <span aria-hidden="true"> · </span>}
+              {href ? <a href={href}>{label}</a> : <span>{label}</span>}
+            </>
+          ))}
+        </nav>
+      ) : (
+        crumbs.length === 1 && (
+          <p class="kicker">{crumbs[0].href ? <a href={crumbs[0].href}>{crumbs[0].label}</a> : crumbs[0].label}</p>
+        )
       )
     }
     <h1 class="page-title mt-1" set:html={typeset(title)} />
@@ -30,4 +53,4 @@ const { kicker, kickerHref, title, lede } = Astro.props;
     <slot />
   </div>
 </header>
-<hr class="double-rule mt-8 print:mt-3" />
+<hr class="double-rule mt-(--rule-gap) print:mt-3" />

@@ -8,8 +8,9 @@ const posts = await getPosts();
 ---
 
 <Base title="Blog" description="Essays, announcements and how-tos, newest first.">
+  <link slot="head" rel="alternate" type="application/rss+xml" title="Blog" href="/blog/rss.xml" />
   <PageHeader kicker="Writing" title="Blog" lede="Essays, announcements and how-tos, newest first.">
-    <p class="mt-5"><a href="/rss.xml" class="pill">RSS feed</a></p>
+    <p class="mt-5"><a href="/blog/rss.xml" class="pill">RSS feed</a></p>
   </PageHeader>
   <div>
     <PostList posts={posts} />
