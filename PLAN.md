@@ -13,7 +13,7 @@ Pros/cons of every choice: [TECH-STUDY.md](TECH-STUDY.md). Blog shape & readabil
 ## 1. Principles
 
 1. **Static first** — no server, no database; everything builds to HTML on GitHub Pages.
-2. **Content is plain files** — Markdown/MDX + YAML/JSON in git. No CMS lock-in.
+2. **Content is plain files** — Markdown + YAML/JSON in git. No CMS lock-in.
 3. **Zero JS by default** — ship JavaScript only where it adds value (map, lightbox, search).
 4. **Fast and accessible** — Lighthouse ≥ 95 on all four scores, WCAG 2.2 AA.
 5. **Privacy-respecting** — no trackers, photo GPS metadata stripped, no third-party cookies.
@@ -28,7 +28,7 @@ Pros/cons of every choice: [TECH-STUDY.md](TECH-STUDY.md). Blog shape & readabil
 | D1 | Framework | **Astro 7** (static output) | Content Collections with typed schemas, built-in image pipeline, islands architecture (zero JS by default), first-class MDX | Next.js (heavier, SSR-oriented), Hugo (fast but weaker component model), Eleventy (less typed content) |
 | D2 | Language | **TypeScript** (strict) | Type-safe content schemas via Zod | — |
 | D3 | Styling | **Tailwind CSS v4** + `@tailwindcss/typography` | CSS-first config, tiny output, good prose defaults | Vanilla CSS + Open Props |
-| D4 | Content format | **MDX** for posts/travel/lab, **YAML/JSON** for CV, reading, photos metadata | Rich embeds where needed, data where it's data | Pure Markdown |
+| D4 | Content format | **Markdown** for posts/travel/lab (Astro's native Sätteri processor; features in `src/lib/markdown/`), **YAML/JSON** for CV, reading, photos metadata | Plain text that renders fast; data where it's data | MDX (embeds, but slower builds and a second syntax) |
 | D5 | Images | **`astro:assets`** (`<Picture>`, AVIF + WebP, responsive `srcset`) + **sharp** | Automatic optimization at build time | Cloudinary (external dependency) |
 | D6 | Photo storage | **Outside GitHub** — object storage (Cloudflare R2 recommended, zero egress fees) served from a subdomain once the custom domain exists. Only metadata (YAML: title, description, alt, album, tags, EXIF) lives in the repo. **Deferred to a later phase.** | Keeps the repo and Pages artifact small; no 1 GB ceiling | In-repo (1 GB Pages limit), Git LFS (Pages can't serve LFS) |
 | D7 | Maps (travel) | **MapLibre GL JS** + **Protomaps PMTiles** file hosted with the site | No API key, no tracking, works offline-ish | Leaflet + OSM tiles, Mapbox (key + billing) |
@@ -138,7 +138,7 @@ cv:      JSON Resume schema (basics, work, education, skills, projects, language
 
 | I want to… | I do… |
 |------------|-------|
-| Write a post | `pnpm new post "Title"` → edit MDX → `git push` |
+| Write a post | `pnpm new post "Title"` → edit Markdown → `git push` |
 | Add phone photos (later) | Drop files into `inbox/` → `pnpm photos:import --album lisbon-2026` (uploads to bucket) → review stubs → push |
 | Log a trip | `pnpm new travel "Title"` → add places (lat/lng) → link album → push |
 | Log something I'm testing | `pnpm new lab "Title"` → fill setup/results, set `status` → push |

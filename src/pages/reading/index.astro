@@ -1,4 +1,5 @@
 ---
+import Colophon from '../../components/Colophon.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import ReadingItem from '../../components/ReadingItem.astro';
 import Section from '../../components/Section.astro';
@@ -11,20 +12,30 @@ const sections = [
   { id: 'read', title: 'Read', entries: read },
   { id: 'up-next', title: 'Up next', entries: toRead },
 ].filter((section) => section.entries.length > 0);
+// The feed carries what I'm reading or have read; it is advertised only once it has an item.
+const hasFeed = reading.length + read.length > 0;
 ---
 
 <Base title="Reading" description="Articles, books, and papers I'm reading, with short notes.">
-  <link slot="head" rel="alternate" type="application/rss+xml" title="Reading" href="/reading/rss.xml" />
+  {hasFeed && <link slot="head" rel="alternate" type="application/rss+xml" title="Reading" href="/reading/rss.xml" />}
   <PageHeader
     kicker="Library"
     title="Reading"
     lede="Articles, books, and papers I'm reading or found worth keeping, with a line on why."
   >
-    <p class="mt-5"><a href="/reading/rss.xml" class="pill">RSS feed</a></p>
+    {
+      hasFeed && (
+        <p class="mt-5">
+          <a href="/reading/rss.xml" class="pill">
+            RSS feed
+          </a>
+        </p>
+      )
+    }
   </PageHeader>
   {
     sections.length === 0 && (
-      <p class="row mt-10 italic text-muted">
+      <p class="row italic text-muted">
         <span class="gutter" aria-hidden="true" />
         <span>Nothing here yet.</span>
       </p>
@@ -32,7 +43,7 @@ const sections = [
   }
   {
     sections.map(({ id, title, entries }) => (
-      <Section id={id} title={title} note={`${entries.length}`}>
+      <Section id={id} title={title} note={`${entries.length}`} variant="list">
         <ul>
           {entries.map((entry) => (
             <ReadingItem entry={entry} />
@@ -41,4 +52,5 @@ const sections = [
       </Section>
     ))
   }
+  <Colophon />
 </Base>

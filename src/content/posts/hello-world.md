@@ -3,6 +3,7 @@ title: Hello, world — a new home
 description: The site is rebuilt from scratch with Astro. Here's what's coming.
 pubDate: 2026-09-29
 tags: [meta, astro]
+relatedLab: [astro-7-satteri]
 ---
 
 This site has been rebuilt from scratch. Posts are plain **Markdown** files in
@@ -11,8 +12,8 @@ on every push to `main`.
 
 ## What's coming
 
-- A short **CV**
-- **Lab** notes on the software and systems I'm testing
+- A short [**CV**](/cv/)
+- [**Lab**](/lab/) notes on the software and systems I'm testing
 - A **reading** list of articles I find worth sharing
 - **Travel** stories, and later my favourite phone shots
 

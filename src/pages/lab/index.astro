@@ -1,14 +1,13 @@
 ---
+import Colophon from '../../components/Colophon.astro';
 import LabList from '../../components/LabList.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Base from '../../layouts/Base.astro';
-import { CATEGORIES, getLabNotes, STATUSES } from '../../lib/lab';
+import { filterGroups, getLabNotes } from '../../lib/lab';
 
 const notes = await getLabNotes();
-const filters = {
-  status: STATUSES.filter((s) => notes.some((n) => n.data.status === s)),
-  category: CATEGORIES.filter((c) => notes.some((n) => n.data.category === c)),
-};
+// W6.4: a filter group appears only when it has two or more values, and the bar only with a group.
+const groups = Object.entries(filterGroups(notes));
 ---
 
 <Base title="Lab" description="Software, systems, and hardware I'm testing — setup, results, and verdicts.">
@@ -21,40 +20,54 @@ const filters = {
     <p class="mt-5"><a href="/lab/rss.xml" class="pill">RSS feed</a></p>
   </PageHeader>
 
-  <div id="lab-filters" class="mt-8 space-y-2" hidden>
-    {
-      Object.entries(filters).map(([key, values]) => (
-        <div class="row items-center" data-filter={key}>
-          <span class="gutter label">{key}</span>
-          <div class="flex flex-wrap gap-2">
-            {['all', ...values].map((value) => (
-              <button type="button" class="pill" data-value={value} aria-pressed={value === 'all' ? 'true' : 'false'}>
-                {value}
-              </button>
-            ))}
+  {
+    groups.length > 0 && (
+      <div id="lab-filters" class="space-y-2" hidden>
+        {groups.map(([key, values]) => (
+          <div class="row items-center" data-filter={key} role="group" aria-labelledby={`filter-${key}`}>
+            <span id={`filter-${key}`} class="gutter label">
+              {key}
+            </span>
+            <div class="flex flex-wrap gap-2">
+              {['all', ...values].map((value) => (
+                <button type="button" class="pill" data-value={value} aria-pressed={value === 'all' ? 'true' : 'false'}>
+                  {value}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      ))
-    }
-  </div>
+        ))}
+        <p id="lab-count" class="sr-only" aria-live="polite" />
+      </div>
+    )
+  }
 
-  <div class="mt-10">
-    <LabList notes={notes} id="lab-notes" />
+  <div class:list={[groups.length > 0 && 'mt-8']}>
+    <LabList notes={notes} id="lab-notes" headingLevel={2} />
   </div>
   <p id="lab-empty" class="row mt-4 italic text-muted" hidden>
     <span class="gutter" aria-hidden="true"></span>
     <span>No notes match these filters.</span>
   </p>
+  <Colophon />
 </Base>
 
 <script>
-  const bar = document.getElementById('lab-filters')!;
+  // Filters come from the URL (?status=…&category=…) whether or not the bar is shown, so links from
+  // articles keep working; the buttons, when there are any, only change them.
+  const bar = document.getElementById('lab-filters');
+  const count = document.getElementById('lab-count');
   const items = [...document.querySelectorAll<HTMLElement>('#lab-notes > li')];
   const empty = document.getElementById('lab-empty')!;
   const params = new URLSearchParams(location.search);
   const active: Record<string, string> = { status: 'all', category: 'all' };
 
-  function apply() {
+  for (const key of Object.keys(active)) {
+    const value = params.get(key);
+    if (value && items.some((item) => item.dataset[key] === value)) active[key] = value;
+  }
+
+  function apply(announce: boolean) {
     let shown = 0;
     for (const item of items) {
       const match = Object.entries(active).every(([key, value]) => value === 'all' || item.dataset[key] === value);
@@ -62,27 +75,25 @@ const filters = {
       if (match) shown++;
     }
     empty.hidden = shown > 0;
-    for (const group of bar.querySelectorAll<HTMLElement>('[data-filter]')) {
+    for (const group of bar?.querySelectorAll<HTMLElement>('[data-filter]') ?? []) {
       for (const button of group.querySelectorAll<HTMLButtonElement>('button')) {
         button.setAttribute('aria-pressed', String(button.dataset.value === active[group.dataset.filter!]));
       }
     }
-    const query = new URLSearchParams(Object.entries(active).filter(([, value]) => value !== 'all'));
-    history.replaceState(null, '', query.size ? `?${query}` : location.pathname);
+    if (announce && count) count.textContent = `${shown} ${shown === 1 ? 'note' : 'notes'} shown`;
   }
 
-  bar.addEventListener('click', (event) => {
-    const button = (event.target as HTMLElement).closest('button');
-    const group = button?.closest<HTMLElement>('[data-filter]');
-    if (!button || !group) return;
-    active[group.dataset.filter!] = button.dataset.value!;
-    apply();
-  });
-
-  for (const key of Object.keys(active)) {
-    const value = params.get(key);
-    if (value && bar.querySelector(`[data-filter="${key}"] [data-value="${CSS.escape(value)}"]`)) active[key] = value;
+  if (bar) {
+    bar.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('button');
+      const group = button?.closest<HTMLElement>('[data-filter]');
+      if (!button || !group) return;
+      active[group.dataset.filter!] = button.dataset.value!;
+      apply(true);
+      const query = new URLSearchParams(Object.entries(active).filter(([, value]) => value !== 'all'));
+      history.replaceState(null, '', query.size ? `?${query}` : location.pathname);
+    });
+    bar.hidden = false;
   }
-  bar.hidden = false;
-  apply();
+  apply(false);
 </script>

@@ -1,0 +1,100 @@
+---
+// End of an article: the fleuron, then where to go next (label rows aligned to the margin column),
+// then a colophon with the dates. The default slot adds rows between "next" and "follow".
+import type { Neighbour, Series } from '../layouts/Article.astro';
+import { formatDate } from '../lib/posts';
+import { typeset } from '../lib/typeset';
+
+interface Props {
+  home: { name: string; href: string; feed: string; all: string };
+  pubDate: Date;
+  updatedDate?: Date;
+  older?: Neighbour;
+  newer?: Neighbour;
+  related?: Neighbour[];
+  series?: Series;
+}
+
+const { home, pubDate, updatedDate, older, newer, related = [], series } = Astro.props;
+const steps = [
+  newer && { label: 'next', ...newer },
+  older && { label: 'previous', ...older },
+].filter((step): step is Neighbour & { label: string } => Boolean(step));
+---
+
+<footer class="article-end">
+  <div class="row" aria-hidden="true">
+    <span class="gutter"></span>
+    <p class="fleuron">❦</p>
+  </div>
+  <dl class="end-rows">
+    {
+      steps.map(({ label, href, title }) => (
+        <div class="row end-nav">
+          <dt class="gutter label">{label}</dt>
+          <dd>
+            <a href={href} set:html={typeset(title)} />
+          </dd>
+        </div>
+      ))
+    }
+    {
+      series && series.parts.length > 1 && (
+        <div class="row">
+          <dt class="gutter label">series</dt>
+          <dd>
+            <ol class="run-in">
+              {series.parts.map(({ href, title, part, current }) => (
+                <li>
+                  {part}.{' '}
+                  {current ? <span set:html={typeset(title)} /> : <a href={href} set:html={typeset(title)} />}
+                </li>
+              ))}
+            </ol>
+          </dd>
+        </div>
+      )
+    }
+    {
+      related.length > 0 && (
+        <div class="row">
+          <dt class="gutter label">related</dt>
+          <dd>
+            <ul class="run-in">
+              {related.map(({ href, title }) => (
+                <li>
+                  <a href={href} set:html={typeset(title)} />
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      )
+    }
+    <slot />
+    <div class="row end-nav">
+      <dt class="gutter label">follow</dt>
+      <dd>
+        <a href={home.feed}>{home.name} feed</a> · <a href="/rss.xml">everything</a>
+      </dd>
+    </div>
+    <div class="row end-nav">
+      <dt class="gutter label">back</dt>
+      <dd>
+        <a href={home.href}>{home.all}</a> · <a href="#top">↑ top</a>
+      </dd>
+    </div>
+  </dl>
+  <p class="row colophon">
+    <span class="gutter" aria-hidden="true"></span>
+    <span>
+      Published <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>{
+        updatedDate && (
+          <>
+            , updated <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time>
+          </>
+        )
+      }. Set in EB Garamond.
+    </span>
+  </p>
+</footer>

@@ -1,5 +1,5 @@
 ---
-import { type LabNote, lastTouched } from '../lib/lab';
+import type { LabNote } from '../lib/lab';
 import { formatDate } from '../lib/posts';
 import { typeset } from '../lib/typeset';
 import StatusBadge from './StatusBadge.astro';
@@ -8,27 +8,33 @@ interface Props {
   notes: LabNote[];
   /** Set to make the list filterable (see the Lab page script). */
   id?: string;
+  /** h2 where the list is the page's content, h3 inside a Section (W6.4: no skipped levels). */
+  headingLevel?: 2 | 3;
 }
 
-const { notes, id } = Astro.props;
+const { notes, id, headingLevel = 3 } = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
 ---
 
-<ol id={id}>
+<ol id={id} class="body-size">
   {
     notes.map((note) => (
       <li class="row entry" data-status={note.data.status} data-category={note.data.category}>
         <div class="gutter date">
-          <time datetime={lastTouched(note).toISOString()} class="block">
-            {formatDate(lastTouched(note))}
-          </time>
+          <time datetime={note.data.pubDate.toISOString()}>{formatDate(note.data.pubDate)}</time>
+          {note.data.updatedDate && (
+            <span>
+              updated <time datetime={note.data.updatedDate.toISOString()}>{formatDate(note.data.updatedDate)}</time>
+            </span>
+          )}
           <StatusBadge status={note.data.status} />
         </div>
         <div>
-          <h3 class="entry-title">
+          <Heading class="entry-title">
             <a href={`/lab/${note.id}/`} set:html={typeset(note.data.title)} />
             {note.data.draft && <span class="label text-muted"> · draft</span>}
-          </h3>
-          <p class="hyphenate mt-0.5 text-muted" set:html={typeset(note.data.verdict ?? note.data.description)} />
+          </Heading>
+          <p class="entry-desc hyphenate mt-0.5 text-muted" set:html={typeset(note.data.verdict ?? note.data.description)} />
           <p class="keywords mt-1">{[note.data.category, ...note.data.tools].join(' · ')}</p>
         </div>
       </li>

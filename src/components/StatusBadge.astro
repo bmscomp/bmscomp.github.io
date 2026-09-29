@@ -3,9 +3,21 @@ import type { LabStatus } from '../lib/lab';
 
 interface Props {
   status: LabStatus;
+  /** Link to the matching /lab/ filter, when that filter is shown. */
+  href?: string;
 }
 
-const { status } = Astro.props;
+const { status, href } = Astro.props;
 ---
 
-<span class="status" data-status={status}>{status}</span>
+{
+  href ? (
+    <a class="status" data-status={status} href={href}>
+      {status}
+    </a>
+  ) : (
+    <span class="status" data-status={status}>
+      {status}
+    </span>
+  )
+}

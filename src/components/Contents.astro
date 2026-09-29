@@ -1,0 +1,46 @@
+---
+// Contents of a long article, in two forms: a run-in row of the fact sheet (≥40rem) and a closed
+// disclosure (phones). Both are rendered; CSS shows one, so neither needs JavaScript.
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+  variant: 'row' | 'disclosure';
+}
+
+const { headings, variant } = Astro.props;
+const links = headings.map(({ slug, text }) => ({ href: `#${slug}`, text }));
+---
+
+{
+  variant === 'row' ? (
+    <div class="row contents-row">
+      <dt class="gutter label">contents</dt>
+      <dd>
+        <ol class="run-in">
+          {links.map(({ href, text }) => (
+            <li>
+              <a href={href}>{text}</a>
+            </li>
+          ))}
+        </ol>
+      </dd>
+    </div>
+  ) : (
+    <details class="contents-disclosure">
+      <summary>
+        <span class="label">contents</span>{' '}
+        <span class="contents-count">
+          {links.length} {links.length === 1 ? 'section' : 'sections'}
+        </span>
+      </summary>
+      <ol>
+        {links.map(({ href, text }) => (
+          <li>
+            <a href={href}>{text}</a>
+          </li>
+        ))}
+      </ol>
+    </details>
+  )
+}

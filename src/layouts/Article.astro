@@ -1,0 +1,167 @@
+---
+// Shared shell for posts and lab notes: letterhead, fact sheet, contents, text and end block.
+// Post.astro and LabNote.astro only decide the facts; everything an article has in common is here.
+import katexCss from 'katex/dist/katex.min.css?url';
+import katexMain from 'katex/dist/fonts/KaTeX_Main-Regular.woff2?url';
+import katexMath from 'katex/dist/fonts/KaTeX_Math-Italic.woff2?url';
+import type { MarkdownHeading } from 'astro';
+import type { render } from 'astro:content';
+import ArticleEnd from '../components/ArticleEnd.astro';
+import Contents from '../components/Contents.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { SITE_TITLE } from '../consts';
+import { lengthParts, measureLength, readingMinutes } from '../lib/length';
+import { formatDate } from '../lib/posts';
+import Base from './Base.astro';
+
+export interface Neighbour {
+  href: string;
+  title: string;
+}
+
+export interface Series {
+  name: string;
+  part: number;
+  total: number;
+  parts: (Neighbour & { part: number; current: boolean })[];
+}
+
+interface Props {
+  section: 'blog' | 'lab';
+  /** Breadcrumb after the section name, e.g. the lab category. */
+  crumbs?: { label: string; href?: string }[];
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  tags?: string[];
+  /** Social card path. */
+  image: string;
+  rendered: Awaited<ReturnType<typeof render>>;
+  /** Markdown source, for the length cue. */
+  body?: string;
+  /** Force the contents list on or off. */
+  toc?: boolean;
+  older?: Neighbour;
+  newer?: Neighbour;
+  related?: Neighbour[];
+  series?: Series;
+  noindex?: boolean;
+}
+
+const SECTIONS = {
+  blog: { name: 'Blog', href: '/blog/', feed: '/blog/rss.xml', all: 'All posts' },
+  lab: { name: 'Lab', href: '/lab/', feed: '/lab/rss.xml', all: 'All lab notes' },
+};
+
+const { section, crumbs = [], title, description, pubDate, updatedDate, tags = [], image, rendered } = Astro.props;
+const { body = '', toc, older, newer, related = [], series, noindex } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = rendered;
+const home = SECTIONS[section];
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// Contents: the article's sections, when there are enough of them on a long page. Code makes a page
+// long too, so four listings count as much as 250 words.
+const titles = (remarkPluginFrontmatter.sectionTitles ?? {}) as Record<string, string>;
+const sections = headings
+  .filter((h: MarkdownHeading) => h.depth === 2 && h.slug !== 'footnote-label')
+  .map((h: MarkdownHeading) => ({ ...h, text: titles[h.slug] ?? h.text }));
+const { words, listings } = measureLength(body);
+// `toc: true` forces it on, but a list needs two sections to be one.
+const showContents = sections.length >= 2 && (toc ?? (sections.length >= 4 && (words >= 250 || listings >= 4)));
+const length = lengthParts({ sections: sections.length, listings, minutes: readingMinutes(words, listings) });
+
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  url: canonical,
+  mainEntityOfPage: canonical,
+  image: new URL(image, Astro.site).href,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate ?? pubDate).toISOString(),
+  inLanguage: 'en',
+  articleSection: home.name,
+  keywords: tags.length ? tags : undefined,
+  wordCount: words,
+  author: { '@type': 'Person', name: SITE_TITLE, url: new URL('/cv/', Astro.site).href },
+}).replace(/</g, '\\u003c');
+---
+
+<Base title={title} description={description} image={image} type="article" noindex={noindex}>
+  <Fragment slot="head">
+    <meta property="article:published_time" content={pubDate.toISOString()} />
+    {updatedDate && <meta property="article:modified_time" content={updatedDate.toISOString()} />}
+    <meta property="article:section" content={home.name} />
+    {tags.map((tag) => <meta property="article:tag" content={tag} />)}
+    <link rel="alternate" type="application/rss+xml" title={`${SITE_TITLE} · ${home.name}`} href={home.feed} />
+    {older && <link rel="prev" href={older.href} />}
+    {newer && <link rel="next" href={newer.href} />}
+    {
+      /* W8.3: KaTeX's faces block text until they load, so the two every formula uses load early. */
+      remarkPluginFrontmatter.hasMath && (
+        <>
+          <link rel="stylesheet" href={katexCss} />
+          <link rel="preload" href={katexMain} as="font" type="font/woff2" crossorigin="anonymous" />
+          <link rel="preload" href={katexMath} as="font" type="font/woff2" crossorigin="anonymous" />
+        </>
+      )
+    }
+    <script type="application/ld+json" set:html={jsonLd} />
+  </Fragment>
+
+  <article class="article" data-pagefind-body>
+    <PageHeader crumbs={[{ label: home.name, href: home.href }, ...crumbs]} title={title} lede={description}>
+      <Fragment slot="gutter">
+        <time class="block" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        {length.length > 0 && <span class="length">{length.map((part) => <span class="block">{part}</span>)}</span>}
+      </Fragment>
+    </PageHeader>
+
+    <dl class="facts">
+      <slot name="facts" />
+      {
+        series && (
+          <div class="row">
+            <dt class="gutter label">series</dt>
+            <dd>
+              {series.name}, part {series.part} of {series.total}
+            </dd>
+          </div>
+        )
+      }
+      {
+        updatedDate && (
+          <div class="row">
+            <dt class="gutter label">updated</dt>
+            <dd class="date">
+              <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time>
+            </dd>
+          </div>
+        )
+      }
+      {showContents && <Contents headings={sections} variant="row" />}
+    </dl>
+    {showContents && <Contents headings={sections} variant="disclosure" />}
+
+    <div class="row article-body">
+      <span class="gutter" aria-hidden="true"></span>
+      <div class="prose prose-paper">
+        <Content />
+      </div>
+    </div>
+
+    <ArticleEnd
+      home={home}
+      pubDate={pubDate}
+      updatedDate={updatedDate}
+      older={older}
+      newer={newer}
+      related={related}
+      series={series}
+    >
+      <slot name="end" />
+    </ArticleEnd>
+  </article>
+</Base>

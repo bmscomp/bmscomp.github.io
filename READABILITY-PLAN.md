@@ -1,6 +1,7 @@
 # Blog shape & readability plan
 
-> Status: **Draft for review** · 2026-09-29 · Companion to [PLAN.md](PLAN.md)
+> Status: **Implemented** (P0–P2, all 44 items) · 2026-09-30 · Companion to [PLAN.md](PLAN.md) · results in
+> [Implementation status](#implementation-status)
 >
 > Scope: "enhancing the blog for making better shape [and] readability". The request was cut off after
 > "and"; tell me if a third goal was meant and it will be folded in.
@@ -14,6 +15,68 @@ then checked against the actual code and dependencies: 3 items held as written, 
 and 2 were not needed. A completeness critic found 9 gaps, 10 contradictions and 7 sequencing problems.
 **This document already includes all of those corrections.** Item IDs such as TYPO-1 or LAYO-03 refer to
 Appendix A.
+
+---
+
+## Implementation status
+
+All 44 items are implemented on the `readability-plan` branch, one commit per phase (P0, P1a, P1b,
+P1c, P2). `pnpm test:e2e` runs 82 readability checks and 7 throttled ones; `pnpm test` runs 31 unit
+tests of the Markdown plugins and helpers; CI gates every deploy on the font-independent checks, the
+content lint and Lighthouse budgets.
+
+An adversarial review then read the whole change through four lenses (Markdown plugins, layouts,
+CSS, build and tests), and a skeptic re-ran each finding: 27 were confirmed and 1 refuted. All 27 are
+fixed in the last commit. The most important: the CI checks no longer pin today's content (feed
+counts, the empty reading list), so a new post or an automated reading-list entry cannot block a
+deploy. Also fixed: tags and repo links are escaped, list pages have their status dots back, and the
+verdict prints once. Table labels no longer contain markup, and footnote references stay out of
+heading ids. The lint also refuses reference-style images and catches price ranges read as math.
+
+**Decisions taken.** O1 lining figures in prose. O2 the CV prints to 3 A4 pages, locked by a test. O3
+Blog lede: "Essays, announcements and how-tos, newest first." O4 shared-style changes accepted. O5
+acronyms in small caps. O6 metric-matched fallback. O7 GitHub alerts only.
+
+| Target (§3) | Baseline | Measured after |
+|---|---|---|
+| Hyphen breaks inside `<code>` | 8 | 0 |
+| Code hidden by sideways scrolling | up to 563 px | 0 px on every block @375/768/1280/1600 |
+| Characters per line @1280/1600 | mean 71.6–71.9, max 83–86 | mean 65.1–67.0, max 71–78, ≤ 10% over 75 |
+| Body x-height @≥1024 | 7.7 px | 8.51 px |
+| Worst column-width step 600→1600 px | −27% at 640 px | −6.8% at 640 px |
+| Throttled CLS (5 cases) | up to 0.155 | 0.013–0.026; /cv/ 0.089 (its limit is 0.1) |
+| Heading top after `#section` @≥768 | 0 px | 88 px |
+| Astro note @375×812 | first line at 1037 px | third line ends at 702 px (first at 645 px @375×667) |
+| Internal links after the text | 0 | 7–10 per article |
+| Small caps share, / and /lab/ | 40% and 42% | 19% and 13% (/tags/ 9%) |
+| Small-caps letter-spacing values | 10 | 4 |
+| Link underline contrast (light/dark) | 1.67 and 2.00 | 3.12 and 4.20 |
+| Heading skips and axe violations | h1→h3; 2 rules | 0 on every page and the fixture |
+| Runtime JavaScript on articles | 1,538 B | 1,497 B transferred (Expressive Code's copy button only) |
+| KaTeX fonts after first paint (throttled) | ~500 ms | 8–14 ms |
+| Lighthouse, 5 URLs | — | 97–100 in all four categories |
+
+**Where the implementation departs from the plan**, each for a measured reason:
+
+- **W5.3** Expressive Code's inline padding is 1.25rem, not 1.35rem: with the frame aligned to the double
+  rule it is what leaves 82 columns at the 0.875rem code size W3.6 needs.
+- **W5.6** To reach the text on a 375×667 screen, tools move to the end block at every width and the
+  verdict moves there on phones (it is also the list entry's summary and each note's closing section).
+  Status and platform share one line on phones. Below 64rem the date line follows the lede, because the
+  6rem margin column is too narrow for it.
+- **W5.5** Contents appear from 4 sections on a long page, where long means 250+ words *or* 4+ listings;
+  the pnpm note is 204 words with 6 listings.
+- **W6.2** The end block landed whole in P1b (the related row followed with W6.6). Footer links are set in
+  italic, so adding Blog and Lab kept the small-caps share under the W4.1 target.
+- **W7.2** Footnote references are medium weight, so they differ from text without an underline (axe
+  `link-in-text-block`).
+- **W6.5b / W6.6** The lab notes gained tags (`astro`, `markdown`, `math`, `pnpm`, `typescript`) and each
+  article links related ones; edit them freely in the frontmatter.
+
+**Left open.** On phones a wide table scrolls inside its region, by design. `$5 and $6` in prose still
+parses as math (Sätteri's single-dollar rule); `pnpm lint:content` warns, and `\$` is the fix. Smooth
+scrolling animates a deep link on load when motion is allowed. The WebKit run (`PW_WEBKIT=1`) is opt-in
+and has not been run on this machine.
 
 ---
 

@@ -27,9 +27,55 @@
   font-display: swap;
 }
 
+/*
+ * W2.1: a local serif stretched to EB Garamond's metrics, so text does not reflow when the webfont
+ * arrives. One face per weight range, because Times' regular, medium and bold metrics differ.
+ */
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Liberation Serif');
+  font-weight: 400 499;
+  font-style: normal;
+  size-adjust: 94.11%;
+  ascent-override: 107%;
+  descent-override: 31.67%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Liberation Serif');
+  font-weight: 500 599;
+  font-style: normal;
+  size-adjust: 97.41%;
+  ascent-override: 103.38%;
+  descent-override: 30.59%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman Bold'), local('TimesNewRomanPS-BoldMT'), local('Liberation Serif Bold');
+  font-weight: 600 800;
+  font-style: normal;
+  size-adjust: 94.44%;
+  ascent-override: 106.63%;
+  descent-override: 31.55%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'), local('Liberation Serif Italic');
+  font-weight: 400 800;
+  font-style: italic;
+  size-adjust: 91.51%;
+  ascent-override: 110.04%;
+  descent-override: 32.56%;
+  line-gap-override: 0%;
+}
+
 @theme {
-  --font-serif: 'EB Garamond Web', 'EB Garamond', Garamond, 'Times New Roman', serif;
-  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  --font-serif: 'EB Garamond Web', 'EB Garamond Fallback', 'Times New Roman', serif;
+  /* W3.3: what readers actually get, in order; JetBrains Mono only where installed. */
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'JetBrains Mono', monospace;
 }
 
 /* Palette tokens resolve at runtime, so light, dark and print can each redefine them. */
@@ -52,6 +98,29 @@
   /* Margin column for dates and labels, as in LaTeX CV classes. */
   --gutter: 7.5rem;
   --gap: 1.75rem;
+  /* W4.1: the only four letter-spacing values used with small caps. */
+  --track-tight: 0.03em;
+  --track-sc: 0.05em;
+  --track-label: 0.08em;
+  --track-head: 0.14em;
+  /* W5.1: height of the sticky header (kept true by min-block-size in Header.astro). */
+  --header-h: 4.125rem;
+  /* W4.3: one gap after every letterhead's double rule (and before it: --rule-gap). */
+  --after-rule: 2rem;
+  --rule-gap: 2rem;
+  /* W2.3: article body grows from 19px on phones to 21px from about 1000px, for EB Garamond's short
+     lowercase; --lh is one line of it, the unit of vertical rhythm in articles (W4.5). */
+  --text-body: clamp(1.1875rem, 1.08rem + 0.37vw, 1.3125rem);
+  --lh: calc(var(--text-body) * 1.5);
+  /* W2.4: the lede stays 15% larger than the text it introduces. */
+  --text-lede: calc(var(--text-body) * 1.15);
+  /* W3.6: listings sit just under the body size; larger once the column is wide. */
+  --code-size: 0.82rem;
+}
+@media screen and (min-width: 64rem) {
+  :root {
+    --code-size: 0.875rem;
+  }
 }
 @media screen and (prefers-color-scheme: dark) {
   :root {
@@ -77,14 +146,40 @@
     font-kerning: normal;
     font-variant-ligatures: common-ligatures contextual;
     font-variant-numeric: oldstyle-nums proportional-nums;
-    -webkit-font-smoothing: antialiased;
+  }
+  /* W2.2: antialiasing counters halation on light-on-dark text; in light mode it only thins the face. */
+  @media screen and (prefers-color-scheme: dark) {
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+  /* W5.1: section links and focused elements land below the sticky header (static on phones). */
+  @media screen and (min-width: 40rem) {
+    html {
+      scroll-padding-top: calc(var(--header-h) + 1.375rem);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
   a {
     color: var(--accent);
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.18em;
-    text-decoration-color: color-mix(in oklab, var(--accent) 30%, transparent);
+    /* W8.1: 60% keeps the underline at ≥3:1 on paper in both modes, so links do not rely on hue. */
+    text-decoration-color: color-mix(in oklab, var(--accent) 60%, transparent);
     transition:
       color 0.15s,
       text-decoration-color 0.15s;
@@ -107,14 +202,14 @@
   /* ---------- Type details ---------- */
   .sc {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--track-sc);
   }
   .nowrap {
     white-space: nowrap;
   }
   .label {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--track-label);
   }
   .hyphenate {
     text-wrap: pretty;
@@ -124,17 +219,18 @@
   }
   .lede-caps::first-line {
     font-variant-caps: small-caps;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--track-tight);
   }
+  /* W4.1: keyword runs in italic instead of tracked small caps; W4.2: lining figures ("pnpm 12"). */
   .keywords {
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.07em;
-    font-size: 0.95em;
+    font-size: 0.9em;
+    font-style: italic;
     color: var(--muted);
+    font-variant-numeric: lining-nums proportional-nums;
   }
   .author-sc {
     font-variant-caps: small-caps;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--track-tight);
   }
   .ref {
     color: var(--accent);
@@ -172,13 +268,16 @@
   /* ---------- Page letterhead ---------- */
   .kicker {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.3em;
+    letter-spacing: var(--track-head);
     font-size: 1rem;
     color: var(--accent);
   }
+  /* W6.3: the kicker is a breadcrumb; its link is underlined with a 24px+ hit area that adds no height. */
   .kicker a {
+    display: inline-block;
+    padding-block: 0.35rem;
+    margin-block: -0.35rem;
     color: inherit;
-    text-decoration: none;
   }
   .page-title {
     font-size: clamp(2.4rem, 6vw, 3.4rem);
@@ -189,10 +288,12 @@
     text-wrap: balance;
   }
   .lede {
-    font-size: 1.3rem;
+    font-size: var(--text-lede);
+    line-height: 1.4;
     font-style: italic;
     color: var(--muted);
     text-wrap: pretty;
+    font-variant-numeric: lining-nums proportional-nums;
   }
   .double-rule {
     border: 0;
@@ -217,10 +318,16 @@
   }
   .heading-text {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.16em;
+    letter-spacing: var(--track-head);
     font-size: 1.4rem;
     font-weight: 500;
     color: var(--accent);
+  }
+  .heading-list .heading-text {
+    font-size: clamp(1.6rem, 1.45rem + 0.5vw, 1.8rem);
+    font-variant-caps: small-caps;
+    letter-spacing: var(--track-sc);
+    line-height: 1.15;
   }
   .heading-note {
     margin-left: 0.6rem;
@@ -230,6 +337,12 @@
     font-style: italic;
     font-weight: 400;
     color: var(--muted);
+  }
+  @media screen {
+    hr.double-rule + *,
+    hr.double-rule + [hidden] + * {
+      margin-top: var(--after-rule);
+    }
   }
   @media (min-width: 40rem) {
     .heading {
@@ -242,9 +355,263 @@
     }
   }
 
+  /* W2.5: no width cliff. Articles stay single-column until 48rem (the margin grid would squeeze the
+     text by 27% at 40rem), then use a narrower margin column until the sheet reaches full width. */
+  @media screen and (min-width: 40rem) and (max-width: 47.99rem) {
+    .article .row,
+    .article .heading {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .article .gutter {
+      text-align: left;
+    }
+  }
+  @media screen and (min-width: 48rem) and (max-width: 63.99rem) {
+    .article {
+      --gutter: 6rem;
+      --gap: 1rem;
+    }
+  }
+
+  /* ---------- Article shell (W5.2): letterhead gutter, fact sheet, contents, end block ---------- */
+  .page-gutter {
+    padding-bottom: 0.375rem;
+  }
+  .page-gutter .length {
+    display: block;
+  }
+  .facts > .row + .row,
+  .end-rows > .row + .row {
+    margin-top: 0.25rem;
+  }
+  .article {
+    --block-gap: 2rem;
+  }
+  .article-body {
+    margin-top: var(--block-gap);
+  }
+  .facts dd:not(.date),
+  .end-rows dd:not(.date) {
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  .end-rows dd {
+    overflow-wrap: anywhere;
+  }
+  .facts:not(:has(> *)) {
+    display: none;
+  }
+  /* W5.5: contents as a run-in row of the fact sheet; a closed disclosure on phones. */
+  .run-in,
+  .run-in > li {
+    display: inline;
+  }
+  .run-in > li + li::before {
+    content: ' · ';
+    color: var(--muted);
+  }
+  .contents-disclosure {
+    display: none;
+  }
+  .contents-disclosure > summary {
+    cursor: pointer;
+    padding-block: 0.1rem;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+  .contents-disclosure > summary::marker {
+    color: var(--accent);
+  }
+  .contents-count {
+    font-style: italic;
+  }
+  .contents-disclosure > ol {
+    margin-top: 0.4rem;
+    padding-inline-start: 1.6em;
+    list-style: decimal;
+  }
+  .contents-disclosure > ol > li + li {
+    margin-top: 0.3rem;
+  }
+  .contents-disclosure > ol > li::marker {
+    color: var(--muted);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  @media (max-width: 39.99rem) {
+    .contents-row {
+      display: none;
+    }
+    .contents-disclosure {
+      display: block;
+      margin-top: 0.75rem;
+    }
+  }
+  /* W6.2: the end block, inside <article>. */
+  .article-end {
+    margin-top: calc(2 * var(--lh));
+  }
+  .article-end .fleuron {
+    max-width: calc(28 * var(--text-body));
+    text-align: center;
+  }
+  .end-rows {
+    margin-top: 1.25rem;
+  }
+  .article-end .colophon {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+  }
+  .end-narrow {
+    display: none;
+  }
+  /* W5.6: phones reach the text on the first screen. The fact sheet becomes a compact two-column grid
+     whose short facts share one line, the verdict moves to the end block (it is also the list entry's
+     summary and the note's last section), the date line follows the lede, and the gaps tighten. */
+  @media screen and (max-width: 47.99rem) {
+    .article {
+      --block-gap: 1.25rem;
+      --rule-gap: 1.25rem;
+    }
+    .article .facts:has(.facts-inline) {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: 1.25rem;
+    }
+    .article .facts:has(.facts-inline) > .row {
+      flex-basis: 100%;
+    }
+    .article .facts > .facts-inline.row {
+      display: block;
+      flex-basis: auto;
+      margin-top: 0;
+    }
+    .article .facts-inline > dt {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .article:has(.contents-disclosure) .page-gutter .length {
+      display: none;
+    }
+    .article .facts .row {
+      grid-template-columns: 5.25rem minmax(0, 1fr);
+      column-gap: 0.75rem;
+    }
+    /* End rows share one grid, so every value lines up after the longest label. */
+    .article .end-rows {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: 0.25rem 0.75rem;
+    }
+    .article .end-rows > .row {
+      display: contents;
+    }
+    .article .facts .gutter,
+    .article .end-rows .gutter {
+      text-align: left;
+    }
+    .article .facts-wide {
+      display: none;
+    }
+    .article .end-narrow {
+      display: contents;
+    }
+    .article .article-end {
+      margin-top: var(--lh);
+    }
+  }
+  /* Until the margin column is 7.5rem wide, the date line follows the lede on one line, and margin labels
+     are set a little smaller so "filed under" fits the 6rem column. */
+  @media screen and (max-width: 63.99rem) {
+    .article .page-gutter {
+      order: 1;
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: 0.5em;
+      margin-top: 0.6rem;
+      padding-bottom: 0;
+      text-align: left;
+    }
+    .article .page-gutter .length {
+      display: contents;
+    }
+    .article .page-gutter .length > *::before {
+      content: '·';
+      margin-inline-end: 0.5em;
+    }
+  }
+  @media screen and (min-width: 48rem) and (max-width: 63.99rem) {
+    .article header > .page-gutter {
+      grid-column: 2;
+    }
+    .article header > .page-gutter ~ div {
+      grid-area: 1 / 2;
+    }
+    .article :is(.facts, .end-rows) dt {
+      font-size: 0.86em;
+      letter-spacing: var(--track-tight);
+      white-space: nowrap;
+    }
+  }
+
   /* ---------- Entries ---------- */
   .entry + .entry {
     margin-top: 1.6rem;
+  }
+  /* List entries (PostList, LabList, ArticleList: ol.body-size); the CV's entries are left alone. */
+  .body-size > .entry > .gutter > :not(.status) {
+    display: block;
+  }
+  /* W6.4: compact entries on phones: date and status share a line above the title. */
+  @media (max-width: 39.99rem) {
+    .body-size > .entry + .entry {
+      margin-top: 1.25rem;
+    }
+    .body-size > .entry > .gutter {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 0.75rem;
+    }
+    .body-size > .entry .entry-desc {
+      margin-top: 0.15rem;
+    }
+    .body-size > .entry .keywords {
+      line-height: 1.4;
+    }
+  }
+  /* W6.5b: /tags/ as a book index. */
+  .tag-index > .row + .row {
+    margin-top: 0.75rem;
+  }
+  .index-initial {
+    font-size: 1em;
+    font-weight: 500;
+    font-variant-caps: all-small-caps;
+    letter-spacing: var(--track-sc);
+    color: var(--accent);
+    line-height: inherit;
+  }
+  .tag-index li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1rem;
+    max-width: 12em;
+  }
+  .index-count {
+    color: var(--muted);
+    font-variant-numeric: oldstyle-nums tabular-nums;
+    text-align: right;
+  }
+  /* A list page ends like a document: the fleuron and a line of small print. */
+  .page-colophon {
+    margin-top: 3.5rem;
+    text-align: center;
+  }
+  .page-colophon .colophon {
+    margin-top: 0.4rem;
   }
   .entry-compact + .entry-compact {
     margin-top: 0.7rem;
@@ -254,6 +621,19 @@
     font-size: 1.15em;
     line-height: 1.3;
     text-wrap: balance;
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  .entry-desc {
+    max-width: 32em;
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  /* W2.4: post and lab lists are set at the size of the articles they link to. */
+  .body-size {
+    font-size: var(--text-body);
+  }
+  /* Margin dates keep the sheet's size, so "Sep 29, 2026" fits the column on one line. */
+  .body-size > li > .gutter {
+    font-size: 1.1875rem;
   }
   .entry-title a {
     color: inherit;
@@ -265,7 +645,7 @@
   }
   .date {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--track-label);
     font-variant-numeric: oldstyle-nums tabular-nums;
     line-height: 1.35;
     padding-top: 0.2rem;
@@ -289,7 +669,7 @@
     align-items: center;
     gap: 0.4em;
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--track-label);
     white-space: nowrap;
   }
   .status::before {
@@ -303,7 +683,7 @@
     color: oklch(0.5 0.11 155);
   }
   .status[data-status='testing'] {
-    color: oklch(0.58 0.12 70);
+    color: oklch(0.55 0.115 70);
   }
   .status[data-status='dropped'] {
     color: var(--muted);
@@ -335,14 +715,16 @@
     font-weight: 500;
     font-variant-numeric: lining-nums;
   }
+  /* W8.2: padding widens the target to 24px+ without moving the words. */
   .nav-link {
     position: relative;
     display: inline-block;
-    padding-block: 0.3rem;
+    padding: 0.3rem 0.35rem;
+    margin-inline: -0.35rem;
     color: var(--muted);
     font-size: 1.05rem;
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.14em;
+    letter-spacing: var(--track-head);
     text-decoration: none;
   }
   .nav-link:hover {
@@ -354,12 +736,23 @@
   .nav-link[aria-current='page']::after {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0.14em;
+    left: 0.35rem;
+    right: calc(0.35rem + var(--track-head));
     bottom: 0.1rem;
     height: 2px;
     border-radius: 1px;
     background: var(--accent);
+  }
+  /* The footer repeats the main sections quietly, in italic rather than tracked small caps (W4.1). */
+  .footer-link {
+    display: inline-block;
+    padding-block: 0.3rem;
+    color: var(--muted);
+    font-style: italic;
+    text-decoration: none;
+  }
+  .footer-link:hover {
+    color: var(--ink);
   }
   .pill {
     display: inline-flex;
@@ -370,7 +763,7 @@
     padding: 0.2rem 0.85rem 0.3rem;
     font-size: 1rem;
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--track-label);
     white-space: nowrap;
     color: var(--ink);
     background: var(--paper);
@@ -405,13 +798,12 @@
     color: var(--muted);
   }
 
-  /* Keep consecutive code frames and display math apart inside articles. */
-  .prose .expressive-code,
-  .prose .math-display {
-    margin-block: 1.5em;
-  }
+  /* Wide equations scroll sideways; the padding holds KaTeX's descenders, so the box never scrolls
+     vertically (axe: scrollable-region-focusable). */
   .prose .math-display {
     overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.3em;
   }
 
   /* ---------- Print: the same documents, set for A4 ---------- */
@@ -466,7 +858,19 @@
     }
     .label {
       font-size: 0.92em;
-      letter-spacing: 0.03em;
+      letter-spacing: var(--track-tight);
+    }
+    /* W7.1: navigation that means nothing on paper. */
+    .contents-row,
+    .contents-disclosure,
+    .end-nav,
+    .end-narrow,
+    .page-colophon {
+      display: none;
+    }
+    .article-end {
+      margin-top: 1rem;
+      break-inside: avoid;
     }
   }
 }
@@ -490,58 +894,456 @@
     --tw-prose-code: var(--ink);
     --tw-prose-th-borders: var(--rule);
     --tw-prose-td-borders: var(--rule);
-    max-width: none;
-    font-size: 1.1875rem;
-    line-height: 1.6;
+    /* W2.3: 28em ≈ 60–68 characters; it binds only where the column would be wider (900–1023px). */
+    max-width: 28em;
+    font-size: var(--text-body);
+    line-height: 1.5;
+    /* W4.6 (owner decision O1): lining figures, so version numbers read unambiguously. */
+    font-variant-numeric: lining-nums proportional-nums;
   }
   .prose.prose-paper :where(p, li) {
     hyphens: auto;
     hyphenate-limit-chars: 8 4 4;
     text-wrap: pretty;
   }
+  .prose.prose-paper > :first-child {
+    margin-top: 0;
+  }
   .prose.prose-paper > p:first-of-type::first-line {
     font-variant-caps: small-caps;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--track-tight);
   }
+  /* W4.4: hierarchy by size and form. h2 in caps and small caps (brand casing survives), h3 italic,
+     h4 a small-caps label. Space above and below in line units (W4.5). */
   .prose.prose-paper :where(h2) {
-    margin-top: 1.9em;
-    margin-bottom: 0.6em;
+    margin-top: calc(1.5 * var(--lh));
+    margin-bottom: calc(0.5 * var(--lh));
     color: var(--accent);
-    font-size: 1.45em;
+    font-size: 1.3em;
     font-weight: 500;
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.12em;
+    line-height: 1.15;
+    font-variant-caps: small-caps;
+    letter-spacing: var(--track-sc);
+    font-variant-numeric: lining-nums proportional-nums;
+    text-wrap: balance;
   }
   .prose.prose-paper :where(h3) {
-    font-size: 1.2em;
+    margin-top: var(--lh);
+    margin-bottom: calc(0.25 * var(--lh));
+    font-size: 1.08em;
+    line-height: 1.3;
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  .prose.prose-paper :where(h4) {
+    margin-top: var(--lh);
+    margin-bottom: calc(0.25 * var(--lh));
+    font-size: 1em;
+    font-weight: 500;
+    font-variant-caps: all-small-caps;
+    letter-spacing: var(--track-label);
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  @media (min-width: 40rem) {
+    .prose.prose-paper :where(h2) {
+      font-size: 1.35em;
+    }
+    .prose.prose-paper :where(h3) {
+      font-size: 1.06em;
+    }
+  }
+  .prose.prose-paper :where(td, th),
+  .prose.prose-paper :where(ol > li)::marker {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .prose.prose-paper :where(h3) {
     font-style: italic;
     font-weight: 500;
   }
+  /* W4.5: vertical rhythm in line units; lists indented like the CV's. */
+  .prose.prose-paper :where(p) {
+    margin-block: calc(0.5 * var(--lh));
+  }
+  .prose.prose-paper :where(.expressive-code, .math-display, table, .table-scroll, figure, blockquote, .callout) {
+    margin-block: var(--lh);
+  }
+  .prose.prose-paper :where(ul) {
+    padding-inline-start: 1.1em;
+  }
+  .prose.prose-paper :where(ol) {
+    padding-inline-start: 1.6em;
+  }
+  .prose.prose-paper :where(ul > li, ol > li) {
+    padding-inline-start: 0;
+    margin-block: calc(0.125 * var(--lh));
+  }
+  .prose.prose-paper :where(li > p) {
+    margin-block: calc(0.5 * var(--lh));
+  }
+  /* W8.1: prose links roll back to the base `a` rule, the single source of truth for underlines. */
   .prose.prose-paper :where(a) {
     font-weight: inherit;
+    text-decoration: revert-layer;
   }
   .prose.prose-paper :where(ul) {
     list-style-type: circle;
   }
   .prose.prose-paper :where(blockquote) {
     border-left-width: 2px;
+    border-left-color: var(--rule);
     font-weight: 400;
   }
+  /* W3.1: identifiers read exactly as typed: never hyphenated, sized to the Garamond x-height. */
   .prose.prose-paper :where(code):not(:where(pre code)) {
-    padding: 0.1em 0.35em;
+    padding: 0.05em 0.2em;
     border-radius: 3px;
-    background: color-mix(in oklab, var(--ink) 7%, transparent);
-    font-size: 0.8em;
+    background: color-mix(in oklab, var(--ink) 5%, transparent);
+    font-size: 0.76em;
     font-weight: 400;
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  @supports (font-size-adjust: ex-height 0.4) {
+    .prose.prose-paper :where(code):not(:where(pre code)) {
+      padding: 0.05em 0.12em;
+      font-size: 1em;
+      font-size-adjust: ex-height 0.405;
+    }
+  }
+  .prose.prose-paper :where(h2, h3, h4) code {
+    font-variant-caps: normal;
+    letter-spacing: normal;
+    background: none;
   }
   .prose.prose-paper :where(code):not(:where(pre code))::before,
   .prose.prose-paper :where(code):not(:where(pre code))::after {
     content: none;
   }
+  /* W7.2: footnotes read as notes: a visible label, a rule above, smaller muted text. References use
+     the font's superior figures, padded to a usable target. */
+  .prose.prose-paper .footnotes {
+    margin-top: calc(2 * var(--lh));
+    padding-top: calc(0.5 * var(--lh));
+    border-top: 1px solid var(--rule);
+    font-size: 0.85em;
+    color: var(--muted);
+  }
+  .prose.prose-paper .footnotes > h2 {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 0.25em;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+    color: var(--muted);
+    font-size: 1em;
+    font-weight: 500;
+    font-variant-caps: all-small-caps;
+    letter-spacing: var(--track-label);
+  }
+  .prose.prose-paper .footnotes ol {
+    margin-block: 0;
+    padding-inline-start: 1.6em;
+  }
+  .prose.prose-paper .footnotes li {
+    margin-block: 0.25em;
+  }
+  .prose.prose-paper .footnotes li p {
+    margin-block: 0;
+  }
+  .prose.prose-paper .footnotes li::marker {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .prose.prose-paper sup:has(> a[data-footnote-ref]) {
+    position: static;
+    vertical-align: baseline;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  /* Without an underline, the medium weight tells the links apart without relying on colour. */
+  .prose.prose-paper a[data-footnote-ref] {
+    padding-inline: 0.3em;
+    margin-inline-start: -0.3em;
+    font-weight: 500;
+    font-variant-position: super;
+    font-variant-numeric: lining-nums;
+    text-decoration: none;
+  }
+  .prose.prose-paper a[data-footnote-backref] {
+    font-weight: 500;
+    text-decoration: none;
+  }
+  /* W7.3: tables in the booktabs manner: rules above and below and under the head, no cell borders,
+     figures lining and tabular, small-caps column heads. */
+  .prose.prose-paper .table-scroll {
+    overflow-x: auto;
+  }
+  .prose.prose-paper .table-scroll > table {
+    margin-block: 0;
+  }
+  .prose.prose-paper table {
+    font-size: 0.9em;
+    line-height: 1.4;
+    border-block: 1.5px solid color-mix(in oklab, var(--ink) 55%, transparent);
+  }
+  .prose.prose-paper thead {
+    border-bottom: 1px solid var(--rule);
+  }
+  .prose.prose-paper thead th {
+    padding-block: 0.4em;
+    font-weight: 500;
+    font-variant-caps: all-small-caps;
+    letter-spacing: var(--track-label);
+    color: var(--muted);
+  }
+  .prose.prose-paper tbody tr {
+    border-bottom: 0;
+  }
+  .prose.prose-paper tbody td {
+    padding-block: 0.3em;
+  }
+  /* Quotations are part of the argument: upright, a quiet rule, no generated quote marks. */
+  .prose.prose-paper :where(blockquote) {
+    font-style: normal;
+    quotes: none;
+    color: var(--ink);
+  }
+  .prose.prose-paper :where(blockquote p)::before,
+  .prose.prose-paper :where(blockquote p)::after {
+    content: none;
+  }
+  /* Figures from Markdown images; Expressive Code's frames are figures too (figure.frame). */
+  .prose.prose-paper figure:not(.frame) img {
+    margin-block: 0;
+  }
+  .prose.prose-paper figure:not(.frame) > figcaption {
+    margin-top: 0.5em;
+    color: var(--muted);
+    font-size: 0.9em;
+    font-style: italic;
+    text-wrap: balance;
+  }
+  /* Definition lists set like the fact sheet: the term in the margin column, where there is one. */
+  .prose.prose-paper :where(dl) {
+    margin-block: var(--lh);
+  }
+  /* Terms at the fact sheet's size, tracked tight, so a word like "throughput" fits the margin. */
+  .prose.prose-paper :where(dt) {
+    margin-top: calc(0.5 * var(--lh));
+    font-size: 0.9em;
+    font-weight: 500;
+    font-variant-caps: all-small-caps;
+    letter-spacing: var(--track-tight);
+  }
+  .prose.prose-paper :where(dd) {
+    margin-top: 0;
+    padding-inline-start: 1.1em;
+  }
+  .prose.prose-paper :where(dd > p) {
+    margin-block: 0;
+  }
+  @media screen and (min-width: 48rem) {
+    .prose.prose-paper :where(dl) {
+      display: grid;
+      grid-template-columns: var(--gutter) minmax(0, 1fr);
+      align-items: baseline;
+      column-gap: var(--gap);
+      row-gap: calc(0.25 * var(--lh));
+      margin-inline-start: calc(-1 * (var(--gutter) + var(--gap)));
+    }
+    .prose.prose-paper :where(dt) {
+      grid-column: 1;
+      margin-top: 0;
+      text-align: right;
+      color: var(--muted);
+    }
+    .prose.prose-paper :where(dd) {
+      grid-column: 2;
+      padding-inline-start: 0;
+    }
+  }
+  /* W7.4: callouts from GitHub alerts. The label sits in the margin column after an accent bar, as
+     section titles do; no box, no tint. Listings inside a callout stay in the column. */
+  .prose.prose-paper .callout {
+    position: relative;
+    margin-block: var(--lh);
+  }
+  .prose.prose-paper .callout > :where(p) {
+    margin-block: calc(0.5 * var(--lh));
+  }
+  .prose.prose-paper .callout > .callout-label {
+    margin: 0;
+    color: var(--accent);
+    font-weight: 500;
+    font-variant-caps: all-small-caps;
+    letter-spacing: var(--track-label);
+  }
+  .prose.prose-paper .callout > .callout-label + p {
+    margin-top: 0;
+  }
+  .prose.prose-paper .callout-warning > .callout-label,
+  .prose.prose-paper .callout-caution > .callout-label {
+    color: oklch(0.5 0.14 35);
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    .prose.prose-paper .callout-warning > .callout-label,
+    .prose.prose-paper .callout-caution > .callout-label {
+      color: oklch(0.78 0.12 45);
+    }
+  }
+  @media screen and (min-width: 48rem) {
+    /* At least the margin column wide; a longer label ("Important" in a 6rem column) grows leftward
+       into the sheet's margin rather than into the text. */
+    .prose.prose-paper .callout > .callout-label {
+      position: absolute;
+      top: 0;
+      right: calc(100% + var(--gap));
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: var(--gutter);
+      line-height: inherit;
+      white-space: nowrap;
+    }
+    .prose.prose-paper .callout > .callout-label::before {
+      content: '';
+      flex: 1;
+      height: 0.2rem;
+      border-radius: 1px;
+      background: currentColor;
+    }
+    .prose.prose-paper .callout > .callout-label + * {
+      margin-top: 0;
+    }
+    .prose.prose-paper .callout :where(.expressive-code, .table-scroll) {
+      margin-inline-start: 0;
+    }
+  }
+  /* W5.4: section marks. A § link beside each h2 and h3: in the margin column where the article grid is
+     active (h2s also draw the CV's accent bar there), at the end of the heading's line below that. */
+  .prose.prose-paper .section-head {
+    position: relative;
+  }
+  /* The wrapper hides the heading from Typography's resets; restore them. */
+  .prose.prose-paper > .section-head:first-child > :is(h2, h3) {
+    margin-top: 0;
+  }
+  .prose.prose-paper .section-head + :where(ul, ol, dl) {
+    margin-top: 0;
+  }
+  .prose.prose-paper .section-head > .anchor {
+    position: absolute;
+    top: 0;
+    display: block;
+    width: 2.75rem;
+    height: 1lh;
+    color: var(--muted);
+    font-style: normal;
+    text-decoration: none;
+  }
+  .prose.prose-paper .section-head:has(> h2) > .anchor {
+    font-size: 1.3em;
+    line-height: 1.15;
+  }
+  .prose.prose-paper .section-head:has(> h3) > .anchor {
+    font-size: 1.08em;
+    line-height: 1.3;
+  }
+  .prose.prose-paper .section-head > .anchor::after {
+    content: '§';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 2.75rem;
+    font-size: 0.8em;
+    line-height: 1.4375;
+    text-align: center;
+  }
+  .prose.prose-paper .section-head > .anchor:is(:hover, :focus-visible),
+  .prose.prose-paper .section-head:hover > .anchor {
+    color: var(--accent);
+  }
+  /* On phones the mark sits in the sheet's 1.5rem margin; the rest of the hit area overlaps the end of
+     the heading's line, which is not interactive. */
+  @media (max-width: 39.99rem) {
+    .prose.prose-paper .section-head > .anchor {
+      right: -1.5rem;
+    }
+    .prose.prose-paper .section-head > .anchor::after {
+      width: 1.5rem;
+    }
+  }
+  @media (min-width: 40rem) and (max-width: 47.99rem) {
+    .prose.prose-paper .section-head > .anchor {
+      right: -2.75rem;
+    }
+  }
+  @media (min-width: 40rem) {
+    .prose.prose-paper .section-head:has(> h2) > .anchor {
+      font-size: 1.35em;
+    }
+    .prose.prose-paper .section-head:has(> h3) > .anchor {
+      font-size: 1.06em;
+    }
+  }
+  @media (min-width: 48rem) {
+    .prose.prose-paper .section-head > .anchor {
+      right: calc(100% + var(--gap));
+      width: var(--gutter);
+    }
+    .prose.prose-paper .section-head:has(> h2) > .anchor::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0 2.25rem;
+      top: calc(50% - 0.15rem);
+      height: 0.3rem;
+      border-radius: 1px;
+      background: var(--accent);
+    }
+  }
+  /* W5.3: listings (and wide tables) break out into the margin column, aligned with the double rule; on
+     phones they bleed to the edge of the sheet. Display math stays in the column. */
+  @media screen and (min-width: 48rem) {
+    .prose.prose-paper :where(.expressive-code, .table-scroll) {
+      margin-inline-start: calc(-1 * (var(--gutter) + var(--gap)));
+    }
+  }
+  @media screen and (max-width: 39.99rem) {
+    .prose.prose-paper :where(.expressive-code, .table-scroll) {
+      margin-inline: -1.5rem;
+    }
+    .prose.prose-paper .table-scroll {
+      padding-inline: 1.5rem;
+    }
+    .prose.prose-paper .callout :where(.expressive-code, .table-scroll) {
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
   @media print {
     .prose.prose-paper {
+      --lh: 1.4rem;
+      max-width: none;
       font-size: 1rem;
       line-height: 1.4;
+    }
+    .prose.prose-paper .section-head > .anchor {
+      display: none;
+    }
+    /* W7.1: headings stay with their text, listings and figures stay whole, no lone lines. */
+    .prose.prose-paper :where(.section-head, h2, h3, h4) {
+      break-after: avoid;
+      break-inside: avoid;
+    }
+    .prose.prose-paper :where(.expressive-code, .math-display, table, .table-scroll, figure, .callout) {
+      break-inside: avoid;
+    }
+    .prose.prose-paper :where(p, li) {
+      orphans: 3;
+      widows: 3;
     }
   }
 }
@@ -572,5 +1374,52 @@
   }
   a {
     text-decoration: none;
+  }
+}
+
+/*
+ * Unlayered on purpose: Expressive Code and KaTeX ship unlayered CSS, which beats every layered rule.
+ */
+/* W3.2: the copy button gets the site focus ring instead of the browser default. */
+.expressive-code .copy button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* W3.4: math at text size (KaTeX's default is 1.21em). */
+.prose .katex {
+  font-size: 1em;
+}
+.prose .math-display .katex {
+  font-size: 1.15em;
+}
+/* W4.5: KaTeX's own display margin would double the rhythm margin of .math-display. */
+.prose .math-display > .katex-display {
+  margin: 0;
+}
+/* W5.3: on phones, listings bleed to the sheet edge with square corners and no side borders. */
+@media screen and (max-width: 39.99rem) {
+  .prose .expressive-code {
+    --ec-brdRad: 0px;
+  }
+  .prose .expressive-code :is(pre, .header),
+  .prose .expressive-code .frame.is-terminal .header,
+  .prose .expressive-code .frame.has-title:not(.is-terminal) .header::before,
+  .prose .expressive-code .frame.has-title:not(.is-terminal) .title {
+    border-inline-width: 0;
+  }
+}
+/* W7.1: on paper, prose links keep their underline and print where they go (unlayered, like the rule
+   that removes underlines from everything else in print). */
+@media print {
+  .prose a {
+    text-decoration: underline;
+    text-decoration-thickness: 0.5pt;
+    text-underline-offset: 0.15em;
+  }
+  .prose a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: var(--muted);
+    overflow-wrap: anywhere;
   }
 }

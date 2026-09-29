@@ -5,6 +5,9 @@ pubDate: 2026-09-29
 category: software
 status: adopted
 tools: [pnpm 12.6, TypeScript 7.0, TypeScript 6, Node 26, GitHub Actions]
+tags: [astro, pnpm, typescript]
+relatedPosts: [hello-world]
+relatedLab: [astro-7-satteri]
 platform: macOS · Node 26
 repo: https://github.com/bmscomp/bmscomp.github.io
 verdict: pnpm 12 adopted; TypeScript stays on 6 until astro check supports 7.
@@ -31,7 +34,7 @@ In CI, `pnpm/action-setup` reads that field, so the workflow doesn't repeat the 
 
 The very first `pnpm add astro` failed:
 
-```text
+```text frame="terminal" title="Output"
 × adding a new package
 ╰─▶ Ignored build scripts: esbuild@0.28.2
 help: Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
@@ -50,9 +53,9 @@ Installs also now report `Lockfile passes supply-chain policies` — a nice defa
 
 ## TypeScript 7 and `astro check`
 
-TypeScript 7 (the native compiler) was the latest release, so it got installed. `astro check` refused to run:
+TypeScript 7 (the native compiler) was the latest release, so it got installed alongside [Astro 7](/lab/astro-7-satteri/). `astro check` refused to run:
 
-```text
+```text frame="terminal" title="Output"
 [check] astro check does not currently support TypeScript 7.0.
 To continue using astro check, install TypeScript 6 instead.
 ```

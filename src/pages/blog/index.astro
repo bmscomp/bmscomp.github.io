@@ -1,4 +1,5 @@
 ---
+import Colophon from '../../components/Colophon.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import PostList from '../../components/PostList.astro';
 import Base from '../../layouts/Base.astro';
@@ -7,11 +8,13 @@ import { getPosts } from '../../lib/posts';
 const posts = await getPosts();
 ---
 
-<Base title="Blog" description="Articles and notes, newest first.">
-  <PageHeader kicker="Writing" title="Blog" lede="Articles and notes, newest first.">
-    <p class="mt-5"><a href="/rss.xml" class="pill">RSS feed</a></p>
+<Base title="Blog" description="Essays, announcements and how-tos, newest first.">
+  <link slot="head" rel="alternate" type="application/rss+xml" title="Blog" href="/blog/rss.xml" />
+  <PageHeader kicker="Writing" title="Blog" lede="Essays, announcements and how-tos, newest first.">
+    <p class="mt-5"><a href="/blog/rss.xml" class="pill">RSS feed</a></p>
   </PageHeader>
-  <div class="mt-10">
-    <PostList posts={posts} />
+  <div>
+    <PostList posts={posts} headingLevel={2} />
   </div>
+  <Colophon />
 </Base>

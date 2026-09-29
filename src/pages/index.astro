@@ -1,4 +1,5 @@
 ---
+import Colophon from '../components/Colophon.astro';
 import LabList from '../components/LabList.astro';
 import PageHeader from '../components/PageHeader.astro';
 import PostList from '../components/PostList.astro';
@@ -23,7 +24,7 @@ const lab = (await getLabNotes()).slice(0, 3);
     </p>
   </PageHeader>
 
-  <Section id="latest" title="Latest posts">
+  <Section id="latest" title="Latest posts" variant="list">
     <PostList posts={latest} />
     <p class="row mt-6">
       <span class="gutter" aria-hidden="true"></span>
@@ -33,7 +34,7 @@ const lab = (await getLabNotes()).slice(0, 3);
 
   {
     lab.length > 0 && (
-      <Section id="lab" title="From the lab">
+      <Section id="lab" title="From the lab" variant="list">
         <LabList notes={lab} />
         <p class="row mt-6">
           <span class="gutter" aria-hidden="true" />
@@ -42,4 +43,5 @@ const lab = (await getLabNotes()).slice(0, 3);
       </Section>
     )
   }
+  <Colophon />
 </Base>

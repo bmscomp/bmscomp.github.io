@@ -1,7 +1,7 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { SITE_TITLE } from '../../consts';
-import { getLabNotes, lastTouched } from '../../lib/lab';
+import { getLabNotes } from '../../lib/lab';
 
 export async function GET(context: APIContext) {
   const notes = await getLabNotes();
@@ -12,7 +12,8 @@ export async function GET(context: APIContext) {
     items: notes.map((note) => ({
       title: `[${note.data.status}] ${note.data.title}`,
       description: note.data.verdict ?? note.data.description,
-      pubDate: lastTouched(note),
+      // The real publication date; the feed is ordered by last update (W6.5b).
+      pubDate: note.data.pubDate,
       categories: [note.data.category, ...note.data.tools],
       link: `/lab/${note.id}/`,
     })),

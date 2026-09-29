@@ -1,4 +1,5 @@
 ---
+import Colophon from '../components/Colophon.astro';
 import PageHeader from '../components/PageHeader.astro';
 import Base from '../layouts/Base.astro';
 ---
@@ -7,4 +8,5 @@ import Base from '../layouts/Base.astro';
   <PageHeader kicker="Error 404" title="Page not found" lede="That page doesn't exist, or it has moved.">
     <p class="mt-5"><a href="/" class="pill">Go home →</a></p>
   </PageHeader>
+  <Colophon />
 </Base>

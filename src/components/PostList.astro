@@ -6,24 +6,32 @@ import TagList from './TagList.astro';
 
 interface Props {
   posts: CollectionEntry<'posts'>[];
+  /** h2 where the list is the page's content, h3 inside a Section (W6.4: no skipped levels). */
+  headingLevel?: 2 | 3;
 }
 
-const { posts } = Astro.props;
+const { posts, headingLevel = 3 } = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
 ---
 
-<ol>
+<ol class="body-size">
   {
     posts.map((post) => (
       <li class="row entry">
         <p class="gutter date">
           <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+          {post.data.updatedDate && (
+            <span>
+              updated <time datetime={post.data.updatedDate.toISOString()}>{formatDate(post.data.updatedDate)}</time>
+            </span>
+          )}
         </p>
         <div>
-          <h3 class="entry-title">
+          <Heading class="entry-title">
             <a href={`/blog/${post.id}/`} set:html={typeset(post.data.title)} />
             {post.data.draft && <span class="label text-muted"> · draft</span>}
-          </h3>
-          <p class="hyphenate mt-0.5 text-muted" set:html={typeset(post.data.description)} />
+          </Heading>
+          <p class="entry-desc hyphenate mt-0.5 text-muted" set:html={typeset(post.data.description)} />
           <TagList tags={post.data.tags} class="mt-1" />
         </div>
       </li>
