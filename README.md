@@ -24,3 +24,18 @@ tags: [linux]
 draft: false
 ---
 ```
+
+Tags link to `/tags/<tag>/`. Each post gets a generated social card at `/og/<file-name>.png`.
+
+### Code
+
+Fenced code blocks are rendered by [Expressive Code](https://expressive-code.com): copy button,
+light/dark themes, and optional titles and line markers — ```` ```ts title="file.ts" {3} ````.
+
+### Math
+
+LaTeX math is rendered to HTML at build time with KaTeX: `$inline$` or a `$$ … $$` block.
+Math is parsed by Astro's native Markdown processor (Sätteri) and rendered by `src/lib/katex.ts`.
+
+> If a Markdown change doesn't show up after editing `astro.config.ts` or `src/lib/`, clear the
+> content cache: `rm -rf node_modules/.astro .astro`.

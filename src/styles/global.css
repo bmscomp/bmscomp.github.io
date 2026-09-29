@@ -18,3 +18,14 @@
     @apply underline-offset-4;
   }
 }
+
+@layer components {
+  /* Keep consecutive code frames and display math apart inside articles. */
+  .prose .expressive-code,
+  .prose .math-display {
+    margin-block: 1.5em;
+  }
+  .prose .math-display {
+    overflow-x: auto;
+  }
+}

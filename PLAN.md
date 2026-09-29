@@ -43,6 +43,7 @@ Pros/cons of every choice: [TECH-STUDY.md](TECH-STUDY.md). Review by leaving com
 | D16 | Lint / format | **Biome** + `astro check` | One fast tool for lint + format | ESLint + Prettier |
 | D17 | Tests | **Playwright** smoke tests + **Lighthouse CI** + `lychee` link checker | Catch regressions before deploy | — |
 | D18 | Deploy | **GitHub Actions** → `actions/upload-pages-artifact` + `actions/deploy-pages` | Official, no `gh-pages` branch needed | `gh-pages` branch push |
+| D20 | Math | **KaTeX** via a native Sätteri mdast plugin (`src/lib/katex.ts`), rendered at build time | Astro 7's default Markdown processor (Sätteri) no longer runs remark/rehype plugins; a 20-line native plugin avoids the legacy pipeline | `remark-math` + `rehype-katex` through `@astrojs/markdown-remark` |
 | D19 | Dependency updates | **Renovate** (weekly, grouped) | Keeps stack current | Dependabot |
 
 ---
@@ -152,14 +153,14 @@ Each phase is one PR, reviewed and merged to `main`.
 
 | Phase | Scope | Done when |
 |-------|-------|-----------|
-| **0. Reset** | Branch `rebuild`; delete **all** existing files including old posts, `docs/`, `test/`, `assets/`, `.idea`, Jekyll workflow. Keep only `LICENSE`, `.gitignore` (rewritten), `PLAN.md`, `TECH-STUDY.md`. Git history is kept. Switch Pages source to "GitHub Actions". | Repo contains only LICENSE, .gitignore, PLAN.md, TECH-STUDY.md |
-| **1. Skeleton** | Astro 7 + TS + Tailwind + Biome, base layout, nav, dark mode, 404, deploy workflow | Empty site live at bmscomp.github.io |
-| **2. Blog** | `posts` collection, list/detail/tags, Shiki, RSS, sitemap, OG images | 1 real post published |
+| **0. Reset** ✅ | Branch `rebuild`; delete **all** existing files including old posts, `docs/`, `test/`, `assets/`, `.idea`, Jekyll workflow. Keep only `LICENSE`, `.gitignore` (rewritten), `PLAN.md`, `TECH-STUDY.md`. Git history is kept. Switch Pages source to "GitHub Actions". | Repo contains only LICENSE, .gitignore, PLAN.md, TECH-STUDY.md |
+| **1. Skeleton** ✅ | Astro 7 + TS + Tailwind (Biome moved to phase 7), base layout, nav, dark mode, 404, deploy workflow | Empty site live at bmscomp.github.io |
+| **2. Blog** ✅ | `posts` collection, list/detail/tags, Expressive Code, KaTeX math, RSS, sitemap, OG images | 1 real post published |
 | **3. CV** | JSON Resume summary data, `/cv` page | `/cv` live |
 | **4. Lab** | `lab` collection, status badges, filters by category/status | ≥ 2 lab notes live |
 | **5. Reading** | `reading` data file, status filters, RSS | ≥ 5 entries live |
 | **6. Travel** | `travel` collection, PMTiles world map, per-trip route map (text + map; photos slot in later) | ≥ 1 trip live |
-| **7. Polish** | Pagefind search, home page aggregation, `/now`, Lighthouse CI + link check gates, README authoring guide | All CI gates green |
+| **7. Polish** | Biome lint/format, Pagefind search, home page aggregation, `/now`, Lighthouse CI + link check gates, README authoring guide | All CI gates green |
 | **8. Custom domain** *(later)* | Buy domain, `public/CNAME`, DNS, enforce HTTPS, update `site` in config | Site served on custom domain, old URL redirects |
 | **9. Photos** *(later, after 8)* | R2 bucket on `photos.<domain>`, import script (resize + GPS strip + upload), grid, albums, per-photo page, lightbox (PhotoSwipe) with description caption, link albums into trips | ≥ 1 album live, page weight < 1 MB above the fold |
 
