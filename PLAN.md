@@ -6,7 +6,7 @@
 > hosted on GitHub Pages that holds my **CV**, **posts**, **phone photography**, **travel
 > stories**, a **lab** (software / systems I'm testing) and a **reading list**.
 
-Pros/cons of every choice: [TECH-STUDY.md](TECH-STUDY.md). Review by leaving comments on each numbered decision (D1, D2, …) and on the open questions at the end.
+Pros/cons of every choice: [TECH-STUDY.md](TECH-STUDY.md). Blog shape & readability work is planned in [READABILITY-PLAN.md](READABILITY-PLAN.md). Review by leaving comments on each numbered decision (D1, D2, …) and on the open questions at the end.
 
 ---
 
