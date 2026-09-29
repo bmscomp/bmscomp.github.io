@@ -13,7 +13,7 @@ const earlier = work.filter(isEarlier);
 const location = formatLocation(basics.location);
 const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)).replace(/</g, '\\u003c');
 const sectionTitle =
-  'mb-5 text-sm font-semibold uppercase tracking-wider text-zinc-500 print:mb-3 print:break-after-avoid print:text-black';
+  'mb-5 text-sm font-semibold uppercase tracking-wider text-zinc-500 print:mb-2 print:break-after-avoid print:text-black';
 ---
 
 <Base title="CV" description={`${basics.name} — ${basics.label}`} image="/og/cv.png">
@@ -23,8 +23,17 @@ const sectionTitle =
   </Fragment>
 
   <article>
-    <header class="mb-10 print:mb-5">
-      <h1 class="text-3xl font-bold tracking-tight">{basics.name}</h1>
+    <header class="mb-10 print:mb-4">
+      <div class="flex items-start justify-between gap-4">
+        <h1 class="text-3xl font-bold tracking-tight">{basics.name}</h1>
+        <button
+          type="button"
+          id="print-cv"
+          class="mt-1 hidden shrink-0 rounded-md border border-zinc-200 px-3 py-1 text-sm hover:border-accent hover:text-accent sm:block dark:border-zinc-800 print:hidden"
+        >
+          Save as PDF
+        </button>
+      </div>
       <p class="mt-1 text-lg text-zinc-700 dark:text-zinc-300">{basics.label}</p>
       <ul class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-500">
         {location && <li>{location}</li>}
@@ -42,7 +51,7 @@ const sectionTitle =
       {basics.summary && <p class="mt-6 leading-relaxed print:mt-3 print:leading-snug">{basics.summary}</p>}
     </header>
 
-    <section aria-labelledby="experience" class="mb-10 print:mb-5">
+    <section aria-labelledby="experience" class="mb-10 print:mb-4">
       <h2 id="experience" class={sectionTitle}>Experience</h2>
       <ol class="space-y-8 print:space-y-3">
         {
@@ -75,11 +84,11 @@ const sectionTitle =
 
     {
       earlier.length > 0 && (
-        <section aria-labelledby="earlier" class="mb-10 print:mb-5">
+        <section aria-labelledby="earlier" class="mb-10 print:mb-4">
           <h2 id="earlier" class={sectionTitle}>
             Earlier experience <span class="font-normal normal-case">(before {EARLIER_BEFORE})</span>
           </h2>
-          <ul class="space-y-3 print:space-y-1.5">
+          <ul class="space-y-3 print:space-y-0 print:leading-snug">
             {earlier.map((job) => (
               <li class="break-inside-avoid">
                 <div class="flex flex-wrap items-baseline justify-between gap-x-4">
@@ -93,7 +102,7 @@ const sectionTitle =
                     <time datetime={job.endDate}>{formatMonth(job.endDate)}</time>
                   </p>
                 </div>
-                {job.summary && <p class="text-sm text-zinc-600 dark:text-zinc-400">{job.summary}</p>}
+                {job.summary && <p class="text-sm text-zinc-600 dark:text-zinc-400 print:hidden">{job.summary}</p>}
               </li>
             ))}
           </ul>
@@ -103,9 +112,9 @@ const sectionTitle =
 
     {
       projects.length > 0 && (
-        <section aria-labelledby="open-source" class="mb-10 print:mb-5 print:break-inside-avoid">
+        <section aria-labelledby="open-source" class="mb-10 print:mb-4 print:break-inside-avoid">
           <h2 id="open-source" class={sectionTitle}>Open source</h2>
-          <ul class="space-y-3 print:space-y-1">
+          <ul class="space-y-3 print:space-y-0.5">
             {projects.map((p) => (
               <li class="break-inside-avoid">
                 <p>
@@ -117,8 +126,10 @@ const sectionTitle =
                     <span class="font-medium">{p.name}</span>
                   )}
                   {p.roles.length > 0 && <span class="text-sm text-zinc-500"> · {p.roles.join(', ')}</span>}
+                  <span class="block text-zinc-600 dark:text-zinc-400 print:inline print:leading-snug print:before:content-['_—_']">
+                    {p.description}
+                  </span>
                 </p>
-                <p class="text-zinc-600 dark:text-zinc-400 print:leading-snug">{p.description}</p>
               </li>
             ))}
           </ul>
@@ -193,7 +204,11 @@ const sectionTitle =
 
     <footer class="mt-12 border-t border-zinc-200 pt-4 text-sm text-zinc-500 dark:border-zinc-800 print:hidden">
       {resume.meta && <span>Updated <time datetime={resume.meta.lastModified}>{formatMonth(resume.meta.lastModified.slice(0, 7))}</time> · </span>}
-      Also available as <a href="/cv.json" class="text-accent">JSON Resume</a> · Print this page for a PDF.
+      Also available as <a href="/cv.json" class="text-accent">JSON Resume</a>.
     </footer>
   </article>
 </Base>
+
+<script>
+  document.getElementById('print-cv')?.addEventListener('click', () => window.print());
+</script>
