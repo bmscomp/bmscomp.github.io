@@ -13,6 +13,8 @@ interface Props {
   type?: 'website' | 'article';
   /** Render the content without the paper sheet. */
   bare?: boolean;
+  /** Keep the page out of search engines (test fixtures). */
+  noindex?: boolean;
 }
 
 const {
@@ -21,6 +23,7 @@ const {
   image = '/og.png',
   type = 'website',
   bare = false,
+  noindex = false,
 } = Astro.props;
 const pageTitle = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -35,6 +38,7 @@ const imageUrl = new URL(image, Astro.site);
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="preload" href={garamondUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <meta name="theme-color" content="#ebe7df" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0b0c0f" media="(prefers-color-scheme: dark)" />

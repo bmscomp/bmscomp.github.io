@@ -1,0 +1,19 @@
+---
+// Test pages for the readability harness, rendered through the real article layout.
+// Built only in `astro dev` or with FIXTURES=1, so they never ship in the production build.
+import { getCollection, render } from 'astro:content';
+import LabNote from '../../layouts/LabNote.astro';
+
+export async function getStaticPaths() {
+  if (!import.meta.env.DEV && process.env.FIXTURES !== '1') return [];
+  const fixtures = await getCollection('fixtures');
+  return fixtures.map((note) => ({ params: { slug: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+---
+
+<LabNote note={note} noindex>
+  <Content />
+</LabNote>

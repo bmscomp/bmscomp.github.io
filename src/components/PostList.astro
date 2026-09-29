@@ -23,7 +23,7 @@ const { posts } = Astro.props;
             <a href={`/blog/${post.id}/`} set:html={typeset(post.data.title)} />
             {post.data.draft && <span class="label text-muted"> · draft</span>}
           </h3>
-          <p class="hyphenate mt-0.5 text-muted" set:html={typeset(post.data.description)} />
+          <p class="entry-desc hyphenate mt-0.5 text-muted" set:html={typeset(post.data.description)} />
           <TagList tags={post.data.tags} class="mt-1" />
         </div>
       </li>

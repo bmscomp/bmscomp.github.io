@@ -7,11 +7,11 @@ import { getPosts } from '../../lib/posts';
 const posts = await getPosts();
 ---
 
-<Base title="Blog" description="Articles and notes, newest first.">
-  <PageHeader kicker="Writing" title="Blog" lede="Articles and notes, newest first.">
+<Base title="Blog" description="Essays, announcements and how-tos, newest first.">
+  <PageHeader kicker="Writing" title="Blog" lede="Essays, announcements and how-tos, newest first.">
     <p class="mt-5"><a href="/rss.xml" class="pill">RSS feed</a></p>
   </PageHeader>
-  <div class="mt-10">
+  <div>
     <PostList posts={posts} />
   </div>
 </Base>

@@ -27,9 +27,55 @@
   font-display: swap;
 }
 
+/*
+ * W2.1: a local serif stretched to EB Garamond's metrics, so text does not reflow when the webfont
+ * arrives. One face per weight range, because Times' regular, medium and bold metrics differ.
+ */
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Liberation Serif');
+  font-weight: 400 499;
+  font-style: normal;
+  size-adjust: 94.11%;
+  ascent-override: 107%;
+  descent-override: 31.67%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Liberation Serif');
+  font-weight: 500 599;
+  font-style: normal;
+  size-adjust: 97.41%;
+  ascent-override: 103.38%;
+  descent-override: 30.59%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman Bold'), local('TimesNewRomanPS-BoldMT'), local('Liberation Serif Bold');
+  font-weight: 600 800;
+  font-style: normal;
+  size-adjust: 94.44%;
+  ascent-override: 106.63%;
+  descent-override: 31.55%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'), local('Liberation Serif Italic');
+  font-weight: 400 800;
+  font-style: italic;
+  size-adjust: 91.51%;
+  ascent-override: 110.04%;
+  descent-override: 32.56%;
+  line-gap-override: 0%;
+}
+
 @theme {
-  --font-serif: 'EB Garamond Web', 'EB Garamond', Garamond, 'Times New Roman', serif;
-  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  --font-serif: 'EB Garamond Web', 'EB Garamond Fallback', 'Times New Roman', serif;
+  /* W3.3: what readers actually get, in order; JetBrains Mono only where installed. */
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'JetBrains Mono', monospace;
 }
 
 /* Palette tokens resolve at runtime, so light, dark and print can each redefine them. */
@@ -52,6 +98,15 @@
   /* Margin column for dates and labels, as in LaTeX CV classes. */
   --gutter: 7.5rem;
   --gap: 1.75rem;
+  /* W4.1: the only four letter-spacing values used with small caps. */
+  --track-tight: 0.03em;
+  --track-sc: 0.05em;
+  --track-label: 0.08em;
+  --track-head: 0.14em;
+  /* W5.1: height of the sticky header (kept true by min-block-size in Header.astro). */
+  --header-h: 4.125rem;
+  /* W4.3: one gap after every letterhead's double rule. */
+  --after-rule: 2rem;
 }
 @media screen and (prefers-color-scheme: dark) {
   :root {
@@ -77,14 +132,40 @@
     font-kerning: normal;
     font-variant-ligatures: common-ligatures contextual;
     font-variant-numeric: oldstyle-nums proportional-nums;
-    -webkit-font-smoothing: antialiased;
+  }
+  /* W2.2: antialiasing counters halation on light-on-dark text; in light mode it only thins the face. */
+  @media screen and (prefers-color-scheme: dark) {
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+  /* W5.1: section links and focused elements land below the sticky header (static on phones). */
+  @media screen and (min-width: 40rem) {
+    html {
+      scroll-padding-top: calc(var(--header-h) + 1.375rem);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
   a {
     color: var(--accent);
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.18em;
-    text-decoration-color: color-mix(in oklab, var(--accent) 30%, transparent);
+    /* W8.1: 60% keeps the underline at ≥3:1 on paper in both modes, so links do not rely on hue. */
+    text-decoration-color: color-mix(in oklab, var(--accent) 60%, transparent);
     transition:
       color 0.15s,
       text-decoration-color 0.15s;
@@ -107,14 +188,14 @@
   /* ---------- Type details ---------- */
   .sc {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--track-sc);
   }
   .nowrap {
     white-space: nowrap;
   }
   .label {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--track-label);
   }
   .hyphenate {
     text-wrap: pretty;
@@ -124,17 +205,18 @@
   }
   .lede-caps::first-line {
     font-variant-caps: small-caps;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--track-tight);
   }
+  /* W4.1: keyword runs in italic instead of tracked small caps; W4.2: lining figures ("pnpm 12"). */
   .keywords {
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.07em;
-    font-size: 0.95em;
+    font-size: 0.9em;
+    font-style: italic;
     color: var(--muted);
+    font-variant-numeric: lining-nums proportional-nums;
   }
   .author-sc {
     font-variant-caps: small-caps;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--track-tight);
   }
   .ref {
     color: var(--accent);
@@ -172,7 +254,7 @@
   /* ---------- Page letterhead ---------- */
   .kicker {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.3em;
+    letter-spacing: var(--track-head);
     font-size: 1rem;
     color: var(--accent);
   }
@@ -193,6 +275,7 @@
     font-style: italic;
     color: var(--muted);
     text-wrap: pretty;
+    font-variant-numeric: lining-nums proportional-nums;
   }
   .double-rule {
     border: 0;
@@ -217,7 +300,7 @@
   }
   .heading-text {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.16em;
+    letter-spacing: var(--track-head);
     font-size: 1.4rem;
     font-weight: 500;
     color: var(--accent);
@@ -230,6 +313,12 @@
     font-style: italic;
     font-weight: 400;
     color: var(--muted);
+  }
+  @media screen {
+    hr.double-rule + *,
+    hr.double-rule + [hidden] + * {
+      margin-top: var(--after-rule);
+    }
   }
   @media (min-width: 40rem) {
     .heading {
@@ -254,6 +343,10 @@
     font-size: 1.15em;
     line-height: 1.3;
     text-wrap: balance;
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  .entry-desc {
+    font-variant-numeric: lining-nums proportional-nums;
   }
   .entry-title a {
     color: inherit;
@@ -265,7 +358,7 @@
   }
   .date {
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--track-label);
     font-variant-numeric: oldstyle-nums tabular-nums;
     line-height: 1.35;
     padding-top: 0.2rem;
@@ -289,7 +382,7 @@
     align-items: center;
     gap: 0.4em;
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--track-label);
     white-space: nowrap;
   }
   .status::before {
@@ -303,7 +396,7 @@
     color: oklch(0.5 0.11 155);
   }
   .status[data-status='testing'] {
-    color: oklch(0.58 0.12 70);
+    color: oklch(0.55 0.115 70);
   }
   .status[data-status='dropped'] {
     color: var(--muted);
@@ -342,7 +435,7 @@
     color: var(--muted);
     font-size: 1.05rem;
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.14em;
+    letter-spacing: var(--track-head);
     text-decoration: none;
   }
   .nav-link:hover {
@@ -355,7 +448,7 @@
     content: '';
     position: absolute;
     left: 0;
-    right: 0.14em;
+    right: var(--track-head);
     bottom: 0.1rem;
     height: 2px;
     border-radius: 1px;
@@ -370,7 +463,7 @@
     padding: 0.2rem 0.85rem 0.3rem;
     font-size: 1rem;
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--track-label);
     white-space: nowrap;
     color: var(--ink);
     background: var(--paper);
@@ -466,7 +559,7 @@
     }
     .label {
       font-size: 0.92em;
-      letter-spacing: 0.03em;
+      letter-spacing: var(--track-tight);
     }
   }
 }
@@ -501,7 +594,7 @@
   }
   .prose.prose-paper > p:first-of-type::first-line {
     font-variant-caps: small-caps;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--track-tight);
   }
   .prose.prose-paper :where(h2) {
     margin-top: 1.9em;
@@ -510,15 +603,25 @@
     font-size: 1.45em;
     font-weight: 500;
     font-variant-caps: all-small-caps;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--track-sc);
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  .prose.prose-paper :where(h3, h4) {
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  .prose.prose-paper :where(td, th),
+  .prose.prose-paper :where(ol > li)::marker {
+    font-variant-numeric: lining-nums tabular-nums;
   }
   .prose.prose-paper :where(h3) {
     font-size: 1.2em;
     font-style: italic;
     font-weight: 500;
   }
+  /* W8.1: prose links roll back to the base `a` rule, the single source of truth for underlines. */
   .prose.prose-paper :where(a) {
     font-weight: inherit;
+    text-decoration: revert-layer;
   }
   .prose.prose-paper :where(ul) {
     list-style-type: circle;
@@ -527,12 +630,29 @@
     border-left-width: 2px;
     font-weight: 400;
   }
+  /* W3.1: identifiers read exactly as typed: never hyphenated, sized to the Garamond x-height. */
   .prose.prose-paper :where(code):not(:where(pre code)) {
-    padding: 0.1em 0.35em;
+    padding: 0.05em 0.2em;
     border-radius: 3px;
-    background: color-mix(in oklab, var(--ink) 7%, transparent);
-    font-size: 0.8em;
+    background: color-mix(in oklab, var(--ink) 5%, transparent);
+    font-size: 0.76em;
     font-weight: 400;
+    hyphens: manual;
+    overflow-wrap: anywhere;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  @supports (font-size-adjust: ex-height 0.4) {
+    .prose.prose-paper :where(code):not(:where(pre code)) {
+      padding: 0.05em 0.15em;
+      font-size: 1em;
+      font-size-adjust: ex-height 0.405;
+    }
+  }
+  .prose.prose-paper :where(h2, h3, h4) code {
+    font-variant-caps: normal;
+    letter-spacing: normal;
+    background: none;
   }
   .prose.prose-paper :where(code):not(:where(pre code))::before,
   .prose.prose-paper :where(code):not(:where(pre code))::after {
@@ -573,4 +693,20 @@
   a {
     text-decoration: none;
   }
+}
+
+/*
+ * Unlayered on purpose: Expressive Code and KaTeX ship unlayered CSS, which beats every layered rule.
+ */
+/* W3.2: the copy button gets the site focus ring instead of the browser default. */
+.expressive-code .copy button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* W3.4: math at text size (KaTeX's default is 1.21em). */
+.prose .katex {
+  font-size: 1em;
+}
+.prose .math-display .katex {
+  font-size: 1.15em;
 }

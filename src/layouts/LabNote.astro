@@ -2,16 +2,18 @@
 import 'katex/dist/katex.min.css';
 import PageHeader from '../components/PageHeader.astro';
 import StatusBadge from '../components/StatusBadge.astro';
-import type { LabNote } from '../lib/lab';
+import type { CollectionEntry } from 'astro:content';
 import { formatDate } from '../lib/posts';
 import { typeset } from '../lib/typeset';
 import Base from './Base.astro';
 
 interface Props {
-  note: LabNote;
+  note: CollectionEntry<'lab'> | CollectionEntry<'fixtures'>;
+  noindex?: boolean;
 }
 
-const { id, data } = Astro.props.note;
+const { note, noindex } = Astro.props;
+const { id, data } = note;
 const { title, description, pubDate, updatedDate, category, status, tools, platform, verdict, repo } = data;
 const facts = [
   { label: 'category', html: `<span class="label">${category}</span>` },
@@ -22,14 +24,14 @@ const facts = [
 ].filter((fact): fact is { label: string; html: string } => Boolean(fact));
 ---
 
-<Base title={title} description={description} image={`/og/lab/${id}.png`} type="article">
+<Base title={title} description={description} image={`/og/lab/${id}.png`} type="article" noindex={noindex}>
   <meta slot="head" property="article:published_time" content={pubDate.toISOString()} />
   <article>
     <PageHeader kicker="Lab" kickerHref="/lab/" title={title} lede={description}>
       <time slot="gutter" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
     </PageHeader>
 
-    <dl class="mt-8 space-y-1">
+    <dl class="space-y-1">
       <div class="row">
         <dt class="gutter label">status</dt>
         <dd><StatusBadge status={status} /></dd>

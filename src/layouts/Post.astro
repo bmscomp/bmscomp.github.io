@@ -20,7 +20,7 @@ const { title, description, pubDate, updatedDate, tags } = data;
     <PageHeader kicker="Blog" kickerHref="/blog/" title={title} lede={description}>
       <time slot="gutter" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
     </PageHeader>
-    <div class="row mt-8">
+    <div class="row">
       <aside class="gutter max-sm:mb-6">
         {
           updatedDate && (

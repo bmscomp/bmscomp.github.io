@@ -1,0 +1,37 @@
+name: Check
+
+# Readability and correctness checks (READABILITY-PLAN.md W1.3). Runs on pull requests, and the
+# deploy workflow calls it so nothing ships when a check fails.
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Types, CV schema and content lint
+        run: pnpm check && pnpm validate:cv && pnpm run --if-present lint:content
+      - name: Markdown plugin unit tests
+        run: pnpm run --if-present test
+      - name: Build with test fixtures
+        run: pnpm build:fixtures
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Readability checks (font-independent)
+        run: pnpm exec playwright test --project=light --project=dark --grep @ci
+      - name: Internal links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --root-dir "${{ github.workspace }}/dist" --index-files index.html --no-progress dist
+          fail: true

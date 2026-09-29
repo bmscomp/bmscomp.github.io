@@ -97,7 +97,7 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
 
     <hr class="double-rule mt-8 print:mt-3" />
 
-    <Section id="profile" title="Profile" class="mt-7!">
+    <Section id="profile" title="Profile" class="print:mt-7!">
       <div class="row">
         <div class="gutter" aria-hidden="true"></div>
         <p class="hyphenate justified lede-caps" set:html={withCitations(basics.summary)} />

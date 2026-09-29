@@ -28,7 +28,7 @@ const { notes, id } = Astro.props;
             <a href={`/lab/${note.id}/`} set:html={typeset(note.data.title)} />
             {note.data.draft && <span class="label text-muted"> · draft</span>}
           </h3>
-          <p class="hyphenate mt-0.5 text-muted" set:html={typeset(note.data.verdict ?? note.data.description)} />
+          <p class="entry-desc hyphenate mt-0.5 text-muted" set:html={typeset(note.data.verdict ?? note.data.description)} />
           <p class="keywords mt-1">{[note.data.category, ...note.data.tools].join(' · ')}</p>
         </div>
       </li>

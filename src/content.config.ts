@@ -15,22 +15,30 @@ const posts = defineCollection({
 });
 
 // Notes on software, systems, and hardware being tested.
+const labSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  pubDate: z.coerce.date(),
+  updatedDate: z.coerce.date().optional(),
+  category: z.enum(['software', 'system', 'hardware', 'homelab']),
+  status: z.enum(['testing', 'adopted', 'dropped']),
+  tools: z.array(z.string()).default([]),
+  platform: z.string().optional(),
+  /** One-line conclusion, shown on the list and at the top of the note. */
+  verdict: z.string().optional(),
+  repo: z.url().optional(),
+  draft: z.boolean().default(false),
+});
 const lab = defineCollection({
   loader: glob({ base: './src/content/lab', pattern: '**/*.md' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    pubDate: z.coerce.date(),
-    updatedDate: z.coerce.date().optional(),
-    category: z.enum(['software', 'system', 'hardware', 'homelab']),
-    status: z.enum(['testing', 'adopted', 'dropped']),
-    tools: z.array(z.string()).default([]),
-    platform: z.string().optional(),
-    /** One-line conclusion, shown on the list and at the top of the note. */
-    verdict: z.string().optional(),
-    repo: z.url().optional(),
-    draft: z.boolean().default(false),
-  }),
+  schema: labSchema,
+});
+
+// Test pages that exercise every long-form construct. Built only in dev or with FIXTURES=1
+// (src/pages/dev/[...slug].astro); the readability tests run against them.
+const fixtures = defineCollection({
+  loader: glob({ base: './src/content/fixtures', pattern: '**/*.md' }),
+  schema: labSchema,
 });
 
 // Articles, books, papers, and videos I'm reading. One YAML file, one entry per item.
@@ -134,4 +142,4 @@ const cv = defineCollection({
   }),
 });
 
-export const collections = { posts, lab, reading, cv };
+export const collections = { posts, lab, fixtures, reading, cv };

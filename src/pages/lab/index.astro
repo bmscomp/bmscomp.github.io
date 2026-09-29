@@ -21,7 +21,7 @@ const filters = {
     <p class="mt-5"><a href="/lab/rss.xml" class="pill">RSS feed</a></p>
   </PageHeader>
 
-  <div id="lab-filters" class="mt-8 space-y-2" hidden>
+  <div id="lab-filters" class="space-y-2" hidden>
     {
       Object.entries(filters).map(([key, values]) => (
         <div class="row items-center" data-filter={key}>

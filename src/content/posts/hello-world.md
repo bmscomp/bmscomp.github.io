@@ -11,8 +11,8 @@ on every push to `main`.
 
 ## What's coming
 
-- A short **CV**
-- **Lab** notes on the software and systems I'm testing
+- A short [**CV**](/cv/)
+- [**Lab**](/lab/) notes on the software and systems I'm testing
 - A **reading** list of articles I find worth sharing
 - **Travel** stories, and later my favourite phone shots
 
