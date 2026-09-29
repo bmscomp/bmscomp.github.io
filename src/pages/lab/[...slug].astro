@@ -1,0 +1,17 @@
+---
+import { render } from 'astro:content';
+import LabNote from '../../layouts/LabNote.astro';
+import { getLabNotes } from '../../lib/lab';
+
+export async function getStaticPaths() {
+  const notes = await getLabNotes();
+  return notes.map((note) => ({ params: { slug: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+---
+
+<LabNote note={note}>
+  <Content />
+</LabNote>

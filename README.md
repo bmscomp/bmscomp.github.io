@@ -27,6 +27,26 @@ draft: false
 
 Tags link to `/tags/<tag>/`. Each post gets a generated social card at `/og/<file-name>.png`.
 
+## Write a lab note
+
+Lab notes are Markdown files in `src/content/lab/`, published at `/lab/<file-name>/`:
+
+```md
+---
+title: Trying Ghostty as my terminal
+description: One-line summary
+pubDate: 2026-10-01
+category: software        # software | system | hardware | homelab
+status: testing           # testing | adopted | dropped
+tools: [Ghostty 1.2]
+platform: macOS           # optional
+verdict: One-line conclusion   # optional, shown on the list
+repo: https://github.com/…     # optional
+---
+```
+
+Update `status`, `verdict`, and `updatedDate` as the test progresses; the list is sorted by last update.
+
 ### Code
 
 Fenced code blocks are rendered by [Expressive Code](https://expressive-code.com): copy button,

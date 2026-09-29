@@ -1,0 +1,104 @@
+---
+import StatusBadge from '../../components/StatusBadge.astro';
+import Base from '../../layouts/Base.astro';
+import { CATEGORIES, getLabNotes, lastTouched, STATUSES } from '../../lib/lab';
+import { formatDate } from '../../lib/posts';
+
+const notes = await getLabNotes();
+const filters = {
+  status: STATUSES.filter((s) => notes.some((n) => n.data.status === s)),
+  category: CATEGORIES.filter((c) => notes.some((n) => n.data.category === c)),
+};
+---
+
+<Base title="Lab" description="Software, systems, and hardware I'm testing — setup, results, and verdicts.">
+  <link slot="head" rel="alternate" type="application/rss+xml" title="Lab" href="/lab/rss.xml" />
+  <h1 class="text-3xl font-bold tracking-tight">Lab</h1>
+  <p class="mt-2 mb-8 text-zinc-600 dark:text-zinc-400">
+    Software, systems, and hardware I'm testing on my machines — how I set them up, what happened, and
+    whether they stayed.
+  </p>
+
+  <div id="lab-filters" class="mb-8 space-y-3 text-sm" hidden>
+    {
+      Object.entries(filters).map(([key, values]) => (
+        <div class="flex flex-wrap items-center gap-2" data-filter={key}>
+          <span class="w-16 text-zinc-500 capitalize">{key}</span>
+          {['all', ...values].map((value) => (
+            <button
+              type="button"
+              data-value={value}
+              aria-pressed={value === 'all' ? 'true' : 'false'}
+              class="rounded-full border border-zinc-200 px-3 py-0.5 capitalize hover:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-white dark:border-zinc-800"
+            >
+              {value}
+            </button>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <ul class="space-y-6" id="lab-notes">
+    {
+      notes.map((note) => (
+        <li data-status={note.data.status} data-category={note.data.category}>
+          <a href={`/lab/${note.id}/`} class="group block no-underline">
+            <p class="flex items-center gap-2 text-sm text-zinc-500">
+              <time datetime={lastTouched(note).toISOString()}>{formatDate(lastTouched(note))}</time>
+              <span>·</span>
+              <span class="capitalize">{note.data.category}</span>
+              <StatusBadge status={note.data.status} />
+            </p>
+            <h3 class="text-lg font-medium group-hover:text-accent">
+              {note.data.title}
+              {note.data.draft && <span class="ml-2 text-xs text-amber-600">draft</span>}
+            </h3>
+            <p class="text-zinc-600 dark:text-zinc-400">{note.data.verdict ?? note.data.description}</p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <p id="lab-empty" class="text-zinc-500" hidden>No notes match these filters.</p>
+</Base>
+
+<script>
+  const bar = document.getElementById('lab-filters')!;
+  const items = [...document.querySelectorAll<HTMLElement>('#lab-notes > li')];
+  const empty = document.getElementById('lab-empty')!;
+  const params = new URLSearchParams(location.search);
+  const active: Record<string, string> = { status: 'all', category: 'all' };
+
+  function apply() {
+    let shown = 0;
+    for (const item of items) {
+      const match = Object.entries(active).every(([key, value]) => value === 'all' || item.dataset[key] === value);
+      item.hidden = !match;
+      if (match) shown++;
+    }
+    empty.hidden = shown > 0;
+    for (const group of bar.querySelectorAll<HTMLElement>('[data-filter]')) {
+      for (const button of group.querySelectorAll<HTMLButtonElement>('button')) {
+        button.setAttribute('aria-pressed', String(button.dataset.value === active[group.dataset.filter!]));
+      }
+    }
+    const query = new URLSearchParams(Object.entries(active).filter(([, value]) => value !== 'all'));
+    history.replaceState(null, '', query.size ? `?${query}` : location.pathname);
+  }
+
+  bar.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest('button');
+    const group = button?.closest<HTMLElement>('[data-filter]');
+    if (!button || !group) return;
+    active[group.dataset.filter!] = button.dataset.value!;
+    apply();
+  });
+
+  for (const key of Object.keys(active)) {
+    const value = params.get(key);
+    if (value && bar.querySelector(`[data-filter="${key}"] [data-value="${CSS.escape(value)}"]`)) active[key] = value;
+  }
+  bar.hidden = false;
+  apply();
+</script>

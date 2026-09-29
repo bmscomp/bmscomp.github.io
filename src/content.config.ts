@@ -14,6 +14,25 @@ const posts = defineCollection({
   }),
 });
 
+// Notes on software, systems, and hardware being tested.
+const lab = defineCollection({
+  loader: glob({ base: './src/content/lab', pattern: '**/*.md' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    category: z.enum(['software', 'system', 'hardware', 'homelab']),
+    status: z.enum(['testing', 'adopted', 'dropped']),
+    tools: z.array(z.string()).default([]),
+    platform: z.string().optional(),
+    /** One-line conclusion, shown on the list and at the top of the note. */
+    verdict: z.string().optional(),
+    repo: z.url().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
 // Public CV summary, a subset of the JSON Resume schema (https://jsonresume.org/schema).
 const date = z.string().regex(/^\d{4}(-\d{2})?$/, 'Use YYYY or YYYY-MM');
 const cv = defineCollection({
@@ -65,4 +84,4 @@ const cv = defineCollection({
   }),
 });
 
-export const collections = { posts, cv };
+export const collections = { posts, lab, cv };

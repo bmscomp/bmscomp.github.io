@@ -1,0 +1,79 @@
+---
+import 'katex/dist/katex.min.css';
+import StatusBadge from '../components/StatusBadge.astro';
+import type { LabNote } from '../lib/lab';
+import { formatDate } from '../lib/posts';
+import Base from './Base.astro';
+
+interface Props {
+  note: LabNote;
+}
+
+const { id, data } = Astro.props.note;
+const { title, description, pubDate, updatedDate, category, status, tools, platform, verdict, repo } = data;
+---
+
+<Base title={title} description={description} image={`/og/lab/${id}.png`} type="article">
+  <meta slot="head" property="article:published_time" content={pubDate.toISOString()} />
+  <article>
+    <header class="mb-8">
+      <p class="mb-2 text-sm"><a href="/lab/" class="text-accent">← Lab</a></p>
+      <h1 class="text-3xl font-bold tracking-tight">{title}</h1>
+      <p class="mt-2 text-sm text-zinc-500">
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        {updatedDate && <span> · updated {formatDate(updatedDate)}</span>}
+      </p>
+      <dl
+        class="mt-6 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"
+      >
+        <dt class="text-zinc-500">Status</dt>
+        <dd><StatusBadge status={status} /></dd>
+        <dt class="text-zinc-500">Category</dt>
+        <dd class="capitalize">{category}</dd>
+        {
+          platform && (
+            <>
+              <dt class="text-zinc-500">Platform</dt>
+              <dd>{platform}</dd>
+            </>
+          )
+        }
+        {
+          tools.length > 0 && (
+            <>
+              <dt class="text-zinc-500">Tools</dt>
+              <dd class="flex flex-wrap gap-1.5">
+                {tools.map((tool) => (
+                  <span class="rounded bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{tool}</span>
+                ))}
+              </dd>
+            </>
+          )
+        }
+        {
+          repo && (
+            <>
+              <dt class="text-zinc-500">Code</dt>
+              <dd>
+                <a href={repo} class="text-accent">{repo.replace(/^https?:\/\//, '')}</a>
+              </dd>
+            </>
+          )
+        }
+        {
+          verdict && (
+            <>
+              <dt class="text-zinc-500">Verdict</dt>
+              <dd class="font-medium">{verdict}</dd>
+            </>
+          )
+        }
+      </dl>
+    </header>
+    <div
+      class="prose prose-zinc max-w-none dark:prose-invert prose-a:text-accent prose-code:before:content-none prose-code:after:content-none"
+    >
+      <slot />
+    </div>
+  </article>
+</Base>
