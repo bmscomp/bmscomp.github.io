@@ -1,0 +1,13 @@
+---
+import { GITHUB_URL, SITE_TITLE } from '../consts';
+---
+
+<footer class="border-t border-zinc-200 text-sm text-zinc-500 dark:border-zinc-800">
+  <div class="mx-auto flex max-w-3xl justify-between px-4 py-6">
+    <span>© {new Date().getFullYear()} {SITE_TITLE}</span>
+    <span class="flex gap-4">
+      <a href={GITHUB_URL} class="hover:text-accent">GitHub</a>
+      <a href="/rss.xml" class="hover:text-accent">RSS</a>
+    </span>
+  </div>
+</footer>

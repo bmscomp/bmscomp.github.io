@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "preview", "runtimeExecutable": "npx", "runtimeArgs": ["-y", "pnpm@12.6.0", "preview", "--port", "4321"], "port": 4321 }
+  ]
+}

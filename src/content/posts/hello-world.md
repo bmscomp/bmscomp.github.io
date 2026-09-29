@@ -1,0 +1,34 @@
+---
+title: Hello, world — a new home
+description: The site is rebuilt from scratch with Astro. Here's what's coming.
+pubDate: 2026-09-29
+tags: [meta, astro]
+---
+
+This site has been rebuilt from scratch. Posts are plain **Markdown** files in
+`src/content/posts/`, rendered by [Astro](https://astro.build) and deployed to GitHub Pages
+on every push to `main`.
+
+## What's coming
+
+- A short **CV**
+- **Lab** notes on the software and systems I'm testing
+- A **reading** list of articles I find worth sharing
+- **Travel** stories, and later my favourite phone shots
+
+## Writing a post
+
+Create `src/content/posts/my-post.md`:
+
+```md
+---
+title: My post
+description: One-line summary
+pubDate: 2026-10-01
+tags: [linux]
+---
+
+Content in Markdown.
+```
+
+Set `draft: true` to keep it out of the published site while still seeing it in `pnpm dev`.
