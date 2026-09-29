@@ -1,9 +1,11 @@
 ---
 import { GITHUB_URL, SITE_TITLE } from '../consts';
+
+const { wide = false } = Astro.props as { wide?: boolean };
 ---
 
 <footer class="print:hidden border-t border-zinc-200 text-sm text-zinc-500 dark:border-zinc-800">
-  <div class="mx-auto flex max-w-3xl justify-between px-4 py-6">
+  <div class:list={['mx-auto flex justify-between px-4 py-6', wide ? 'max-w-5xl' : 'max-w-3xl']}>
     <span>© {new Date().getFullYear()} {SITE_TITLE}</span>
     <span class="flex gap-4">
       <a href={GITHUB_URL} class="hover:text-accent">GitHub</a>

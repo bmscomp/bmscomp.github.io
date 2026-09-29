@@ -175,9 +175,15 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.7.4
         version: 3.7.4
+      '@fontsource-variable/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/inter':
         specifier: ^5.3.0
         version: 5.3.0
+      '@lucide/astro':
+        specifier: ^1.48.0
+        version: 1.48.0(astro@7.3.5(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1))
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
@@ -626,6 +632,9 @@ packages:
   '@expressive-code/plugin-text-markers@0.44.2':
     resolution: {integrity: sha512-SNI7EgUSiADqbqUzzMbj1ZeC/r2pa5eg3KyFOGAd3a7EsIA4qzjXQLp+ODWQtHVDKFCdGs4J3ovSJUqvKIK96g==}
 
+  '@fontsource-variable/inter@5.3.0':
+    resolution: {integrity: sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==}
+
   '@fontsource/inter@5.3.0':
     resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
 
@@ -806,6 +815,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@lucide/astro@1.48.0':
+    resolution: {integrity: sha512-BL+7lLGjjSTfdYEBd9pAB0ixhJ7M84OVzxHoY3oG3M92kX/q1UG2+znp+pqH3waxpIHF1l8Hd1QZxytqv5WH8A==}
+    peerDependencies:
+      astro: ^4 || ^5 || ^6 || ^7
 
   '@napi-rs/wasm-runtime@1.2.4':
     resolution: {integrity: sha512-AJxoUD2/15ESHbvpcyjU274nsAPLuOtPHCk0vKJM5pj//Fg/B1FXNWjPnXTT9PymCYYiHo4zPj0ZomXBKhoy7g==}
@@ -2806,6 +2820,8 @@ snapshots:
     dependencies:
       '@expressive-code/core': 0.44.2
 
+  '@fontsource-variable/inter@5.3.0': {}
+
   '@fontsource/inter@5.3.0': {}
 
   '@img/colour@1.1.0':
@@ -2933,6 +2949,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@lucide/astro@1.48.0(astro@7.3.5(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1))':
+    dependencies:
+      astro: 7.3.5(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1)
 
   '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
     dependencies:

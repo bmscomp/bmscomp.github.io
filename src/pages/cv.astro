@@ -1,5 +1,16 @@
 ---
+import ArrowUpRight from '@lucide/astro/icons/arrow-up-right';
+import Braces from '@lucide/astro/icons/braces';
+import Briefcase from '@lucide/astro/icons/briefcase';
+import BriefcaseBusiness from '@lucide/astro/icons/briefcase-business';
+import CodeXml from '@lucide/astro/icons/code-xml';
+import GraduationCap from '@lucide/astro/icons/graduation-cap';
+import Languages from '@lucide/astro/icons/languages';
+import MapPin from '@lucide/astro/icons/map-pin';
+import Printer from '@lucide/astro/icons/printer';
+import Wrench from '@lucide/astro/icons/wrench';
 import { getEntry } from 'astro:content';
+import BrandIcon from '../components/BrandIcon.astro';
 import Base from '../layouts/Base.astro';
 import { EARLIER_BEFORE, formatLocation, formatMonth, isEarlier, toJsonLd } from '../lib/cv';
 
@@ -11,199 +22,343 @@ const { basics, work, projects, education, skills, languages } = resume;
 const recent = work.filter((job) => !isEarlier(job));
 const earlier = work.filter(isEarlier);
 const location = formatLocation(basics.location);
+const initials = basics.name
+  .split(/\s+/)
+  .map((part) => part[0])
+  .join('')
+  .slice(0, 2);
+const stats = [
+  { value: String(Math.min(...work.map((job) => Number(job.startDate.slice(0, 4))))), label: 'Building software since' },
+  { value: String(new Set(work.map((job) => job.name)).size), label: 'Companies' },
+  { value: String(projects.length), label: 'Open-source projects' },
+];
 const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)).replace(/</g, '\\u003c');
+
+// Shared styles. Every screen-only flourish has a print: override so the printed CV stays a plain A4 document.
 const sectionTitle =
-  'mb-5 text-sm font-semibold uppercase tracking-wider text-zinc-500 print:mb-2 print:break-after-avoid print:text-black';
+  'mb-5 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-zinc-500 print:mb-2 print:break-after-avoid print:text-black';
+const sectionIcon = 'size-4 text-accent print:hidden';
+const card =
+  'rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900/50 print:rounded-none print:border-0 print:bg-transparent print:p-0';
+const button =
+  'inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-sm font-medium text-zinc-700 no-underline transition hover:border-accent hover:text-accent dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300';
 ---
 
-<Base title="CV" description={`${basics.name} — ${basics.label}`} image="/og/cv.png">
+<Base title="CV" description={`${basics.name} — ${basics.label}`} image="/og/cv.png" wide>
   <Fragment slot="head">
     <link rel="alternate" type="application/json" title="JSON Resume" href="/cv.json" />
     <script type="application/ld+json" set:html={jsonLd} />
   </Fragment>
 
   <article>
-    <header class="mb-10 print:mb-4">
-      <div class="flex items-start justify-between gap-4">
-        <h1 class="text-3xl font-bold tracking-tight">{basics.name}</h1>
-        <button
-          type="button"
-          id="print-cv"
-          class="mt-1 hidden shrink-0 rounded-md border border-zinc-200 px-3 py-1 text-sm hover:border-accent hover:text-accent sm:block dark:border-zinc-800 print:hidden"
-        >
-          Save as PDF
-        </button>
+    <!-- Hero -->
+    <header
+      class="relative mb-12 overflow-hidden rounded-3xl border border-zinc-200 bg-linear-to-br from-accent/10 via-white to-violet-500/10 p-6 sm:p-10 dark:border-zinc-800 dark:via-zinc-950 print:mb-4 print:overflow-visible print:rounded-none print:border-0 print:bg-none print:p-0"
+    >
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute -top-32 -right-24 size-80 rounded-full bg-accent/20 blur-3xl print:hidden"
+      >
       </div>
-      <p class="mt-1 text-lg text-zinc-700 dark:text-zinc-300">{basics.label}</p>
-      <ul class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-500">
-        {location && <li>{location}</li>}
+
+      <div class="relative flex flex-col gap-6 sm:flex-row sm:items-start">
+        <div
+          aria-hidden="true"
+          class="grid size-16 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-accent to-violet-500 text-xl sm:size-20 sm:text-2xl font-bold tracking-tight text-white shadow-lg shadow-accent/25 print:hidden"
+        >
+          {initials}
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <h1 class="text-4xl font-bold tracking-tight sm:text-5xl print:text-3xl">{basics.name}</h1>
+          <p class="mt-2 text-lg font-medium text-zinc-700 sm:text-xl dark:text-zinc-300 print:mt-1 print:text-lg print:font-normal">
+            {basics.label}
+          </p>
+          <ul class="mt-4 flex flex-wrap items-center gap-2 text-sm print:mt-2 print:gap-x-4 print:text-zinc-500">
+            {
+              location && (
+                <li class="inline-flex items-center gap-1.5 pr-2 text-zinc-600 dark:text-zinc-400 print:pr-0 print:text-inherit">
+                  <MapPin class="size-4 print:hidden" aria-hidden="true" />
+                  {location}
+                </li>
+              )
+            }
+            {
+              basics.profiles.map((p) => (
+                <li>
+                  <a
+                    href={p.url}
+                    class:list={[
+                      button,
+                      'py-1! print:border-0 print:bg-transparent print:p-0! print:font-normal print:text-inherit',
+                    ]}
+                  >
+                    <BrandIcon name={p.network} class="size-3.5 print:hidden" />
+                    <span class="print:hidden">{p.network}</span>
+                    <span class="hidden print:inline">{p.url.replace(/^https:\/\/(www\.)?/, '')}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="flex gap-2 sm:flex-col print:hidden">
+          <button type="button" id="print-cv" class:list={[button, 'max-sm:hidden']}>
+            <Printer class="size-4" aria-hidden="true" /> Save as PDF
+          </button>
+          <a href="/cv.json" class={button}><Braces class="size-4" aria-hidden="true" /> JSON Resume</a>
+        </div>
+      </div>
+
+      {
+        basics.summary && (
+          <p class="relative mt-8 max-w-3xl text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 print:mt-3 print:max-w-none print:text-base print:leading-snug print:text-black">
+            {basics.summary}
+          </p>
+        )
+      }
+
+      <dl
+        class="relative mt-8 grid grid-cols-3 divide-x divide-zinc-200 border-t border-zinc-200 pt-6 dark:divide-zinc-800 dark:border-zinc-800 print:hidden"
+      >
         {
-          basics.profiles.map((p) => (
-            <li>
-              <a href={p.url} class="text-accent print:text-inherit">
-                <span class="print:hidden">{p.network}</span>
-                <span class="hidden print:inline">{p.url.replace(/^https:\/\/(www\.)?/, '')}</span>
-              </a>
-            </li>
+          stats.map(({ value, label }) => (
+            <div class="flex flex-col-reverse items-center px-2 text-center">
+              <dt class="mt-1 text-xs text-zinc-500 sm:text-sm">{label}</dt>
+              <dd class="bg-linear-to-br from-accent to-violet-500 bg-clip-text text-2xl font-bold tabular-nums text-transparent sm:text-3xl">
+                {value}
+              </dd>
+            </div>
           ))
         }
-      </ul>
-      {basics.summary && <p class="mt-6 leading-relaxed print:mt-3 print:leading-snug">{basics.summary}</p>}
+      </dl>
     </header>
 
-    <section aria-labelledby="experience" class="mb-10 print:mb-4">
-      <h2 id="experience" class={sectionTitle}>Experience</h2>
-      <ol class="space-y-8 print:space-y-3">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_19rem] print:block">
+      <div class="min-w-0">
+        <!-- Experience timeline -->
+        <section aria-labelledby="experience" class="mb-12 print:mb-4">
+          <h2 id="experience" class={sectionTitle}>
+            <BriefcaseBusiness class={sectionIcon} aria-hidden="true" /> Experience
+          </h2>
+          <ol
+            class="relative ml-2 space-y-10 border-l-2 border-zinc-200 pl-7 dark:border-zinc-800 print:ml-0 print:space-y-3 print:border-0 print:pl-0"
+          >
+            {
+              recent.map((job) => {
+                const current = !job.endDate;
+                return (
+                  <li class="relative break-inside-avoid">
+                    <span
+                      aria-hidden="true"
+                      class:list={[
+                        'absolute top-1.5 -left-[37px] size-4 rounded-full ring-4 ring-white dark:ring-zinc-950 print:hidden',
+                        current ? 'bg-accent' : 'bg-zinc-300 dark:bg-zinc-700',
+                      ]}
+                    >
+                      {current && (
+                        <span class="absolute inset-0 rounded-full bg-accent opacity-50 motion-safe:animate-ping" />
+                      )}
+                    </span>
+                    <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                      <h3 class="text-lg font-semibold">{job.position}</h3>
+                      <p class="flex items-center gap-2 text-sm text-zinc-500 tabular-nums">
+                        {current && (
+                          <span class="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent print:hidden">
+                            Now
+                          </span>
+                        )}
+                        <span>
+                          <time datetime={job.startDate}>{formatMonth(job.startDate)}</time> –{' '}
+                          {job.endDate ? <time datetime={job.endDate}>{formatMonth(job.endDate)}</time> : 'Present'}
+                        </span>
+                      </p>
+                    </div>
+                    <p class="font-medium text-accent print:text-inherit">
+                      {job.url ? <a href={job.url}>{job.name}</a> : job.name}
+                      {job.location && <span class="font-normal text-zinc-500"> · {job.location}</span>}
+                    </p>
+                    {job.summary && (
+                      <p class="mt-2 text-zinc-700 dark:text-zinc-300 print:mt-0.5 print:leading-snug">{job.summary}</p>
+                    )}
+                    {job.highlights.length > 0 && (
+                      <ul class="mt-3 list-disc space-y-1.5 pl-5 text-zinc-600 marker:text-accent dark:text-zinc-400 print:mt-1 print:space-y-0 print:leading-snug print:marker:text-zinc-400">
+                        {job.highlights.map((h) => (
+                          <li>{h}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })
+            }
+          </ol>
+        </section>
+
+        <!-- Earlier experience -->
         {
-          recent.map((job) => (
-            <li class="break-inside-avoid">
-              <div class="flex flex-wrap items-baseline justify-between gap-x-4">
-                <h3 class="text-lg font-semibold">{job.position}</h3>
-                <p class="text-sm text-zinc-500 tabular-nums">
-                  <time datetime={job.startDate}>{formatMonth(job.startDate)}</time> –{' '}
-                  {job.endDate ? <time datetime={job.endDate}>{formatMonth(job.endDate)}</time> : 'Present'}
-                </p>
-              </div>
-              <p class="font-medium text-accent print:text-inherit">
-                {job.url ? <a href={job.url}>{job.name}</a> : job.name}
-                {job.location && <span class="font-normal text-zinc-500"> · {job.location}</span>}
-              </p>
-              {job.summary && <p class="mt-2 text-zinc-700 dark:text-zinc-300 print:mt-0.5 print:leading-snug">{job.summary}</p>}
-              {job.highlights.length > 0 && (
-                <ul class="mt-2 list-disc space-y-1 pl-5 text-zinc-600 marker:text-zinc-400 dark:text-zinc-400 print:mt-1 print:space-y-0 print:leading-snug">
-                  {job.highlights.map((h) => (
-                    <li>{h}</li>
+          earlier.length > 0 && (
+            <section aria-labelledby="earlier" class="mb-12 print:mb-4">
+              <h2 id="earlier" class={sectionTitle}>
+                <Briefcase class={sectionIcon} aria-hidden="true" /> Earlier experience
+                <span class="font-normal normal-case">(before {EARLIER_BEFORE})</span>
+              </h2>
+              <ul class:list={[card, 'divide-y divide-zinc-200 py-1 dark:divide-zinc-800 print:divide-y-0 print:leading-snug']}>
+                {earlier.map((job) => (
+                  <li class="break-inside-avoid py-3 print:py-0">
+                    <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+                      <p>
+                        <span class="font-medium">{job.position}</span>
+                        <span class="text-zinc-500"> · {job.name}</span>
+                        {job.location && <span class="text-zinc-500"> · {job.location}</span>}
+                      </p>
+                      <p class="text-sm text-zinc-500 tabular-nums">
+                        <time datetime={job.startDate}>{formatMonth(job.startDate)}</time> –{' '}
+                        <time datetime={job.endDate}>{formatMonth(job.endDate)}</time>
+                      </p>
+                    </div>
+                    {job.summary && (
+                      <p class="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400 print:hidden">{job.summary}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        <!-- Open source -->
+        {
+          projects.length > 0 && (
+            <section aria-labelledby="open-source" class="mb-12 print:mb-4 print:break-inside-avoid lg:mb-0">
+              <h2 id="open-source" class={sectionTitle}>
+                <CodeXml class={sectionIcon} aria-hidden="true" /> Open source
+              </h2>
+              <ul class="grid gap-4 sm:grid-cols-2 print:block print:space-y-0.5">
+                {projects.map((p) => {
+                  const Tag = p.url ? 'a' : 'div';
+                  return (
+                    <li class="break-inside-avoid">
+                      <Tag
+                        href={p.url}
+                        class="group flex h-full flex-col rounded-2xl border border-zinc-200 bg-white p-4 no-underline transition hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/5 dark:border-zinc-800 dark:bg-zinc-900/50 print:block print:rounded-none print:border-0 print:bg-transparent print:p-0 print:leading-snug"
+                      >
+                        <span class="flex items-start justify-between gap-2 print:inline">
+                          <span>
+                            <span class="font-semibold group-hover:text-accent print:font-medium">{p.name}</span>
+                            {p.roles.length > 0 && (
+                              <span class="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 print:ml-0 print:bg-transparent print:p-0 print:text-sm print:text-zinc-500 print:before:content-['_·_']">
+                                {p.roles.join(', ')}
+                              </span>
+                            )}
+                          </span>
+                          {p.url && (
+                            <ArrowUpRight
+                              class="size-4 shrink-0 text-zinc-400 transition group-hover:text-accent print:hidden"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </span>
+                        <span class="mt-2 block text-sm text-zinc-600 dark:text-zinc-400 print:mt-0 print:inline print:text-base print:before:content-['_—_']">
+                          {p.description}
+                        </span>
+                      </Tag>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )
+        }
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="space-y-10 lg:sticky lg:top-8 lg:self-start print:static print:space-y-4">
+        {
+          skills.length > 0 && (
+            <section aria-labelledby="skills" class="break-inside-avoid">
+              <h2 id="skills" class={sectionTitle}>
+                <Wrench class={sectionIcon} aria-hidden="true" /> Skills
+              </h2>
+              <dl class:list={[card, 'space-y-4 print:space-y-0.5']}>
+                {skills.map((group) => (
+                  <div class="print:flex print:gap-4">
+                    <dt class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 print:mb-0 print:w-32 print:shrink-0 print:text-base print:font-medium print:tracking-normal print:text-black print:normal-case">
+                      {group.name}
+                    </dt>
+                    <dd class="flex flex-wrap gap-1.5 print:gap-y-0">
+                      {group.keywords.map((k) => (
+                        <span class="rounded-full bg-accent/10 px-2.5 py-0.5 text-sm text-blue-900 ring-1 ring-accent/20 ring-inset dark:text-blue-100 print:bg-transparent print:px-0 print:py-0 print:text-base print:text-black print:ring-0 print:after:content-[','] print:last:after:content-none">
+                          {k}
+                        </span>
+                      ))}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )
+        }
+
+        <div class="grid gap-10 print:grid-cols-2 print:gap-6">
+          {
+            education.length > 0 && (
+              <section aria-labelledby="education" class="break-inside-avoid">
+                <h2 id="education" class={sectionTitle}>
+                  <GraduationCap class={sectionIcon} aria-hidden="true" /> Education
+                </h2>
+                <ul class:list={[card, 'space-y-3']}>
+                  {education.map((e) => (
+                    <li>
+                      <p class="font-medium">
+                        {e.studyType}, {e.area}
+                      </p>
+                      <p class="text-sm text-zinc-500">
+                        {e.institution}
+                        {e.endDate && (
+                          <span>
+                            {' '}
+                            · <time datetime={e.endDate}>{formatMonth(e.endDate)}</time>
+                          </span>
+                        )}
+                      </p>
+                    </li>
                   ))}
                 </ul>
-              )}
-            </li>
-          ))
-        }
-      </ol>
-    </section>
-
-    {
-      earlier.length > 0 && (
-        <section aria-labelledby="earlier" class="mb-10 print:mb-4">
-          <h2 id="earlier" class={sectionTitle}>
-            Earlier experience <span class="font-normal normal-case">(before {EARLIER_BEFORE})</span>
-          </h2>
-          <ul class="space-y-3 print:space-y-0 print:leading-snug">
-            {earlier.map((job) => (
-              <li class="break-inside-avoid">
-                <div class="flex flex-wrap items-baseline justify-between gap-x-4">
-                  <p>
-                    <span class="font-medium">{job.position}</span>
-                    <span class="text-zinc-500"> · {job.name}</span>
-                    {job.location && <span class="text-zinc-500"> · {job.location}</span>}
-                  </p>
-                  <p class="text-sm text-zinc-500 tabular-nums">
-                    <time datetime={job.startDate}>{formatMonth(job.startDate)}</time> –{' '}
-                    <time datetime={job.endDate}>{formatMonth(job.endDate)}</time>
-                  </p>
-                </div>
-                {job.summary && <p class="text-sm text-zinc-600 dark:text-zinc-400 print:hidden">{job.summary}</p>}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    }
-
-    {
-      projects.length > 0 && (
-        <section aria-labelledby="open-source" class="mb-10 print:mb-4 print:break-inside-avoid">
-          <h2 id="open-source" class={sectionTitle}>Open source</h2>
-          <ul class="space-y-3 print:space-y-0.5">
-            {projects.map((p) => (
-              <li class="break-inside-avoid">
-                <p>
-                  {p.url ? (
-                    <a href={p.url} class="font-medium text-accent print:text-inherit">
-                      {p.name}
-                    </a>
-                  ) : (
-                    <span class="font-medium">{p.name}</span>
-                  )}
-                  {p.roles.length > 0 && <span class="text-sm text-zinc-500"> · {p.roles.join(', ')}</span>}
-                  <span class="block text-zinc-600 dark:text-zinc-400 print:inline print:leading-snug print:before:content-['_—_']">
-                    {p.description}
-                  </span>
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    }
-
-    {
-      skills.length > 0 && (
-        <section aria-labelledby="skills" class="mb-10 break-inside-avoid print:mb-5">
-          <h2 id="skills" class={sectionTitle}>Skills</h2>
-          <dl class="space-y-3 print:space-y-0.5">
-            {skills.map((group) => (
-              <div class="sm:flex sm:gap-4 print:flex print:gap-4">
-                <dt class="font-medium sm:w-32 sm:shrink-0 print:w-32 print:shrink-0">{group.name}</dt>
-                <dd class="flex flex-wrap gap-1.5 print:gap-y-0">
-                  {group.keywords.map((k) => (
-                    <span class="rounded bg-zinc-100 px-2 py-0.5 text-sm dark:bg-zinc-800 print:bg-transparent print:px-0 print:py-0 print:text-base print:after:content-[','] print:last:after:content-none">
-                      {k}
-                    </span>
+              </section>
+            )
+          }
+          {
+            languages.length > 0 && (
+              <section aria-labelledby="languages" class="break-inside-avoid">
+                <h2 id="languages" class={sectionTitle}>
+                  <Languages class={sectionIcon} aria-hidden="true" /> Languages
+                </h2>
+                <dl class:list={[card, 'grid grid-cols-[auto_1fr] gap-x-4 gap-y-1']}>
+                  {languages.map((l) => (
+                    <>
+                      <dt class="font-medium">{l.language}</dt>
+                      <dd class="text-zinc-600 dark:text-zinc-400">{l.fluency}</dd>
+                    </>
                   ))}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      )
-    }
-
-    <div class="grid gap-10 sm:grid-cols-2 print:grid-cols-2 print:gap-6">
-      {
-        education.length > 0 && (
-          <section aria-labelledby="education" class="break-inside-avoid">
-            <h2 id="education" class={sectionTitle}>Education</h2>
-            <ul class="space-y-3">
-              {education.map((e) => (
-                <li>
-                  <p class="font-medium">
-                    {e.studyType}, {e.area}
-                  </p>
-                  <p class="text-sm text-zinc-500">
-                    {e.institution}
-                    {e.endDate && (
-                      <span>
-                        {' '}
-                        · <time datetime={e.endDate}>{formatMonth(e.endDate)}</time>
-                      </span>
-                    )}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )
-      }
-      {
-        languages.length > 0 && (
-          <section aria-labelledby="languages" class="break-inside-avoid">
-            <h2 id="languages" class={sectionTitle}>Languages</h2>
-            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-              {languages.map((l) => (
-                <>
-                  <dt class="font-medium">{l.language}</dt>
-                  <dd class="text-zinc-600 dark:text-zinc-400">{l.fluency}</dd>
-                </>
-              ))}
-            </dl>
-          </section>
-        )
-      }
+                </dl>
+              </section>
+            )
+          }
+        </div>
+      </aside>
     </div>
 
-    <footer class="mt-12 border-t border-zinc-200 pt-4 text-sm text-zinc-500 dark:border-zinc-800 print:hidden">
-      {resume.meta && <span>Updated <time datetime={resume.meta.lastModified}>{formatMonth(resume.meta.lastModified.slice(0, 7))}</time> · </span>}
+    <footer class="mt-16 border-t border-zinc-200 pt-4 text-sm text-zinc-500 dark:border-zinc-800 print:hidden">
+      {
+        resume.meta && (
+          <span>
+            Updated <time datetime={resume.meta.lastModified}>{formatMonth(resume.meta.lastModified.slice(0, 7))}</time>{' '}
+            ·{' '}
+          </span>
+        )
+      }
       Also available as <a href="/cv.json" class="text-accent">JSON Resume</a>.
     </footer>
   </article>

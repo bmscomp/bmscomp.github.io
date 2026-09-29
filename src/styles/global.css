@@ -5,9 +5,22 @@
 @custom-variant dark (@media screen and (prefers-color-scheme: dark));
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
-  --color-accent: oklch(0.62 0.17 250);
+}
+
+/* Accent resolves at runtime so it can be darker on light backgrounds and lighter on dark ones (WCAG AA). */
+@theme inline {
+  --color-accent: var(--accent);
+}
+
+:root {
+  --accent: oklch(0.54 0.2 262);
+}
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --accent: oklch(0.72 0.15 255);
+  }
 }
 
 @layer base {

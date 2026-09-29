@@ -12,10 +12,16 @@ const links = [
   { href: '/tags/', label: 'Tags' },
 ];
 const path = Astro.url.pathname;
+const { wide = false } = Astro.props as { wide?: boolean };
 ---
 
 <header class="print:hidden border-b border-zinc-200 dark:border-zinc-800">
-  <nav class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-4">
+  <nav
+    class:list={[
+      'mx-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-4',
+      wide ? 'max-w-5xl' : 'max-w-3xl',
+    ]}
+  >
     <a href="/" class="font-semibold whitespace-nowrap no-underline hover:text-accent">{SITE_TITLE}</a>
     <ul class="flex gap-4 text-sm sm:gap-5">
       {
