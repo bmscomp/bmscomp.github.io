@@ -1,0 +1,37 @@
+---
+import { type LabNote, lastTouched } from '../lib/lab';
+import { formatDate } from '../lib/posts';
+import { typeset } from '../lib/typeset';
+import StatusBadge from './StatusBadge.astro';
+
+interface Props {
+  notes: LabNote[];
+  /** Set to make the list filterable (see the Lab page script). */
+  id?: string;
+}
+
+const { notes, id } = Astro.props;
+---
+
+<ol id={id}>
+  {
+    notes.map((note) => (
+      <li class="row entry" data-status={note.data.status} data-category={note.data.category}>
+        <div class="gutter date">
+          <time datetime={lastTouched(note).toISOString()} class="block">
+            {formatDate(lastTouched(note))}
+          </time>
+          <StatusBadge status={note.data.status} />
+        </div>
+        <div>
+          <h3 class="entry-title">
+            <a href={`/lab/${note.id}/`} set:html={typeset(note.data.title)} />
+            {note.data.draft && <span class="label text-muted"> · draft</span>}
+          </h3>
+          <p class="hyphenate mt-0.5 text-muted" set:html={typeset(note.data.verdict ?? note.data.description)} />
+          <p class="keywords mt-1">{[note.data.category, ...note.data.tools].join(' · ')}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>

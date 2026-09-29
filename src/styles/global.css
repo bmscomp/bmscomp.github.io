@@ -4,22 +4,63 @@
 /* Dark styles apply on screen only, so printed pages are always black on white. */
 @custom-variant dark (@media screen and (prefers-color-scheme: dark));
 
-@theme {
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+/*
+ * EB Garamond (OFL, https://github.com/octaviopardo/EBGaramond12), self-hosted as a Latin subset of
+ * the full variable font from google/fonts, because the npm/Google Fonts builds drop small caps and
+ * old-style figures. Regenerate with fontTools:
+ *   pyftsubset "EBGaramond[wght].ttf" --flavor=woff2 \
+ *     --unicodes="U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2013-2014,U+2018-201E,U+2020-2022,U+2026,U+2030,U+2032-2033,U+2039-203A,U+20AC,U+2122,U+2190-2199,U+2212,U+25E6,U+2766-2767" \
+ *     --layout-features="kern,liga,clig,calt,ccmp,locl,mark,mkmk,smcp,c2sc,onum,lnum,pnum,tnum,case,frac,numr,dnom,ordn,sups"
+ */
+@font-face {
+  font-family: 'EB Garamond Web';
+  src: url('../assets/fonts/eb-garamond/EBGaramond-Latin-VF.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'EB Garamond Web';
+  src: url('../assets/fonts/eb-garamond/EBGaramond-Italic-Latin-VF.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: italic;
+  font-display: swap;
 }
 
-/* Accent resolves at runtime so it can be darker on light backgrounds and lighter on dark ones (WCAG AA). */
+@theme {
+  --font-serif: 'EB Garamond Web', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+}
+
+/* Palette tokens resolve at runtime, so light, dark and print can each redefine them. */
 @theme inline {
+  --color-page: var(--page);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
   --color-accent: var(--accent);
 }
 
 :root {
-  --accent: oklch(0.54 0.2 262);
+  --page: #ebe7df;
+  --paper: #fffdf8;
+  --ink: #221f1a;
+  --muted: #6a6358;
+  --rule: #e2dacb;
+  --accent: oklch(0.42 0.11 262);
+  /* Margin column for dates and labels, as in LaTeX CV classes. */
+  --gutter: 7.5rem;
+  --gap: 1.75rem;
 }
 @media screen and (prefers-color-scheme: dark) {
   :root {
-    --accent: oklch(0.72 0.15 255);
+    --page: #0b0c0f;
+    --paper: #16181d;
+    --ink: #ebe6dc;
+    --muted: #a59e92;
+    --rule: #2e3139;
+    --accent: oklch(0.8 0.08 255);
   }
 }
 
@@ -28,14 +69,342 @@
     color-scheme: light dark;
   }
   body {
-    @apply bg-white text-zinc-800 antialiased dark:bg-zinc-950 dark:text-zinc-200;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 1.1875rem;
+    line-height: 1.55;
+    font-kerning: normal;
+    font-variant-ligatures: common-ligatures contextual;
+    font-variant-numeric: oldstyle-nums proportional-nums;
+    -webkit-font-smoothing: antialiased;
   }
   a {
-    @apply underline-offset-4;
+    color: var(--accent);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: color-mix(in oklab, var(--accent) 30%, transparent);
+    transition:
+      color 0.15s,
+      text-decoration-color 0.15s;
+  }
+  a:hover {
+    text-decoration-color: currentColor;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 22%, transparent);
   }
 }
 
+/* The document system shared by every page. Utilities (incl. print:*) still win over these. */
 @layer components {
+  /* ---------- Type details ---------- */
+  .sc {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.05em;
+  }
+  .nowrap {
+    white-space: nowrap;
+  }
+  .label {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.08em;
+  }
+  .hyphenate {
+    text-wrap: pretty;
+    hyphens: auto;
+    /* Only hyphenate words of 8+ letters, keeping 4 on each side (avoids "de-fine", "pipe-lines"). */
+    hyphenate-limit-chars: 8 4 4;
+  }
+  .lede-caps::first-line {
+    font-variant-caps: small-caps;
+    letter-spacing: 0.03em;
+  }
+  .keywords {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.07em;
+    font-size: 0.95em;
+    color: var(--muted);
+  }
+  .author-sc {
+    font-variant-caps: small-caps;
+    letter-spacing: 0.03em;
+  }
+  .ref {
+    color: var(--accent);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .url-note {
+    font-size: 0.85em;
+    color: var(--muted);
+    word-break: break-word;
+  }
+  @media (min-width: 40rem) {
+    .justified {
+      text-align: justify;
+    }
+  }
+
+  /* ---------- Margin grid ---------- */
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gutter {
+    color: var(--muted);
+  }
+  @media (min-width: 40rem) {
+    .row {
+      grid-template-columns: var(--gutter) minmax(0, 1fr);
+      column-gap: var(--gap);
+    }
+    .gutter {
+      text-align: right;
+    }
+  }
+
+  /* ---------- Page letterhead ---------- */
+  .kicker {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.3em;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+  .kicker a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .page-title {
+    font-size: clamp(2.4rem, 6vw, 3.4rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    font-variant-numeric: lining-nums;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .double-rule {
+    border: 0;
+    border-top: 3px double color-mix(in oklab, var(--ink) 40%, transparent);
+  }
+
+  /* ---------- Sections: accent bar in the gutter, small-caps title ---------- */
+  .section {
+    margin-top: 2.75rem;
+  }
+  .heading {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 1.1rem;
+  }
+  .heading-bar {
+    width: 2rem;
+    height: 0.3rem;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+  .heading-text {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.16em;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .heading-note {
+    margin-left: 0.6rem;
+    font-variant-caps: normal;
+    letter-spacing: 0;
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  @media (min-width: 40rem) {
+    .heading {
+      display: grid;
+      grid-template-columns: var(--gutter) minmax(0, 1fr);
+      column-gap: var(--gap);
+    }
+    .heading-bar {
+      width: 100%;
+    }
+  }
+
+  /* ---------- Entries ---------- */
+  .entry + .entry {
+    margin-top: 1.6rem;
+  }
+  .entry-compact + .entry-compact {
+    margin-top: 0.7rem;
+  }
+  .entry-title {
+    font-weight: 600;
+    font-size: 1.15em;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+  .entry-title a {
+    color: inherit;
+    text-decoration-color: transparent;
+  }
+  .entry-title a:hover {
+    color: var(--accent);
+    text-decoration-color: currentColor;
+  }
+  .date {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.06em;
+    font-variant-numeric: oldstyle-nums tabular-nums;
+    line-height: 1.35;
+    padding-top: 0.2rem;
+  }
+  .date-now {
+    color: var(--accent);
+    font-style: italic;
+  }
+  .circle-list {
+    list-style-type: circle;
+    padding-left: 1.15em;
+  }
+  .circle-list > li + li {
+    margin-top: 0.25rem;
+  }
+  .circle-list > li::marker {
+    color: var(--accent);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .status::before {
+    content: '';
+    width: 0.42em;
+    height: 0.42em;
+    border-radius: 9999px;
+    background: currentColor;
+  }
+  .status[data-status='adopted'] {
+    color: oklch(0.5 0.11 155);
+  }
+  .status[data-status='testing'] {
+    color: oklch(0.58 0.12 70);
+  }
+  .status[data-status='dropped'] {
+    color: var(--muted);
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    .status[data-status='adopted'] {
+      color: oklch(0.78 0.12 155);
+    }
+    .status[data-status='testing'] {
+      color: oklch(0.82 0.12 80);
+    }
+  }
+
+  /* ---------- Navigation, pills and small print ---------- */
+  .monogram {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 9999px;
+    border: 1.5px solid var(--accent);
+    box-shadow:
+      0 0 0 2px var(--page),
+      0 0 0 3px color-mix(in oklab, var(--accent) 50%, transparent);
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-style: italic;
+    font-weight: 500;
+    font-variant-numeric: lining-nums;
+  }
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.3rem;
+    color: var(--muted);
+    font-size: 1.05rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.14em;
+    text-decoration: none;
+  }
+  .nav-link:hover {
+    color: var(--ink);
+  }
+  .nav-link[aria-current='page'] {
+    color: var(--accent);
+  }
+  .nav-link[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0.14em;
+    bottom: 0.1rem;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.2rem 0.85rem 0.3rem;
+    font-size: 1rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    color: var(--ink);
+    background: var(--paper);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background-color 0.15s;
+  }
+  .pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .pill[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--paper);
+  }
+  .pill-count {
+    font-variant-numeric: oldstyle-nums;
+    color: var(--muted);
+  }
+  .fleuron {
+    font-size: 1.6rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .colophon {
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
   /* Keep consecutive code frames and display math apart inside articles. */
   .prose .expressive-code,
   .prose .math-display {
@@ -44,12 +413,153 @@
   .prose .math-display {
     overflow-x: auto;
   }
+
+  /* ---------- Print: the same documents, set for A4 ---------- */
+  @media print {
+    .row,
+    .heading {
+      display: grid;
+      grid-template-columns: var(--gutter) minmax(0, 1fr);
+      column-gap: var(--gap);
+    }
+    .gutter {
+      text-align: right;
+    }
+    .heading-bar {
+      width: 100%;
+      height: 0.22rem;
+    }
+    .page-title {
+      font-size: 2.35rem;
+    }
+    .lede {
+      font-size: 1.15rem;
+    }
+    .kicker {
+      font-size: 0.85rem;
+    }
+    .section {
+      margin-top: 0.85rem;
+    }
+    .heading {
+      margin-bottom: 0.35rem;
+      break-after: avoid;
+    }
+    .heading-text {
+      font-size: 1.15rem;
+    }
+    .entry + .entry {
+      margin-top: 0.5rem;
+    }
+    .entry-compact + .entry-compact {
+      margin-top: 0.05rem;
+    }
+    .entry,
+    .entry-compact {
+      break-inside: avoid;
+    }
+    .circle-list > li + li {
+      margin-top: 0;
+    }
+    .justified {
+      text-align: justify;
+    }
+    .label {
+      font-size: 0.92em;
+      letter-spacing: 0.03em;
+    }
+  }
+}
+
+/* ---------- Articles: Tailwind Typography, re-set as a typeset page ---------- */
+@layer utilities {
+  /* Tailwind Typography emits `.prose` rules in the utilities layer, so these overrides live there too;
+     their higher specificity (.prose.prose-paper) then wins. */
+  .prose.prose-paper {
+    --tw-prose-body: var(--ink);
+    --tw-prose-headings: var(--ink);
+    --tw-prose-lead: var(--muted);
+    --tw-prose-links: var(--accent);
+    --tw-prose-bold: var(--ink);
+    --tw-prose-counters: var(--muted);
+    --tw-prose-bullets: var(--accent);
+    --tw-prose-hr: var(--rule);
+    --tw-prose-quotes: var(--ink);
+    --tw-prose-quote-borders: var(--accent);
+    --tw-prose-captions: var(--muted);
+    --tw-prose-code: var(--ink);
+    --tw-prose-th-borders: var(--rule);
+    --tw-prose-td-borders: var(--rule);
+    max-width: none;
+    font-size: 1.1875rem;
+    line-height: 1.6;
+  }
+  .prose.prose-paper :where(p, li) {
+    hyphens: auto;
+    hyphenate-limit-chars: 8 4 4;
+    text-wrap: pretty;
+  }
+  .prose.prose-paper > p:first-of-type::first-line {
+    font-variant-caps: small-caps;
+    letter-spacing: 0.03em;
+  }
+  .prose.prose-paper :where(h2) {
+    margin-top: 1.9em;
+    margin-bottom: 0.6em;
+    color: var(--accent);
+    font-size: 1.45em;
+    font-weight: 500;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.12em;
+  }
+  .prose.prose-paper :where(h3) {
+    font-size: 1.2em;
+    font-style: italic;
+    font-weight: 500;
+  }
+  .prose.prose-paper :where(a) {
+    font-weight: inherit;
+  }
+  .prose.prose-paper :where(ul) {
+    list-style-type: circle;
+  }
+  .prose.prose-paper :where(blockquote) {
+    border-left-width: 2px;
+    font-weight: 400;
+  }
+  .prose.prose-paper :where(code):not(:where(pre code)) {
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    background: color-mix(in oklab, var(--ink) 7%, transparent);
+    font-size: 0.8em;
+    font-weight: 400;
+  }
+  .prose.prose-paper :where(code):not(:where(pre code))::before,
+  .prose.prose-paper :where(code):not(:where(pre code))::after {
+    content: none;
+  }
+  @media print {
+    .prose.prose-paper {
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+  }
 }
 
 @media print {
   @page {
     size: A4;
-    margin: 12mm 14mm;
+    margin: 13mm 15mm 12mm;
+  }
+  :root {
+    --page: white;
+    --paper: transparent;
+    --ink: #151412;
+    --muted: #55504a;
+    --rule: #c9c2b5;
+    --accent: #213f73;
+    --gutter: 6.1rem;
+    --gap: 0.95rem;
   }
   html {
     font-size: 10pt;
@@ -57,10 +567,10 @@
   }
   body {
     background: white;
-    color: black;
+    font-size: 1rem;
+    line-height: 1.3;
   }
-  main {
-    max-width: none;
-    padding: 0;
+  a {
+    text-decoration: none;
   }
 }

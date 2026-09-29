@@ -1,0 +1,33 @@
+---
+// Page letterhead: small-caps kicker, display title, italic lede, then a double rule.
+// The margin column (slot "gutter") can hold a date or a mark; the default slot holds actions.
+import { typeset } from '../lib/typeset';
+
+interface Props {
+  kicker?: string;
+  kickerHref?: string;
+  title: string;
+  lede?: string;
+}
+
+const { kicker, kickerHref, title, lede } = Astro.props;
+---
+
+<header class="row items-end">
+  <div class="gutter date pb-1.5 max-sm:mb-1">
+    <slot name="gutter" />
+  </div>
+  <div>
+    {
+      kicker && (
+        <p class="kicker">
+          {kickerHref ? <a href={kickerHref}>{kicker}</a> : kicker}
+        </p>
+      )
+    }
+    <h1 class="page-title mt-1" set:html={typeset(title)} />
+    {lede && <p class="lede mt-3" set:html={typeset(lede)} />}
+    <slot />
+  </div>
+</header>
+<hr class="double-rule mt-8 print:mt-3" />

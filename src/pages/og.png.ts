@@ -1,7 +1,14 @@
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
-import { renderOgImage } from '../lib/og';
+import { initialsOf, pngResponse, renderCard } from '../lib/og';
 
 export async function GET() {
-  const png = await renderOgImage({ title: SITE_TITLE, subtitle: SITE_DESCRIPTION });
-  return new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
+  return pngResponse(
+    await renderCard({
+      kicker: 'Writing · Lab · CV',
+      title: SITE_TITLE,
+      subtitle: SITE_DESCRIPTION,
+      initials: initialsOf(SITE_TITLE),
+      variant: 'seal',
+    }),
+  );
 }

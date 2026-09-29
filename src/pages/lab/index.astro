@@ -1,8 +1,8 @@
 ---
-import StatusBadge from '../../components/StatusBadge.astro';
+import LabList from '../../components/LabList.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import Base from '../../layouts/Base.astro';
-import { CATEGORIES, getLabNotes, lastTouched, STATUSES } from '../../lib/lab';
-import { formatDate } from '../../lib/posts';
+import { CATEGORIES, getLabNotes, STATUSES } from '../../lib/lab';
 
 const notes = await getLabNotes();
 const filters = {
@@ -13,54 +13,38 @@ const filters = {
 
 <Base title="Lab" description="Software, systems, and hardware I'm testing — setup, results, and verdicts.">
   <link slot="head" rel="alternate" type="application/rss+xml" title="Lab" href="/lab/rss.xml" />
-  <h1 class="text-3xl font-bold tracking-tight">Lab</h1>
-  <p class="mt-2 mb-8 text-zinc-600 dark:text-zinc-400">
-    Software, systems, and hardware I'm testing on my machines — how I set them up, what happened, and
-    whether they stayed.
-  </p>
+  <PageHeader
+    kicker="Notebook"
+    title="Lab"
+    lede="Software, systems, and hardware I'm testing on my machines — how I set them up, what happened, and whether they stayed."
+  >
+    <p class="mt-5"><a href="/lab/rss.xml" class="pill">RSS feed</a></p>
+  </PageHeader>
 
-  <div id="lab-filters" class="mb-8 space-y-3 text-sm" hidden>
+  <div id="lab-filters" class="mt-8 space-y-2" hidden>
     {
       Object.entries(filters).map(([key, values]) => (
-        <div class="flex flex-wrap items-center gap-2" data-filter={key}>
-          <span class="w-16 text-zinc-500 capitalize">{key}</span>
-          {['all', ...values].map((value) => (
-            <button
-              type="button"
-              data-value={value}
-              aria-pressed={value === 'all' ? 'true' : 'false'}
-              class="rounded-full border border-zinc-200 px-3 py-0.5 capitalize hover:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-white dark:border-zinc-800"
-            >
-              {value}
-            </button>
-          ))}
+        <div class="row items-center" data-filter={key}>
+          <span class="gutter label">{key}</span>
+          <div class="flex flex-wrap gap-2">
+            {['all', ...values].map((value) => (
+              <button type="button" class="pill" data-value={value} aria-pressed={value === 'all' ? 'true' : 'false'}>
+                {value}
+              </button>
+            ))}
+          </div>
         </div>
       ))
     }
   </div>
 
-  <ul class="space-y-6" id="lab-notes">
-    {
-      notes.map((note) => (
-        <li data-status={note.data.status} data-category={note.data.category}>
-          <a href={`/lab/${note.id}/`} class="group block no-underline">
-            <p class="flex items-center gap-2 text-sm text-zinc-500">
-              <time datetime={lastTouched(note).toISOString()}>{formatDate(lastTouched(note))}</time>
-              <span>·</span>
-              <span class="capitalize">{note.data.category}</span>
-              <StatusBadge status={note.data.status} />
-            </p>
-            <h3 class="text-lg font-medium group-hover:text-accent">
-              {note.data.title}
-              {note.data.draft && <span class="ml-2 text-xs text-amber-600">draft</span>}
-            </h3>
-            <p class="text-zinc-600 dark:text-zinc-400">{note.data.verdict ?? note.data.description}</p>
-          </a>
-        </li>
-      ))
-    }
-  </ul>
-  <p id="lab-empty" class="text-zinc-500" hidden>No notes match these filters.</p>
+  <div class="mt-10">
+    <LabList notes={notes} id="lab-notes" />
+  </div>
+  <p id="lab-empty" class="row mt-4 italic text-muted" hidden>
+    <span class="gutter" aria-hidden="true"></span>
+    <span>No notes match these filters.</span>
+  </p>
 </Base>
 
 <script>

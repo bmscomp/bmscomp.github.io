@@ -2,9 +2,8 @@
 import Braces from '@lucide/astro/icons/braces';
 import Printer from '@lucide/astro/icons/printer';
 import { getEntry } from 'astro:content';
-import garamondUrl from '../assets/fonts/eb-garamond/EBGaramond-Latin-VF.woff2?url';
 import Seal from '../components/cv/Seal.astro';
-import Section from '../components/cv/Section.astro';
+import Section from '../components/Section.astro';
 import Base from '../layouts/Base.astro';
 import {
   abbreviateName,
@@ -60,30 +59,23 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
   title="CV"
   description={`${basics.name} — ${basics.label}`}
   image="/og/cv.png"
-  wide
-  bodyClass="bg-[#ebe7df] dark:bg-[#0b0c0f]"
 >
   <Fragment slot="head">
-    <link rel="preload" href={garamondUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="alternate" type="application/json" title="JSON Resume" href="/cv.json" />
     <script type="application/ld+json" set:html={jsonLd} />
   </Fragment>
 
-  <article
-    class="cv relative -mx-4 px-6 pt-10 pb-12 sm:mx-auto sm:max-w-4xl sm:rounded-[3px] sm:px-12 sm:pt-14 sm:shadow-[0_1px_2px_rgb(60_45_20/0.06),0_18px_50px_-18px_rgb(60_45_20/0.3)] lg:px-16 dark:sm:shadow-[0_1px_2px_rgb(0_0_0/0.4),0_18px_50px_-18px_rgb(0_0_0/0.9)] print:mx-0 print:max-w-none print:p-0 print:shadow-none"
-  >
-    <div aria-hidden="true" class="absolute inset-x-0 top-0 h-1.5 bg-(--cv-accent) sm:rounded-t-[3px] print:hidden"></div>
-
+  <article class="cv">
     <!-- Letterhead -->
-    <header class="cv-row items-center">
-      <div class="cv-gutter mb-5 flex sm:mb-0 sm:justify-end print:mb-0 print:justify-end">
+    <header class="row items-center">
+      <div class="gutter mb-5 flex sm:mb-0 sm:justify-end print:mb-0 print:justify-end">
         <Seal initials={initials} ring={ring} class="size-24 sm:size-[7.5rem] print:size-[5.2rem]" />
       </div>
       <div>
-        <p class="cv-kicker">Curriculum Vitæ</p>
+        <p class="kicker">Curriculum Vitæ</p>
         <h1 class="cv-name mt-1">{basics.name}</h1>
         <p class="cv-headline mt-2" set:html={typeset(basics.label)} />
-        <address class="cv-muted mt-3 flex flex-wrap gap-x-2 not-italic print:mt-1">
+        <address class="text-muted mt-3 flex flex-wrap gap-x-2 not-italic print:mt-1">
           {location && <span>{location}</span>}
           {
             basics.profiles.map((p) => (
@@ -95,34 +87,34 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
           }
         </address>
         <div class="mt-5 flex flex-wrap gap-2 print:hidden">
-          <button type="button" id="print-cv" class="cv-action max-sm:hidden">
+          <button type="button" id="print-cv" class="pill max-sm:hidden">
             <Printer class="size-4" aria-hidden="true" /> Save as PDF
           </button>
-          <a href="/cv.json" class="cv-action"><Braces class="size-4" aria-hidden="true" /> JSON Resume</a>
+          <a href="/cv.json" class="pill"><Braces class="size-4" aria-hidden="true" /> JSON Resume</a>
         </div>
       </div>
     </header>
 
-    <hr class="cv-double-rule mt-8 print:mt-3" />
+    <hr class="double-rule mt-8 print:mt-3" />
 
     <Section id="profile" title="Profile" class="mt-7!">
-      <div class="cv-row">
-        <div class="cv-gutter" aria-hidden="true"></div>
-        <p class="cv-prose cv-justify cv-lede" set:html={withCitations(basics.summary)} />
+      <div class="row">
+        <div class="gutter" aria-hidden="true"></div>
+        <p class="hyphenate justified lede-caps" set:html={withCitations(basics.summary)} />
       </div>
       {
         interests.length > 0 && (
-          <div class="cv-row mt-3 print:mt-1">
-            <p class="cv-gutter cv-label">expertise</p>
+          <div class="row mt-3 print:mt-1">
+            <p class="gutter label">expertise</p>
             <p
               class="italic"
-              set:html={interests.map((i) => typeset(i.name)).join('<span class="cv-muted not-italic">&nbsp;· </span>')}
+              set:html={interests.map((i) => typeset(i.name)).join('<span class="text-muted not-italic">&nbsp;· </span>')}
             />
           </div>
         )
       }
-      <div class="cv-row mt-8 print:hidden">
-        <div class="cv-gutter" aria-hidden="true"></div>
+      <div class="row mt-8 print:hidden">
+        <div class="gutter" aria-hidden="true"></div>
         <dl class="cv-facts">
           {
             facts.map(({ value, label }) => (
@@ -141,10 +133,10 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
         recent.map((job) => {
           const current = !job.endDate;
           return (
-            <div class="cv-row cv-item">
-              <p class="cv-gutter cv-date">
+            <div class="row entry">
+              <p class="gutter date">
                 <span class="sm:block print:block">{formatMonth(job.startDate)} –</span>{' '}
-                <span class:list={['sm:block print:block', current && 'cv-date-now']}>
+                <span class:list={['sm:block print:block', current && 'date-now']}>
                   {current ? 'present' : formatMonth(job.endDate)}
                 </span>
               </p>
@@ -152,11 +144,11 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
                 <h3 class="cv-role" set:html={typeset(job.position)} />
                 <p class="cv-org">
                   {job.url ? <a href={job.url} set:html={typeset(job.name)} /> : <span set:html={typeset(job.name)} />}
-                  {job.location && <span class="cv-muted font-normal not-italic"> · {job.location}</span>}
+                  {job.location && <span class="text-muted font-normal not-italic"> · {job.location}</span>}
                 </p>
-                {job.summary && <p class="cv-prose mt-1.5 print:mt-0.5" set:html={typeset(job.summary)} />}
+                {job.summary && <p class="hyphenate mt-1.5 print:mt-0.5" set:html={typeset(job.summary)} />}
                 {job.highlights.length > 0 && (
-                  <ul class="cv-list cv-prose mt-1.5 print:mt-0.5">
+                  <ul class="circle-list hyphenate mt-1.5 print:mt-0.5">
                     {job.highlights.map((h) => (
                       <li set:html={typeset(h)} />
                     ))}
@@ -173,18 +165,18 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
       earlier.length > 0 && (
         <Section id="earlier" title="Earlier experience" note={`before ${EARLIER_BEFORE}`}>
           {earlier.map((job) => (
-            <div class="cv-row cv-compact">
-              <p class="cv-gutter cv-date">
+            <div class="row entry-compact">
+              <p class="gutter date">
                 {formatYear(job.startDate)}–{formatYear(job.endDate)}
               </p>
               <div>
                 <p>
                   <span class="font-semibold" set:html={typeset(job.position)} />,{' '}
                   <span class="cv-org" set:html={typeset(job.name)} />
-                  {job.location && <span class="cv-muted"> · {job.location}</span>}
+                  {job.location && <span class="text-muted"> · {job.location}</span>}
                 </p>
                 {job.summary && (
-                  <p class="cv-muted cv-prose text-[0.95em] print:hidden" set:html={typeset(job.summary)} />
+                  <p class="text-muted hyphenate text-[0.95em] print:hidden" set:html={typeset(job.summary)} />
                 )}
               </div>
             </div>
@@ -197,16 +189,16 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
       publications.length > 0 && (
         <Section id="publications" title="Publications">
           {publications.map((pub) => (
-            <div class="cv-row cv-compact">
-              <p class="cv-gutter cv-date">{pub.releaseDate && formatYear(pub.releaseDate)}</p>
-              <div class="cv-prose">
+            <div class="row entry-compact">
+              <p class="gutter date">{pub.releaseDate && formatYear(pub.releaseDate)}</p>
+              <div class="hyphenate">
                 <p>
-                  <span class="cv-author" set:html={typeset(pub.authors ?? citedAuthor)} />.{' '}
+                  <span class="author-sc" set:html={typeset(pub.authors ?? citedAuthor)} />.{' '}
                   <cite>{pub.url ? <a href={pub.url} set:html={typeset(pub.name)} /> : <span set:html={typeset(pub.name)} />}</cite>.
                   {pub.publisher && <span set:html={` ${typeset(pub.publisher)}.`} />}
-                  {pub.url && <span class="cv-url"> {shortUrl(pub.url)}</span>}
+                  {pub.url && <span class="url-note"> {shortUrl(pub.url)}</span>}
                 </p>
-                {pub.summary && <p class="cv-muted text-[0.95em] print:hidden" set:html={typeset(pub.summary)} />}
+                {pub.summary && <p class="text-muted text-[0.95em] print:hidden" set:html={typeset(pub.summary)} />}
               </div>
             </div>
           ))}
@@ -221,9 +213,9 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
             {openSource.map((p, i) => {
               const book = bookFor(p.name);
               return (
-                <li class="cv-row cv-compact">
-                  <p class="cv-gutter cv-ref">[{i + 1}]</p>
-                  <div class="cv-prose">
+                <li class="row entry-compact">
+                  <p class="gutter ref">[{i + 1}]</p>
+                  <div class="hyphenate">
                     <p>
                       {p.url ? (
                         <a href={p.url} class="font-semibold">
@@ -232,12 +224,12 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
                       ) : (
                         <span class="font-semibold">{p.name}</span>
                       )}
-                      {p.roles.length > 0 && <span class="cv-muted italic"> — {p.roles.join(' & ').toLowerCase()}.</span>}{' '}
+                      {p.roles.length > 0 && <span class="text-muted italic"> — {p.roles.join(' & ').toLowerCase()}.</span>}{' '}
                       <span set:html={typeset(p.description)} />
-                      {p.url && <span class="cv-url print:hidden"> {shortUrl(p.url)}</span>}
+                      {p.url && <span class="url-note print:hidden"> {shortUrl(p.url)}</span>}
                     </p>
                     {p.highlights.length > 0 && (
-                      <ul class="cv-list mt-1 print:mt-0">
+                      <ul class="circle-list mt-1 print:mt-0">
                         {p.highlights.map((h) => (
                           <li set:html={typeset(h)} />
                         ))}
@@ -245,13 +237,13 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
                     )}
                     {book && (
                       <p class="mt-1 print:mt-0">
-                        <span class="cv-label cv-muted">book</span>{' '}
+                        <span class="label text-muted">book</span>{' '}
                         <cite>
                           <a href={book.url} set:html={typeset(book.name)} />
                         </cite>
                       </p>
                     )}
-                    {p.keywords.length > 0 && <p class="cv-keywords mt-1 print:hidden">{p.keywords.join('\u00a0· ')}</p>}
+                    {p.keywords.length > 0 && <p class="keywords mt-1 print:hidden">{p.keywords.join('\u00a0· ')}</p>}
                   </div>
                 </li>
               );
@@ -271,11 +263,11 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
               ? `“${typeset(t.name)}${t.translation ? '”' : '.”'}`
               : `${typeset(t.name)}${t.translation ? '' : '.'}`;
             return (
-              <div class="cv-row cv-compact">
-                <p class="cv-gutter cv-date">
-                  {t.startDate ? formatMonth(t.startDate.slice(0, 7)) : <span class="cv-label">{t.type}</span>}
+              <div class="row entry-compact">
+                <p class="gutter date">
+                  {t.startDate ? formatMonth(t.startDate.slice(0, 7)) : <span class="label">{t.type}</span>}
                 </p>
-                <div class="cv-prose">
+                <div class="hyphenate">
                   <p>
                     {t.url ? (
                       <a href={t.url} class="font-semibold" set:html={title} />
@@ -283,7 +275,7 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
                       <span class="font-semibold" set:html={title} />
                     )}
                     {t.translation && (
-                      <span class="cv-muted">
+                      <span class="text-muted">
                         {' '}
                         [<span set:html={typeset(t.translation)} />].
                       </span>
@@ -295,9 +287,9 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
                       </>
                     )}
                     {t.with.length > 0 && <>, with {listNames(t.with.map(abbreviateName))}</>}
-                    {t.url?.includes('youtube.com') && <span class="cv-muted"> (recorded)</span>}.
+                    {t.url?.includes('youtube.com') && <span class="text-muted"> (recorded)</span>}.
                   </p>
-                  <p class="cv-muted text-[0.95em] print:hidden" set:html={typeset(t.description)} />
+                  <p class="text-muted text-[0.95em] print:hidden" set:html={typeset(t.description)} />
                 </div>
               </div>
             );
@@ -309,9 +301,9 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
     <Section id="education" title="Education">
       {
         education.map((e) => (
-          <div class="cv-row cv-compact">
-            <p class="cv-gutter cv-date">{e.endDate && formatYear(e.endDate)}</p>
-            <div class="cv-prose">
+          <div class="row entry-compact">
+            <p class="gutter date">{e.endDate && formatYear(e.endDate)}</p>
+            <div class="hyphenate">
               <p>
                 <span class="font-semibold" set:html={typeset(`${e.studyType} in ${e.area}`)} />
                 {e.specialization && (
@@ -330,24 +322,24 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
     <Section id="skills" title="Skills">
       {
         skills.map((group) => (
-          <div class="cv-row cv-compact">
-            <p class="cv-gutter cv-label">{group.name}</p>
-            <p class="cv-prose" set:html={group.keywords.map(typeset).join(', ')} />
+          <div class="row entry-compact">
+            <p class="gutter label">{group.name}</p>
+            <p class="hyphenate" set:html={group.keywords.map(typeset).join(', ')} />
           </div>
         ))
       }
     </Section>
 
     <Section id="languages" title="Languages">
-      <div class="cv-row">
-        <div class="cv-gutter" aria-hidden="true"></div>
+      <div class="row">
+        <div class="gutter" aria-hidden="true"></div>
         <p>{languages.map((l) => `${l.language} (${l.fluency.toLowerCase()})`).join('\u00a0· ')}</p>
       </div>
     </Section>
 
     <footer class="mt-14 text-center print:mt-3">
-      <p class="cv-fleuron" aria-hidden="true">❦</p>
-      <p class="cv-colophon mt-2 print:mt-0.5">
+      <p class="fleuron" aria-hidden="true">❦</p>
+      <p class="colophon mt-2 print:mt-0.5">
         {
           updated && (
             <>

@@ -1,4 +1,5 @@
 ---
+import PageHeader from '../../components/PageHeader.astro';
 import PostList from '../../components/PostList.astro';
 import Base from '../../layouts/Base.astro';
 import { getPosts } from '../../lib/posts';
@@ -6,7 +7,11 @@ import { getPosts } from '../../lib/posts';
 const posts = await getPosts();
 ---
 
-<Base title="Blog" description="All posts">
-  <h1 class="mb-8 text-3xl font-bold tracking-tight">Blog</h1>
-  <PostList posts={posts} />
+<Base title="Blog" description="Articles and notes, newest first.">
+  <PageHeader kicker="Writing" title="Blog" lede="Articles and notes, newest first.">
+    <p class="mt-5"><a href="/rss.xml" class="pill">RSS feed</a></p>
+  </PageHeader>
+  <div class="mt-10">
+    <PostList posts={posts} />
+  </div>
 </Base>

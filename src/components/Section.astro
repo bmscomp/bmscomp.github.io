@@ -1,0 +1,22 @@
+---
+// A document section: accent bar in the margin column and a small-caps title, like LaTeX CV classes.
+interface Props {
+  id: string;
+  title: string;
+  note?: string;
+  class?: string;
+}
+
+const { id, title, note, class: className } = Astro.props;
+---
+
+<section aria-labelledby={id} class:list={['section', className]}>
+  <h2 id={id} class="heading">
+    <span class="heading-bar" aria-hidden="true"></span>
+    <span class="heading-text">
+      {title}
+      {note && <span class="heading-note">{note}</span>}
+    </span>
+  </h2>
+  <slot />
+</section>

@@ -2,215 +2,130 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
 import satori from 'satori';
-import { SITE_TITLE } from '../consts';
 
-const fontDir = join(process.cwd(), 'node_modules/@fontsource/inter/files');
-const fonts = Promise.all([
-  readFile(join(fontDir, 'inter-latin-400-normal.woff')),
-  readFile(join(fontDir, 'inter-latin-700-normal.woff')),
-]);
+// Social cards in the site's "typeset paper" style. Satori needs WOFF/TTF (not WOFF2) and cannot use
+// OpenType features, so the cards use the static EB Garamond files and plain uppercase for small caps.
+const fontDir = join(process.cwd(), 'node_modules/@fontsource/eb-garamond/files');
+let fonts: Promise<Buffer[]> | undefined;
+const loadFonts = () =>
+  (fonts ??= Promise.all(
+    ['latin-400-normal', 'latin-500-normal', 'latin-400-italic'].map((f) => readFile(join(fontDir, `eb-garamond-${f}.woff`))),
+  ));
 
-interface OgOptions {
-  title: string;
-  subtitle?: string;
-  tags?: string[];
-}
+const NAVY = '#213f73';
+const INK = '#221f1a';
+const MUTED = '#6a6358';
+const PAPER = '#fffdf8';
 
-/** Renders a 1200×630 social card as PNG. */
-export async function renderOgImage({ title, subtitle, tags = [] }: OgOptions) {
-  const [regular, bold] = await fonts;
-  const svg = await satori(
+type Node = { type: 'div'; props: { style: Record<string, unknown>; children?: unknown } };
+const div = (style: Record<string, unknown>, children?: unknown): Node => ({ type: 'div', props: { style, children } });
+
+/** Curly apostrophes for card text (the page itself uses `typeset`). */
+const curly = (text: string) => text.replace(/(\w)'(\w)/g, '$1’$2');
+
+/** Two concentric rings around italic initials, like a seal. */
+function monogram(initials: string, size: number): Node {
+  const inner = Math.round(size * 0.79);
+  return div(
     {
-      type: 'div',
-      props: {
-        style: {
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '72px',
-          background: 'linear-gradient(135deg, #09090b 0%, #1e293b 100%)',
-          color: '#f4f4f5',
-          fontFamily: 'Inter',
-        },
-        children: [
-          {
-            type: 'div',
-            props: {
-              style: { display: 'flex', flexDirection: 'column', gap: '24px' },
-              children: [
-                {
-                  type: 'div',
-                  props: {
-                    style: { fontSize: title.length > 60 ? 56 : 68, fontWeight: 700, lineHeight: 1.1 },
-                    children: title,
-                  },
-                },
-                subtitle && {
-                  type: 'div',
-                  props: { style: { fontSize: 30, color: '#a1a1aa', lineHeight: 1.4 }, children: subtitle },
-                },
-              ].filter(Boolean),
-            },
-          },
-          {
-            type: 'div',
-            props: {
-              style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 28 },
-              children: [
-                { type: 'div', props: { style: { fontWeight: 700, color: '#60a5fa' }, children: SITE_TITLE } },
-                {
-                  type: 'div',
-                  props: {
-                    style: { display: 'flex', gap: '16px', color: '#a1a1aa' },
-                    children: tags.slice(0, 4).map((tag) => ({ type: 'div', props: { children: `#${tag}` } })),
-                  },
-                },
-              ],
-            },
-          },
-        ],
+      width: size,
+      height: size,
+      flexShrink: 0,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 9999,
+      border: `${Math.max(2, Math.round(size / 64))}px solid ${NAVY}`,
+    },
+    div(
+      {
+        width: inner,
+        height: inner,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 9999,
+        border: `1px solid ${NAVY}`,
+        color: NAVY,
+        fontSize: Math.round(size * 0.4),
+        fontStyle: 'italic',
       },
-    },
-    {
-      width: 1200,
-      height: 630,
-      fonts: [
-        { name: 'Inter', data: regular, weight: 400, style: 'normal' },
-        { name: 'Inter', data: bold, weight: 700, style: 'normal' },
-      ],
-    },
-  );
-  return new Resvg(svg).render().asPng();
-}
-
-const garamondDir = join(process.cwd(), 'node_modules/@fontsource/eb-garamond/files');
-let garamondFonts: Promise<Buffer[]> | undefined;
-
-interface CvCardOptions {
-  name: string;
-  label: string;
-  initials: string;
-  /** Credentials line under the headline, e.g. talks and publications. */
-  credentials?: string;
-  location?: string;
-}
-
-/** CV social card in the page's "typeset document" style: ivory paper, seal, EB Garamond. */
-export async function renderCvCard({ name, label, initials, credentials, location }: CvCardOptions) {
-  garamondFonts ??= Promise.all(
-    ['latin-400-normal', 'latin-500-normal', 'latin-400-italic'].map((f) =>
-      readFile(join(garamondDir, `eb-garamond-${f}.woff`)),
+      initials,
     ),
   );
-  const [regular, medium, italic] = await garamondFonts;
-  const navy = '#213f73';
-  const ink = '#221f1a';
-  const muted = '#6a6358';
+}
+
+export interface CardOptions {
+  /** Small-caps line above the title, e.g. "Blog". */
+  kicker: string;
+  title: string;
+  /** Italic line under the title. */
+  subtitle?: string;
+  /** Extra roman line under the subtitle, e.g. credentials. */
+  note?: string;
+  /** Bottom-left, italic: tags, location. */
+  footer?: string;
+  /** Bottom-right address. */
+  url?: string;
+  initials: string;
+  /** "seal": a large monogram beside the title (CV, home). "mark": a small one beside the kicker. */
+  variant?: 'seal' | 'mark';
+}
+
+/** Renders a 1200×630 PNG card: ivory paper, navy rule, EB Garamond. */
+export async function renderCard({
+  kicker,
+  title,
+  subtitle,
+  note,
+  footer,
+  url = 'bmscomp.github.io',
+  initials,
+  variant = 'mark',
+}: CardOptions) {
+  const [regular, medium, italic] = await loadFonts();
+  const titleSize = title.length <= 28 ? 100 : title.length <= 45 ? 78 : title.length <= 70 ? 62 : 52;
+  const kickerLine = div({ fontSize: 24, letterSpacing: 9, color: NAVY }, kicker.toUpperCase());
+  const text = div(
+    { display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 },
+    [
+      variant === 'mark'
+        ? div({ display: 'flex', alignItems: 'center', gap: 22 }, [monogram(initials, 64), kickerLine])
+        : kickerLine,
+      div(
+        { fontSize: titleSize, fontWeight: 500, lineHeight: 1.06, color: INK, marginTop: variant === 'mark' ? 30 : 8 },
+        curly(title),
+      ),
+      subtitle && div({ fontSize: 36, fontStyle: 'italic', color: MUTED, marginTop: 18, lineHeight: 1.3 }, curly(subtitle)),
+      note && div({ fontSize: 27, color: INK, marginTop: 20 }, curly(note)),
+    ].filter(Boolean),
+  );
+  const hairline = (marginTop: number | 'auto') => div({ marginTop, height: 1.5, background: MUTED, opacity: 0.6 });
+
   const svg = await satori(
-    {
-      type: 'div',
-      props: {
-        style: {
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          background: '#fffdf8',
-          borderTop: `14px solid ${navy}`,
-          padding: '70px 84px',
-          fontFamily: 'EB Garamond',
-          color: ink,
-        },
-        children: [
-          {
-            type: 'div',
-            props: {
-              style: { display: 'flex', alignItems: 'center', gap: '56px' },
-              children: [
-                {
-                  type: 'div',
-                  props: {
-                    style: {
-                      width: 190,
-                      height: 190,
-                      borderRadius: 9999,
-                      border: `3px solid ${navy}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    },
-                    children: {
-                      type: 'div',
-                      props: {
-                        style: {
-                          width: 150,
-                          height: 150,
-                          borderRadius: 9999,
-                          border: `1px solid ${navy}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: navy,
-                          fontSize: 76,
-                          fontStyle: 'italic',
-                        },
-                        children: initials,
-                      },
-                    },
-                  },
-                },
-                {
-                  type: 'div',
-                  props: {
-                    style: { display: 'flex', flexDirection: 'column' },
-                    children: [
-                      {
-                        type: 'div',
-                        props: { style: { fontSize: 24, letterSpacing: 9, color: navy }, children: 'CURRICULUM VITÆ' },
-                      },
-                      {
-                        type: 'div',
-                        props: { style: { fontSize: 104, fontWeight: 500, lineHeight: 1.05, marginTop: 8 }, children: name },
-                      },
-                      {
-                        type: 'div',
-                        props: { style: { fontSize: 40, fontStyle: 'italic', color: muted, marginTop: 14 }, children: label },
-                      },
-                      credentials && {
-                        type: 'div',
-                        props: { style: { fontSize: 27, color: ink, marginTop: 22 }, children: credentials },
-                      },
-                    ].filter(Boolean),
-                  },
-                },
-              ],
-            },
-          },
-          // Double rule (satori has no `double` border style): two hairlines.
-          { type: 'div', props: { style: { marginTop: 'auto', height: 1.5, background: muted, opacity: 0.6 } } },
-          { type: 'div', props: { style: { marginTop: 4, height: 1.5, background: muted, opacity: 0.6 } } },
-          {
-            type: 'div',
-            props: {
-              style: {
-                display: 'flex',
-                paddingTop: 24,
-                justifyContent: 'space-between',
-                fontSize: 26,
-                color: muted,
-              },
-              children: [
-                { type: 'div', props: { style: { fontStyle: 'italic' }, children: location ?? '' } },
-                { type: 'div', props: { style: { fontSize: 22, letterSpacing: 5, color: navy }, children: 'BMSCOMP.GITHUB.IO/CV' } },
-              ],
-            },
-          },
-        ],
+    div(
+      {
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '64px 84px 56px',
+        background: PAPER,
+        borderTop: `14px solid ${NAVY}`,
+        fontFamily: 'EB Garamond',
+        color: INK,
       },
-    },
+      [
+        variant === 'seal' ? div({ display: 'flex', alignItems: 'center', gap: 56 }, [monogram(initials, 190), text]) : text,
+        // Double rule (satori has no `double` border style): two hairlines.
+        hairline('auto'),
+        hairline(4),
+        div({ display: 'flex', justifyContent: 'space-between', paddingTop: 22, fontSize: 26, color: MUTED }, [
+          div({ fontStyle: 'italic' }, footer ?? ''),
+          div({ fontSize: 22, letterSpacing: 5, color: NAVY }, url.toUpperCase()),
+        ]),
+      ],
+    ),
     {
       width: 1200,
       height: 630,
@@ -223,3 +138,15 @@ export async function renderCvCard({ name, label, initials, credentials, locatio
   );
   return new Resvg(svg).render().asPng();
 }
+
+/** Satori output → HTTP response. */
+export const pngResponse = (png: Buffer) =>
+  new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
+
+/** "Said Boudjelda" → "SB". */
+export const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2);

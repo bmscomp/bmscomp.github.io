@@ -10,13 +10,20 @@ export default defineConfig({
   integrations: [
     expressiveCode({
       themes: ['github-light', 'github-dark'],
-      styleOverrides: { borderRadius: '0.5rem', codeFontSize: '0.875rem' },
+      // Quiet frames that sit on the paper: hairline border, no drop shadow, serif UI text.
+      styleOverrides: {
+        borderRadius: '0.35rem',
+        borderColor: 'var(--rule)',
+        codeFontSize: '0.82rem',
+        uiFontFamily: 'var(--font-serif)',
+        frames: { frameBoxShadowCssValue: 'none' },
+      },
     }),
     sitemap(),
   ],
   markdown: {
     processor: satteri({
-      features: { math: true },
+      features: { math: true, smartPunctuation: true },
       mdastPlugins: [katexPlugin],
     }),
   },

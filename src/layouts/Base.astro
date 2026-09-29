@@ -1,5 +1,5 @@
 ---
-import '@fontsource-variable/inter';
+import garamondUrl from '../assets/fonts/eb-garamond/EBGaramond-Latin-VF.woff2?url';
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
@@ -11,10 +11,8 @@ interface Props {
   /** Social card path, relative to the site root. */
   image?: string;
   type?: 'website' | 'article';
-  /** Wider content column, for pages with a sidebar. */
-  wide?: boolean;
-  /** Extra classes for <body>, e.g. a page-specific background. */
-  bodyClass?: string;
+  /** Render the content without the paper sheet. */
+  bare?: boolean;
 }
 
 const {
@@ -22,8 +20,7 @@ const {
   description = SITE_DESCRIPTION,
   image = '/og.png',
   type = 'website',
-  wide = false,
-  bodyClass,
+  bare = false,
 } = Astro.props;
 const pageTitle = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -38,6 +35,9 @@ const imageUrl = new URL(image, Astro.site);
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="preload" href={garamondUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    <meta name="theme-color" content="#ebe7df" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0c0f" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href="/rss.xml" />
@@ -51,11 +51,25 @@ const imageUrl = new URL(image, Astro.site);
     <meta name="twitter:card" content="summary_large_image" />
     <slot name="head" />
   </head>
-  <body class:list={['flex min-h-dvh flex-col', bodyClass]}>
-    <Header wide={wide} />
-    <main class:list={['mx-auto w-full flex-1 px-4 py-10', wide ? 'max-w-5xl' : 'max-w-3xl']}>
-      <slot />
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="pill sr-only z-50 focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >Skip to content</a
+    >
+    <Header />
+    <main id="main" class="mx-auto w-full max-w-4xl flex-1 sm:px-4 sm:py-10 print:max-w-none print:p-0">
+      {
+        bare ? (
+          <slot />
+        ) : (
+          <div class="relative bg-paper px-6 pt-10 pb-12 sm:rounded-[3px] sm:px-12 sm:pt-14 sm:shadow-[0_1px_2px_rgb(60_45_20/0.06),0_18px_50px_-18px_rgb(60_45_20/0.3)] lg:px-16 dark:sm:shadow-[0_1px_2px_rgb(0_0_0/0.4),0_18px_50px_-18px_rgb(0_0_0/0.9)] print:bg-transparent print:p-0 print:shadow-none">
+            <div aria-hidden="true" class="absolute inset-x-0 top-0 h-1.5 bg-accent sm:rounded-t-[3px] print:hidden" />
+            <slot />
+          </div>
+        )
+      }
     </main>
-    <Footer wide={wide} />
+    <Footer />
   </body>
 </html>

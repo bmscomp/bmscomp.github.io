@@ -1,4 +1,5 @@
 ---
+import PageHeader from '../../components/PageHeader.astro';
 import PostList from '../../components/PostList.astro';
 import Base from '../../layouts/Base.astro';
 import { getTags } from '../../lib/posts';
@@ -12,9 +13,17 @@ const { name, posts } = Astro.props;
 ---
 
 <Base title={`#${name}`} description={`Posts tagged ${name}`}>
-  <h1 class="mb-2 text-3xl font-bold tracking-tight">#{name}</h1>
-  <p class="mb-8 text-zinc-500">
-    {posts.length} post{posts.length === 1 ? '' : 's'} · <a href="/tags/" class="text-accent">all tags</a>
+  <PageHeader
+    kicker="Tag"
+    kickerHref="/tags/"
+    title={`#${name}`}
+    lede={`${posts.length} post${posts.length === 1 ? '' : 's'} on this topic.`}
+  />
+  <div class="mt-10">
+    <PostList posts={posts} />
+  </div>
+  <p class="row mt-8">
+    <span class="gutter" aria-hidden="true"></span>
+    <a href="/tags/" class="label">All tags →</a>
   </p>
-  <PostList posts={posts} />
 </Base>

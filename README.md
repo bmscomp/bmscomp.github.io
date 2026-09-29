@@ -11,6 +11,15 @@ pnpm dev        # http://localhost:4321 (drafts visible)
 pnpm build      # type-check + static build into dist/
 ```
 
+## Design
+
+Every page is a typeset "sheet of paper": EB Garamond with true small caps and old-style figures, dates
+and labels in a left margin column, small-caps section titles with an accent bar. The system lives in
+`src/styles/global.css` (palette tokens `page`, `paper`, `ink`, `muted`, `rule`, `accent` switch for dark
+mode and print); `src/styles/cv.css` only holds CV-specific pieces. Shared building blocks:
+`PageHeader`, `Section`, `PostList`, `LabList`, `TagList`. Social cards (`src/lib/og.ts`) use the same
+paper style.
+
 ## Write a post
 
 Add a Markdown file to `src/content/posts/`. The file name becomes the URL (`/blog/<file-name>/`).
