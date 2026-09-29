@@ -1,0 +1,35 @@
+---
+import ReadingItem from '../../components/ReadingItem.astro';
+import Base from '../../layouts/Base.astro';
+import { getReadingByStatus } from '../../lib/reading';
+
+const { reading, read, toRead } = await getReadingByStatus();
+const sections = [
+  { title: 'Reading now', entries: reading },
+  { title: 'Read', entries: read },
+  { title: 'Up next', entries: toRead },
+].filter((section) => section.entries.length > 0);
+---
+
+<Base title="Reading" description="Articles, books, and papers I'm reading, with short notes.">
+  <link slot="head" rel="alternate" type="application/rss+xml" title="Reading" href="/reading/rss.xml" />
+  <h1 class="text-3xl font-bold tracking-tight">Reading</h1>
+  <p class="mt-2 mb-10 text-zinc-600 dark:text-zinc-400">
+    Articles, books, and papers I'm reading or found worth keeping, with a line on why.
+  </p>
+  {sections.length === 0 && <p class="text-zinc-500">Nothing here yet.</p>}
+  {
+    sections.map(({ title, entries }) => (
+      <section class="mb-10">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+          {title} <span class="font-normal">({entries.length})</span>
+        </h2>
+        <ul class="space-y-5">
+          {entries.map((entry) => (
+            <ReadingItem entry={entry} />
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</Base>

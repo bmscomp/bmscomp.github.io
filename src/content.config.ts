@@ -33,6 +33,23 @@ const lab = defineCollection({
   }),
 });
 
+// Articles, books, papers, and videos I'm reading. One YAML file, one entry per item.
+const reading = defineCollection({
+  loader: file('src/content/reading/reading.yaml'),
+  schema: z.object({
+    title: z.string(),
+    url: z.url().optional(),
+    author: z.string().optional(),
+    kind: z.enum(['article', 'book', 'paper', 'video']).default('article'),
+    status: z.enum(['to-read', 'reading', 'read']),
+    addedDate: z.coerce.date(),
+    finishedDate: z.coerce.date().optional(),
+    rating: z.number().int().min(1).max(5).optional(),
+    tags: z.array(z.string()).default([]),
+    note: z.string().optional(),
+  }),
+});
+
 // Public CV summary, a subset of the JSON Resume schema (https://jsonresume.org/schema).
 const date = z.string().regex(/^\d{4}(-\d{2})?$/, 'Use YYYY or YYYY-MM');
 const cv = defineCollection({
@@ -84,4 +101,4 @@ const cv = defineCollection({
   }),
 });
 
-export const collections = { posts, lab, cv };
+export const collections = { posts, lab, reading, cv };

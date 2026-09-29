@@ -1,0 +1,36 @@
+---
+import type { ReadingEntry } from '../lib/reading';
+
+interface Props {
+  entry: ReadingEntry;
+}
+
+const { title, url, author, kind, rating, tags, note } = Astro.props.entry.data;
+const site = url ? new URL(url).hostname.replace(/^www\./, '') : undefined;
+const meta = [author, site, kind !== 'article' ? kind : undefined].filter(Boolean);
+---
+
+<li id={Astro.props.entry.id}>
+  <p class="font-medium">
+    {url ? <a href={url} class="hover:text-accent" rel="noopener">{title}</a> : title}
+    {
+      rating && (
+        <span class="ml-1 text-sm text-amber-500" aria-label={`Rated ${rating} out of 5`}>
+          {'★'.repeat(rating)}
+          <span class="text-zinc-300 dark:text-zinc-700">{'★'.repeat(5 - rating)}</span>
+        </span>
+      )
+    }
+  </p>
+  {meta.length > 0 && <p class="text-sm text-zinc-500">{meta.join(' · ')}</p>}
+  {note && <p class="mt-1 text-zinc-600 dark:text-zinc-400">{note}</p>}
+  {
+    tags.length > 0 && (
+      <ul class="mt-2 flex flex-wrap gap-1.5 text-xs">
+        {tags.map((tag) => (
+          <li class="rounded bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">#{tag}</li>
+        ))}
+      </ul>
+    )
+  }
+</li>

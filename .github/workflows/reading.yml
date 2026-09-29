@@ -1,0 +1,59 @@
+name: Add to reading list
+
+# Opening an issue from the "Reading" template adds or updates an entry in
+# src/content/reading/reading.yaml, commits it, redeploys the site, and closes the issue.
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: reading-list
+  cancel-in-progress: false
+
+jobs:
+  add:
+    # Only the repository owner can add entries.
+    if: contains(github.event.issue.labels.*.name, 'reading') && github.event.issue.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: add
+        run: node scripts/add-reading.mjs
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+      - name: Commit and push
+        env:
+          SUMMARY: ${{ steps.add.outputs.summary }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content/reading/reading.yaml
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "Reading: $SUMMARY" -m "Closes #$ISSUE"
+            git push
+          fi
+      # Pushes made with GITHUB_TOKEN don't trigger workflows, so start the deploy explicitly.
+      - run: gh workflow run deploy.yml --ref main
+      - name: Close issue
+        env:
+          SUMMARY: ${{ steps.add.outputs.summary }}
+        run: gh issue close "$ISSUE" --comment "$SUMMARY — the site is redeploying and will show it in about a minute."
+      - name: Report failure
+        if: failure()
+        run: gh issue comment "$ISSUE" --body "Couldn't update the reading list — see ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -1,9 +1,13 @@
 ---
+import { getCollection } from 'astro:content';
 import { SITE_TITLE } from '../consts';
 
+// Reading appears in the nav once it has at least one entry.
+const hasReading = (await getCollection('reading')).length > 0;
 const links = [
   { href: '/blog/', label: 'Blog' },
   { href: '/lab/', label: 'Lab' },
+  ...(hasReading ? [{ href: '/reading/', label: 'Reading' }] : []),
   { href: '/cv/', label: 'CV' },
   { href: '/tags/', label: 'Tags' },
 ];

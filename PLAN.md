@@ -158,7 +158,7 @@ Each phase is one PR, reviewed and merged to `main`.
 | **2. Blog** ✅ | `posts` collection, list/detail/tags, Expressive Code, KaTeX math, RSS, sitemap, OG images | 1 real post published |
 | **3. CV** ✅ | JSON Resume summary data, `/cv` page | `/cv` live |
 | **4. Lab** ✅ | `lab` collection, status badges, filters by category/status | ≥ 2 lab notes live |
-| **5. Reading** | `reading` data file, status filters, RSS | ≥ 5 entries live |
+| **5. Reading** 🟡 built, awaiting entries | `reading` data file, status filters, RSS | ≥ 5 entries live |
 | **6. Travel** | `travel` collection, PMTiles world map, per-trip route map (text + map; photos slot in later) | ≥ 1 trip live |
 | **7. Polish** | Biome lint/format, Pagefind search, home page aggregation, `/now`, Lighthouse CI + link check gates, README authoring guide | All CI gates green |
 | **8. Custom domain** *(later)* | Buy domain, `public/CNAME`, DNS, enforce HTTPS, update `site` in config | Site served on custom domain, old URL redirects |
@@ -199,4 +199,4 @@ Each phase is one PR, reviewed and merged to `main`.
 ## 12. Still open
 
 - **Q6. Comments:** Giscus at launch or later? *Default: later.*
-- **Q7. Reading list input:** YAML file edits, or a quicker capture path (GitHub issue template → Action appends to the list)? *Default: YAML for now.*
+- **Q7. Reading list input:** ✅ both — edit `reading.yaml`, or open a "Reading" GitHub issue (form → workflow commits the entry and redeploys).

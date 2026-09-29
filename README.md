@@ -47,6 +47,32 @@ repo: https://github.com/…     # optional
 
 Update `status`, `verdict`, and `updatedDate` as the test progresses; the list is sorted by last update.
 
+## Add to the reading list
+
+**From any device:** open a new issue on GitHub → **Reading** template → paste the link, pick a status,
+optionally add a rating, tags, and a note. A workflow adds the entry to
+`src/content/reading/reading.yaml`, commits it, redeploys the site, and closes the issue.
+Submitting the **same link again** updates that entry (e.g. `reading` → `read` sets the finished date).
+Only issues opened by the repository owner are processed.
+
+**By hand:** add an entry at the top of `src/content/reading/reading.yaml`:
+
+```yaml
+- id: designing-data-intensive-applications
+  title: Designing Data-Intensive Applications
+  url: https://dataintensive.net/
+  author: Martin Kleppmann
+  kind: book            # article | book | paper | video
+  status: reading       # to-read | reading | read
+  addedDate: 2026-10-01
+  finishedDate:         # optional, set when read
+  rating: 5             # optional, 1–5
+  tags: [distributed-systems]
+  note: Why it's worth reading.
+```
+
+The **Reading** link appears in the site menu once the list has at least one entry.
+
 ### Code
 
 Fenced code blocks are rendered by [Expressive Code](https://expressive-code.com): copy button,

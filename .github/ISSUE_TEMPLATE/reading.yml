@@ -1,0 +1,51 @@
+name: Reading
+description: Add something to the reading list on the site, or update an entry (same link = update).
+title: "Reading: "
+labels: [reading]
+body:
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      placeholder: https://…
+      description: Leave empty for a book without a link (then a title is required).
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options: [reading, read, to-read]
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      description: Optional — the page title is used when empty.
+  - type: input
+    id: author
+    attributes:
+      label: Author
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [article, book, paper, video]
+      default: 0
+  - type: dropdown
+    id: rating
+    attributes:
+      label: Rating
+      options: ["—", "1", "2", "3", "4", "5"]
+      default: 0
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      placeholder: kafka, distributed-systems
+      description: Comma-separated.
+  - type: textarea
+    id: note
+    attributes:
+      label: Note
+      description: One or two lines on why it's worth reading.
