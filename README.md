@@ -67,7 +67,7 @@ plugins in `src/lib/markdown/`. What renders today:
 |---|---|---|
 | `## Heading` | A section with an ASCII id (`Sätteri` → `satteri`) and a § link beside it, drawn with the accent bar in the margin. | Only h2 and h3 get a § link. |
 | `## Heading {#my-id}` | The heading keeps `my-id`; generated ids never take it. | |
-| Four or more `##` sections | A contents row in the fact sheet (a closed disclosure on phones), and "5 sections · 4 listings" under the date. | Only on a long page (250+ words or 4+ listings); set `toc: true` or `toc: false` in the frontmatter to decide. |
+| Four or more `##` sections | A contents row in the fact sheet (a closed disclosure on phones), and "5 sections · 4 listings" under the date. | Only on a long page (250+ words or 4+ listings); set `toc: true` or `toc: false` in the frontmatter to decide (a list needs at least two sections). |
 | ```` ```ts title="src/file.ts" ```` | A listing with a file tab, copy button, light and dark themes. Long lines wrap with a hanging indent; copying returns the original line. | Listings break out into the margin column from 48rem. |
 | ```` ```ts {3} ```` | Line 3 marked. | |
 | ```` ```diff lang="ts" ```` | A diff with `+`/`-` lines highlighted as TypeScript. | |
@@ -76,7 +76,7 @@ plugins in `src/lib/markdown/`. What renders today:
 | `$E = mc^2$`, `$$ … $$` | Math rendered to HTML at build time by KaTeX (`src/lib/markdown/katex.ts`); the stylesheet loads only on pages with math. | Two dollar amounts in one paragraph read as math: write `\$5`. |
 | `\| a \| b \|` with `\|---\|--:\|` | A table in the booktabs manner (rules above, below and under the head), in a labelled region that scrolls sideways on phones; `--:` right-aligns a column, and figures are tabular. | Wide tables break out into the margin with the listings. |
 | `text[^1]` and `[^1]: note` | Numbered notes under a "Notes" label at the end, with ↑ back-links. | |
-| `![Alt text](./image.png)` | A responsive image (`srcset`, scaled to the column). | Alt text is required: the build fails without it. |
+| `![Alt text](./image.png)` | A responsive image (`srcset`, scaled to the column). | Alt text is required: the build fails without it. Write images inline; reference-style `![Alt][id]` is refused. |
 | `![Alt](./image.png "Caption")` | A figure with the title as its caption. | Only for an image alone in its paragraph. |
 | `> quoted text` | A quotation, upright, with a quiet rule. | |
 | `> [!NOTE]` (also `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`) on the first line of a quotation | A callout with its label in the margin; GitHub previews the same file as an alert. | `:::` directives are not supported (they would eat text such as `localhost:4321`). |
@@ -89,8 +89,8 @@ a "related" row to the end block (a misspelled id fails the build), and `series:
 posts and lab notes share one index at `/tags/`.
 
 `pnpm lint:content` (part of `pnpm build`) checks every file and prints `path:line`: an image without alt
-text, a raw `<img>`, an h1 or a skipped heading level fail the build; a code line over 110 characters
-and a dollar amount read as math are warnings.
+text, a reference-style image, a raw `<img>`, an h1 or a skipped heading level fail the build; a code
+line over 110 characters and a dollar amount read as math (`$5 and $6`, `$5-$10`) are warnings.
 
 After changing `astro.config.ts` or anything in `src/lib/markdown/`, clear the content cache:
 `rm -rf node_modules/.astro .astro`.

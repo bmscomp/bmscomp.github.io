@@ -16,3 +16,14 @@ test('series: an article outside the list still counts, and a gap keeps the stat
   const pos = seriesPosition([a('one', 'Rebuild', 1)], a('four', 'Rebuild', 4))!;
   assert.deepEqual([pos.part, pos.total], [4, 4]);
 });
+
+test('series: every part states the same total when a part in between is missing', () => {
+  const all = [a('one', 'Rebuild', 1), a('two', 'Rebuild', 2), a('four', 'Rebuild', 4)];
+  assert.deepEqual(all.map((x) => seriesPosition(all, x)!.total), [4, 4, 4]);
+});
+
+test('series: a post and a lab note with the same id are different parts', () => {
+  const post = { id: 'nas', href: '/blog/nas/', title: 'NAS', series: 'Homelab', seriesPart: 1 };
+  const note = { id: 'nas', href: '/lab/nas/', title: 'NAS', series: 'Homelab', seriesPart: 2 };
+  assert.deepEqual(seriesPosition([post], note)!.parts.map((p) => p.href), ['/blog/nas/', '/lab/nas/']);
+});

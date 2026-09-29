@@ -62,3 +62,23 @@ test('definition lists render as dl', async () => {
   const code = await html('Throughput\n: Messages per second.\n');
   assert.match(code, /<dl>\s*<dt>Throughput<\/dt>\s*<dd>\s*(<p>)?Messages per second.(<\/p>)?\s*<\/dd>\s*<\/dl>/);
 });
+
+test('tables: the label is text only; math contributes its TeX source', async () => {
+  const code = await html('| $n$ | a<br>b | <kbd>Ctrl</kbd> |\n|---|---|---|\n| 1 | 2 | 3 |\n');
+  assert.match(code, /aria-label="Table 1: n, a b, Ctrl"/);
+});
+
+test('callouts: CRLF files, and a hard break after the marker', async () => {
+  assert.match(await html('> [!NOTE]\r\n> Mind the gap.\r\n'), /<aside class="callout callout-note"/);
+  const code = await html('> [!NOTE]  \n> text\n');
+  assert.match(code, /<p class="callout-label">Note<\/p>\s*<p>text<\/p>/);
+});
+
+test('headings: footnote references stay out of ids and labels; page ids are reserved', async () => {
+  const { code, metadata } = await processor.render('## Results[^1]\n\n## Main\n\n## top\n\n[^1]: A note.\n', { frontmatter: {} });
+  assert.match(code, /<h2 id="results">/);
+  assert.match(code, /aria-label="Link to section: Results"/);
+  assert.match(code, /<h2 id="main-1">/);
+  assert.match(code, /<h2 id="top-1">/);
+  assert.equal((metadata.frontmatter.sectionTitles as Record<string, string>).results, 'Results');
+});

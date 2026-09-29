@@ -10,7 +10,7 @@ export interface Node {
   alt?: string | null;
   value?: string;
   children?: Node[];
-  position?: { start: { line: number; column: number } };
+  position?: { start: { line: number; column: number; offset?: number }; end?: { offset?: number } };
 }
 
 export interface Problem {
@@ -26,7 +26,8 @@ function* walk(node: Node): Generator<Node> {
   for (const child of node.children ?? []) yield* walk(child);
 }
 
-export function lint(tree: Node): Problem[] {
+/** `source` (the file as parsed) sharpens two checks: indented code lines and dollar amounts. */
+export function lint(tree: Node, source = ''): Problem[] {
   const problems: Problem[] = [];
   const report = (node: Node, severity: Problem['severity'], message: string, offset = 0) =>
     problems.push({ line: (node.position?.start.line ?? 0) + offset, severity, message });
@@ -44,22 +45,35 @@ export function lint(tree: Node): Problem[] {
       case 'image':
         if (!node.alt?.trim()) report(node, 'error', 'image without alt text: describe it, e.g. ![A diagram of …](./file.png)');
         break;
+      case 'imageReference':
+        // Astro optimizes only inline images; a reference-style one ships as-is, often with a broken path.
+        report(node, 'error', 'reference-style image: write it inline, ![A diagram of …](./file.png)');
+        break;
       case 'html':
         if (/<img\b/i.test(node.value ?? '')) report(node, 'error', 'raw <img>: use ![alt](./file.png) so the image is optimized');
         break;
-      case 'code':
-        (node.value ?? '').split('\n').forEach((line, i) => {
+      case 'code': {
+        // A fenced block starts on its fence line; an indented one on its first line of code.
+        const start = node.position?.start.offset;
+        const fenced = start === undefined || /^[ \t]*(`{3,}|~{3,})/.test(source.slice(start, start + 64)) || !source;
+        (node.value ?? '').split(/\r?\n/).forEach((line, i) => {
           if (line.length > MAX_CODE_LINE) {
-            report(node, 'warning', `code line of ${line.length} characters (over ${MAX_CODE_LINE}) wraps on every screen`, i + 1);
+            report(node, 'warning', `code line of ${line.length} characters (over ${MAX_CODE_LINE}) wraps on every screen`, i + (fenced ? 1 : 0));
           }
         });
         break;
-      case 'inlineMath':
-        // "$5 and $6" parses as math: a digit first and a space last is a price, not a formula.
-        if (/^\d/.test(node.value ?? '') && /\s$/.test(node.value ?? '')) {
-          report(node, 'warning', `"$${node.value}$" reads as math; write \\$ for a dollar sign`);
+      }
+      case 'inlineMath': {
+        // "$5 and $6" or "$5-$10" parse as math: a digit first, then a space before the closing $ or a
+        // digit right after it, is a price, not a formula (the Pandoc rule).
+        const value = node.value ?? '';
+        const end = node.position?.end?.offset;
+        const digitAfter = end !== undefined && /\d/.test(source.charAt(end));
+        if (/^\d/.test(value) && (/\s$/.test(value) || digitAfter)) {
+          report(node, 'warning', `"$${value}$" reads as math; write \\$ for a dollar sign`);
         }
         break;
+      }
     }
   }
   return problems;

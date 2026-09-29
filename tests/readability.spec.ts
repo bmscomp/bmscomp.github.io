@@ -461,6 +461,7 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
       return { lh, gaps, bulletIndent: textLeft - prose.getBoundingClientRect().left, itemGap };
     });
     record(info, 'W4.5 rhythm', r);
+    expect.soft(r.gaps.length, 'the fixture has adjacent paragraphs').toBeGreaterThanOrEqual(1);
     for (const g of r.gaps) expect.soft(Math.abs(g - r.lh / 2)).toBeLessThanOrEqual(1);
     expect.soft(r.bulletIndent).toBeLessThanOrEqual(24);
     expect.soft(r.itemGap).toBeLessThanOrEqual(8);
@@ -488,6 +489,8 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
 test.describe('W5 article shell and orientation', () => {
   for (const vp of [tablet, desktop, wide]) {
     test(`W5.1 section links land below the header at ${vp.width}px @ci`, async ({ page }, info) => {
+      // Reduced motion makes the jump instant, so the check reads where the heading settles.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       for (const [path, id] of [
         ['/lab/astro-7-satteri/', 'two-gotchas'],
         ['/cv/', 'experience'],
@@ -495,10 +498,12 @@ test.describe('W5 article shell and orientation', () => {
         await page.setViewportSize(vp);
         await page.goto(`${path}#${id}`, { waitUntil: 'load' });
         await page.evaluate(() => document.fonts.ready);
-        await page.waitForTimeout(400);
+        await page.waitForTimeout(100);
         const top = await page.evaluate((i) => document.getElementById(i)!.getBoundingClientRect().top, id);
         record(info, `W5.1 #${id} top ${vp.width}`, top);
+        // Below the 66px header, and close under it (not left mid-screen).
         expect.soft(top).toBeGreaterThanOrEqual(80);
+        expect.soft(top).toBeLessThanOrEqual(120);
       }
     });
   }
@@ -618,11 +623,19 @@ test.describe('W5 article shell and orientation', () => {
   });
 
   test('W5.5 long notes list their sections; short posts do not @ci', async ({ page }) => {
-    for (const path of LAB_NOTES) {
+    // Content-independent: wherever a contents row appears it lists every section, in order. The
+    // fixtures pin both sides of the rule (a long note with contents, a short one without).
+    for (const path of [...LAB_NOTES, '/dev/kitchen-sink/']) {
       await open(page, path, desktop);
-      await expect.soft(page.locator('.contents-row a')).toHaveCount(5);
+      const { links, sections } = await page.evaluate(() => ({
+        links: [...document.querySelectorAll('.contents-row a')].map((a) => a.getAttribute('href')),
+        sections: [...document.querySelectorAll('.prose h2:not(#footnote-label)')].map((h) => `#${h.id}`),
+      }));
+      if (links.length) expect.soft(links, path).toEqual(sections);
     }
-    await open(page, '/blog/hello-world/', desktop);
+    await open(page, '/dev/kitchen-sink/', desktop);
+    expect.soft(await page.locator('.contents-row a').count()).toBeGreaterThanOrEqual(4);
+    await open(page, '/dev/short-note/', desktop);
     await expect.soft(page.locator('.contents-row, .contents-disclosure')).toHaveCount(0);
   });
 
@@ -728,11 +741,23 @@ test.describe('W6 endings and paths between articles', () => {
       await open(page, path, desktop);
       expect.soft((await headingSkips(page)).skips, path).toEqual([]);
     }
+    // A filter group shows only with two or more values, and the bar only with a group.
     await open(page, '/lab/', desktop);
-    await expect.soft(page.locator('#lab-filters')).toHaveCount(0);
+    const values = await page.evaluate(() => {
+      const items = [...document.querySelectorAll<HTMLElement>('#lab-notes > li')];
+      return ['status', 'category'].map((key) => new Set(items.map((i) => i.dataset[key])).size);
+    });
+    await expect.soft(page.locator('#lab-filters')).toHaveCount(values.some((n) => n >= 2) ? 1 : 0);
+    for (const [i, key] of ['status', 'category'].entries()) {
+      await expect.soft(page.locator(`#lab-filters [data-filter="${key}"]`)).toHaveCount(values[i] >= 2 ? 1 : 0);
+    }
     expect.soft(errors).toEqual([]);
+    // The reading feed is advertised exactly when it has an item.
+    const feedItems = ((await (await page.request.get('/reading/rss.xml')).text()).match(/<item>/g) ?? []).length;
     await open(page, '/reading/', desktop);
-    await expect.soft(page.locator('a.pill[href="/reading/rss.xml"]')).toHaveCount(0);
+    const advertised = feedItems > 0 ? 1 : 0;
+    await expect.soft(page.locator('a.pill[href="/reading/rss.xml"]')).toHaveCount(advertised);
+    await expect.soft(page.locator('link[rel="alternate"][href="/reading/rss.xml"]')).toHaveCount(advertised);
   });
 
   test('W6.4 short pages end at the sheet, and phone entries are compact', async ({ page }, info) => {
@@ -740,9 +765,10 @@ test.describe('W6 endings and paths between articles', () => {
       for (const path of ['/blog/', '/tags/', '/reading/', '/tags/meta/', '/404.html']) {
         await open(page, path, vp);
         const gap = await page.evaluate(
-          () => document.querySelector('footer')!.getBoundingClientRect().top - document.querySelector('main > div')!.getBoundingClientRect().bottom,
+          () => document.querySelector('body > footer')!.getBoundingClientRect().top - document.querySelector('main > div')!.getBoundingClientRect().bottom,
         );
         record(info, `W6.4 bare ${vp.width} ${path}`, gap);
+        expect.soft(gap, `${path} @${vp.width}`).toBeGreaterThanOrEqual(0);
         expect.soft(gap, `${path} @${vp.width}`).toBeLessThanOrEqual(48);
       }
     }
@@ -756,11 +782,19 @@ test.describe('W6 endings and paths between articles', () => {
     for (const h of r.heights) expect.soft(h).toBeLessThanOrEqual(230);
   });
 
-  test('W6.5 feeds: a global feed and one per section @ci', async ({ request }) => {
-    const items = async (path: string) => ((await (await request.get(path)).text()).match(/<item>/g) ?? []).length;
-    expect.soft(await items('/rss.xml')).toBe(3);
-    expect.soft(await items('/blog/rss.xml')).toBe(1);
-    expect.soft(await items('/lab/rss.xml')).toBe(2);
+  test('W6.5 feeds: a global feed and one per section @ci', async ({ request, page }) => {
+    const links = async (path: string) =>
+      [...(await (await request.get(path)).text()).matchAll(/<item>.*?<link>([^<]+)<\/link>/gs)].map((m) => new URL(m[1]).pathname);
+    const [all, blog, lab] = [await links('/rss.xml'), await links('/blog/rss.xml'), await links('/lab/rss.xml')];
+    // Each section feed carries exactly its section's list; the global feed carries both.
+    await open(page, '/blog/', desktop);
+    const posts = await page.locator('main .entry-title a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+    await open(page, '/lab/', desktop);
+    const notes = await page.locator('main .entry-title a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+    expect.soft(blog.toSorted()).toEqual(posts.toSorted());
+    expect.soft(lab.toSorted()).toEqual(notes.toSorted());
+    expect.soft(all.toSorted()).toEqual([...blog, ...lab].toSorted());
+    expect.soft(all.every((p) => !p.startsWith('/dev/'))).toBe(true);
   });
 
   test('W6.5 tag pages list both collections; /tags/ reads as an index', async ({ page }, info) => {
@@ -782,8 +816,10 @@ test.describe('W6 endings and paths between articles', () => {
 
 test.describe('W7 long-form devices and print', () => {
   test('W7.1 print keeps code, shows link targets and hides section marks @ci', async ({ page }, info) => {
+    // A4 minus the @page margins (15mm each side) is 180mm, about 680 CSS px.
+    const a4 = { width: 680, height: 1000 };
     for (const path of ARTICLES) {
-      await open(page, path, desktop);
+      await open(page, path, a4);
       await page.emulateMedia({ media: 'print' });
       const o = await overflow(page);
       expect.soft(Math.max(0, ...o.pre), path).toBeLessThanOrEqual(1);

@@ -8,6 +8,20 @@ type Element = Parameters<NonNullable<HastVisitorContext['textContent']>>[0] & {
   children?: unknown[];
 };
 
+type Node = { type: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: Node[] };
+
+// Ids the page itself uses: <main id="main">, and "#top" in the end block means the top of the page.
+const PAGE_IDS = ['main', 'top'];
+
+/** A heading's text without its footnote references ("Results[^1]" reads "Results", not "Results1"). */
+function headingText(node: Node): string {
+  if (node.type === 'text') return node.value ?? '';
+  const isRef = (n: Node): boolean =>
+    (n.tagName === 'a' && n.properties?.dataFootnoteRef !== undefined) || (n.children ?? []).some(isRef);
+  if (node.tagName === 'sup' && isRef(node)) return '';
+  return (node.children ?? []).map(headingText).join('');
+}
+
 /**
  * ASCII id for a heading: accents are folded ("Sätteri" → "satteri") and anything else outside
  * ASCII is dropped, so every id reads the same in a URL as on the page.
@@ -34,6 +48,7 @@ export function headingAnchors(): HastPluginDefinition {
   return {
     name: 'heading-anchors',
     before(root) {
+      for (const id of PAGE_IDS) slugger.slug(id);
       const walk = (node: { type: string; tagName?: string; properties?: Record<string, unknown>; children?: unknown[] }) => {
         if (node.type === 'element' && /^h[1-6]$/.test(node.tagName ?? '') && typeof node.properties?.id === 'string') {
           slugger.slug(node.properties.id);
@@ -46,10 +61,16 @@ export function headingAnchors(): HastPluginDefinition {
       filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
       visit(node, ctx) {
         const heading = node as unknown as Element;
-        const text = ctx.textContent(node).trim();
+        const text = headingText(node as unknown as Node).replace(/\s+/g, ' ').trim();
         const custom = heading.properties?.id;
         const id = typeof custom === 'string' ? custom : asciiSlug(slugger, text);
         if (typeof custom !== 'string') ctx.setProperty(node, 'id', id);
+        // Astro's own headings list takes the raw text; the contents row reads the clean one from here.
+        const astro = ctx.data.astro as { frontmatter?: Record<string, unknown> } | undefined;
+        if (astro?.frontmatter) {
+          const titles = (astro.frontmatter.sectionTitles ??= {}) as Record<string, string>;
+          titles[id] = text;
+        }
         // The footnotes label is a label, not a section.
         if (heading.tagName !== 'h2' && heading.tagName !== 'h3') return;
         if (id === 'footnote-label') return;

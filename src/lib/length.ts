@@ -1,49 +1,37 @@
+import { markdownToMdast } from 'satteri';
+import { features } from './markdown/index.ts';
+
 /**
- * Length of an article, measured on its Markdown source. Only running text counts as words: code
- * blocks, inline code, math, HTML, URLs and link targets are left out, and image alt text too.
+ * Length of an article, measured on the Markdown tree Sätteri parses (so listings inside callouts or
+ * nested lists count). Only running text counts as words: code, math, HTML, images, link definitions
+ * and bare URLs are left out.
  */
 
-const FENCE = /^ {0,3}(`{3,}|~{3,})/;
+type Node = { type: string; value?: string; url?: string; children?: Node[] };
 
-/** The body split into prose and fenced code blocks. */
-function split(markdown: string) {
-  const prose: string[] = [];
+const SKIP = new Set(['code', 'inlineCode', 'math', 'inlineMath', 'html', 'yaml', 'toml', 'image', 'imageReference', 'definition']);
+// Inline containers: their text runs on into the surrounding words ("Sät**teri**" is one word).
+const INLINE = new Set(['emphasis', 'strong', 'delete', 'link', 'linkReference']);
+const WORD = /[\p{L}\p{N}]+(?:['’.\-][\p{L}\p{N}]+)*/gu;
+
+export function measureLength(markdown: string) {
   let listings = 0;
-  let fence: string | null = null;
-  for (const line of markdown.split('\n')) {
-    const open = line.match(FENCE)?.[1];
-    if (fence) {
-      if (open && open[0] === fence[0] && open.length >= fence.length && !line.trim().slice(open.length).trim()) fence = null;
-      continue;
-    }
-    if (open) {
-      fence = open;
-      listings++;
-      continue;
-    }
-    prose.push(line);
-  }
-  return { prose: prose.join('\n'), listings };
+  let text = '';
+  const walk = (node: Node) => {
+    if (node.type === 'code') listings++;
+    if (SKIP.has(node.type)) return;
+    // A bare URL is a link whose only text is the URL itself.
+    if (node.type === 'link' && node.children?.length === 1 && node.children[0].value === node.url) return;
+    if (node.type === 'text') text += node.value ?? '';
+    for (const child of node.children ?? []) walk(child);
+    if (!INLINE.has(node.type) && node.type !== 'text') text += ' ';
+  };
+  walk(markdownToMdast(markdown, { features, position: false }) as Node);
+  return { words: text.match(WORD)?.length ?? 0, listings };
 }
 
-export function countListings(markdown: string) {
-  return split(markdown).listings;
-}
-
-export function countWords(markdown: string) {
-  const text = split(markdown)
-    .prose.replace(/\$\$[\s\S]*?\$\$/g, ' ') // display math
-    .replace(/(^|[^\\$])\$(?=\S)([^$\n]*?\S)\$(?!\d)/g, '$1 ') // inline math
-    .replace(/(`+)[\s\S]*?\1/g, ' ') // inline code
-    .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<\/?[a-z][^>]*>/gi, ' ') // HTML tags (their text stays)
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ') // images
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // inline links keep their text
-    .replace(/^\s*\[[^\]]+\]:\s+\S+.*$/gm, ' ') // link reference definitions
-    .replace(/\[\^[^\]]+\]:?/g, ' ') // footnote markers
-    .replace(/\bhttps?:\/\/\S+/g, ' ');
-  return text.match(/[\p{L}\p{N}]+(?:['’.\-][\p{L}\p{N}]+)*/gu)?.length ?? 0;
-}
+export const countWords = (markdown: string) => measureLength(markdown).words;
+export const countListings = (markdown: string) => measureLength(markdown).listings;
 
 /** Minutes at 230 words a minute. Listings are read, not skimmed: each adds half a minute. */
 export function readingMinutes(words: number, listings = 0) {

@@ -1,0 +1,20 @@
+---
+// Tag links run into a line ("meta · astro"), for fact-sheet and end-block rows.
+import { tagSlug } from '../lib/articles';
+
+interface Props {
+  tags: string[];
+}
+
+const { tags } = Astro.props;
+---
+
+<ul class="run-in">
+  {
+    tags.map((tag) => (
+      <li>
+        <a href={`/tags/${tagSlug(tag)}/`}>{tag}</a>
+      </li>
+    ))
+  }
+</ul>

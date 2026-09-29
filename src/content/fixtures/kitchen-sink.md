@@ -150,3 +150,5 @@ Latency
 
 A closing paragraph, so that the end of the article can be measured without a list or a table right
 before it.
+
+A second paragraph right after it, so the space between two paragraphs can be measured: half a line.

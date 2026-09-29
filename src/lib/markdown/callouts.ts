@@ -11,7 +11,7 @@ const LABELS: Record<string, string> = {
   warning: 'Warning',
   caution: 'Caution',
 };
-const MARKER = /^\[!(note|tip|important|warning|caution)\][ \t]*(?:\n|$)/i;
+const MARKER = /^\[!(note|tip|important|warning|caution)\][ \t]*(?:\r?\n|$)/i;
 
 type Node = { type: string; value?: string; children?: Node[] };
 type Ctx = {
@@ -33,8 +33,14 @@ export const calloutsPlugin = {
       hProperties: { className: ['callout', `callout-${type}`], role: 'note' },
     });
     const rest = text.value!.slice(match[0].length);
-    if (rest || (first.children?.length ?? 0) > 1) ctx.setProperty(text, 'value', rest);
-    else ctx.removeNode(first);
+    // "[!NOTE]" followed by two spaces ends in a hard break: drop it with the marker.
+    const next = first.children?.[1];
+    const breakAfter = !rest && next?.type === 'break';
+    const others = (first.children?.length ?? 0) - 1 - (breakAfter ? 1 : 0);
+    if (rest || others > 0) {
+      ctx.setProperty(text, 'value', rest);
+      if (breakAfter) ctx.removeNode(next);
+    } else ctx.removeNode(first);
     ctx.insertChildAt(node, 0, {
       type: 'paragraph',
       data: { hProperties: { className: ['callout-label'] } },

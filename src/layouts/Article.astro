@@ -10,7 +10,7 @@ import ArticleEnd from '../components/ArticleEnd.astro';
 import Contents from '../components/Contents.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { SITE_TITLE } from '../consts';
-import { countListings, countWords, lengthParts, readingMinutes } from '../lib/length';
+import { lengthParts, measureLength, readingMinutes } from '../lib/length';
 import { formatDate } from '../lib/posts';
 import Base from './Base.astro';
 
@@ -62,10 +62,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
 
 // Contents: the article's sections, when there are enough of them on a long page. Code makes a page
 // long too, so four listings count as much as 250 words.
-const sections = headings.filter((h: MarkdownHeading) => h.depth === 2 && h.slug !== 'footnote-label');
-const words = countWords(body);
-const listings = countListings(body);
-const showContents = toc ?? (sections.length >= 4 && (words >= 250 || listings >= 4));
+const titles = (remarkPluginFrontmatter.sectionTitles ?? {}) as Record<string, string>;
+const sections = headings
+  .filter((h: MarkdownHeading) => h.depth === 2 && h.slug !== 'footnote-label')
+  .map((h: MarkdownHeading) => ({ ...h, text: titles[h.slug] ?? h.text }));
+const { words, listings } = measureLength(body);
+// `toc: true` forces it on, but a list needs two sections to be one.
+const showContents = sections.length >= 2 && (toc ?? (sections.length >= 4 && (words >= 250 || listings >= 4)));
 const length = lengthParts({ sections: sections.length, listings, minutes: readingMinutes(words, listings) });
 
 const jsonLd = JSON.stringify({

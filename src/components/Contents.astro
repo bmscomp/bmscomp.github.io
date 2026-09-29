@@ -29,7 +29,10 @@ const links = headings.map(({ slug, text }) => ({ href: `#${slug}`, text }));
   ) : (
     <details class="contents-disclosure">
       <summary>
-        <span class="label">contents</span> <span class="contents-count">{links.length} sections</span>
+        <span class="label">contents</span>{' '}
+        <span class="contents-count">
+          {links.length} {links.length === 1 ? 'section' : 'sections'}
+        </span>
       </summary>
       <ol>
         {links.map(({ href, text }) => (

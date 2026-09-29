@@ -71,6 +71,8 @@ for (const path of ['/lab/astro-7-satteri/', '/blog/hello-world/']) {
           const fonts = performance
             .getEntriesByType('resource')
             .filter((r) => /KaTeX_(Main-Regular|Math-Italic)/.test(r.name)) as PerformanceResourceTiming[];
+          // Both faces must have loaded; otherwise there is nothing to time (and no math on screen).
+          if (fonts.length < 2) return Number.POSITIVE_INFINITY;
           return Math.max(...fonts.map((f) => f.responseEnd)) - fcp;
         }),
       );

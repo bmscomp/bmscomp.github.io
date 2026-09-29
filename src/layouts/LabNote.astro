@@ -1,7 +1,8 @@
 ---
 import { type CollectionEntry, render } from 'astro:content';
 import StatusBadge from '../components/StatusBadge.astro';
-import { getArticles, neighbours, tagSlug } from '../lib/articles';
+import TagLinks from '../components/TagLinks.astro';
+import { getArticles, neighbours } from '../lib/articles';
 import { filterGroups, getLabNotes } from '../lib/lab';
 import { resolveRelated } from '../lib/related';
 import { seriesPosition } from '../lib/series';
@@ -27,13 +28,12 @@ const statusHref = groups.status && `/lab/?status=${status}`;
 const categoryHref = groups.category && `/lab/?category=${category}`;
 const categoryName = category[0].toUpperCase() + category.slice(1);
 const toolList = tools.map(typeset).join(', ');
-const repoLink = repo && `<a href="${repo}">${repo.replace(/^https?:\/\//, '')}</a>`;
-const filed = data.tags.map((tag) => `<a href="/tags/${tagSlug(tag)}/">${tag}</a>`).join(' · ');
+const href = `/lab/${id}/`;
 const related = await resolveRelated([...data.relatedPosts, ...data.relatedLab]);
-const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href: `/lab/${id}/`, title });
+const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href, title });
 const series = position && {
   ...position,
-  parts: position.parts.map((p) => ({ href: p.href, title: p.title, part: p.seriesPart!, current: p.id === id })),
+  parts: position.parts.map((p) => ({ href: p.href, title: p.title, part: p.seriesPart!, current: p.href === href })),
 };
 ---
 
@@ -82,15 +82,17 @@ const series = position && {
   <Fragment slot="end">
     <div class="row">
       <dt class="gutter label">filed under</dt>
-      {
-        filed ? (
-          <dd set:html={filed} />
-        ) : (
-          <dd>
-            <a href="/lab/">Lab</a> · {categoryHref ? <a href={categoryHref}>{categoryName}</a> : categoryName}
-          </dd>
-        )
-      }
+      <dd>
+        {
+          data.tags.length > 0 ? (
+            <TagLinks tags={data.tags} />
+          ) : (
+            <>
+              <a href="/lab/">Lab</a> · {categoryHref ? <a href={categoryHref}>{categoryName}</a> : categoryName}
+            </>
+          )
+        }
+      </dd>
     </div>
     {
       verdict && (
@@ -111,10 +113,12 @@ const series = position && {
       )
     }
     {
-      repoLink && (
+      repo && (
         <div class="row">
           <dt class="gutter label">code</dt>
-          <dd set:html={repoLink} />
+          <dd>
+            <a href={repo}>{repo.replace(/^https?:\/\//, '')}</a>
+          </dd>
         </div>
       )
     }

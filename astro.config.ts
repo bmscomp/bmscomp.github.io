@@ -33,7 +33,7 @@ export default defineConfig({
       },
     }),
     // Test fixtures (/dev/) are built only with FIXTURES=1 and never belong in the sitemap.
-    sitemap({ filter: (page) => !page.includes('/dev/') }),
+    sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/dev/') }),
   ],
   markdown: {
     // Features and native plugins live in src/lib/markdown/ (tested with `pnpm test`).

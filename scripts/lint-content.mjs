@@ -15,8 +15,8 @@ const files = readdirSync(root, { recursive: true, withFileTypes: true })
 let errors = 0;
 let warnings = 0;
 for (const file of files) {
-  const tree = markdownToMdast(readFileSync(file, 'utf8'), { features });
-  for (const { line, severity, message } of lint(tree)) {
+  const source = readFileSync(file, 'utf8');
+  for (const { line, severity, message } of lint(markdownToMdast(source, { features }), source)) {
     if (severity === 'error') errors++;
     else warnings++;
     console.log(`${relative(process.cwd(), file)}:${line}  ${severity}  ${message}`);

@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, render } from 'astro:content';
-import { getArticles, neighbours, tagSlug } from '../lib/articles';
+import TagLinks from '../components/TagLinks.astro';
+import { getArticles, neighbours } from '../lib/articles';
 import { getPosts } from '../lib/posts';
 import { resolveRelated } from '../lib/related';
 import { seriesPosition } from '../lib/series';
@@ -15,12 +16,12 @@ const { id, body, data } = post;
 const rendered = await render(post);
 const { older, newer } = neighbours(await getPosts(), id);
 const link = (p?: CollectionEntry<'posts'>) => p && { href: `/blog/${p.id}/`, title: p.data.title };
-const filed = data.tags.map((tag) => `<a href="/tags/${tagSlug(tag)}/">${tag}</a>`).join(' · ');
+const href = `/blog/${id}/`;
 const related = await resolveRelated([...data.relatedPosts, ...data.relatedLab]);
-const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href: `/blog/${id}/`, title: data.title });
+const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href, title: data.title });
 const series = position && {
   ...position,
-  parts: position.parts.map((p) => ({ href: p.href, title: p.title, part: p.seriesPart!, current: p.id === id })),
+  parts: position.parts.map((p) => ({ href: p.href, title: p.title, part: p.seriesPart!, current: p.href === href })),
 };
 ---
 
@@ -45,7 +46,9 @@ const series = position && {
       data.tags.length > 0 && (
         <div class="row">
           <dt class="gutter label">filed under</dt>
-          <dd set:html={filed} />
+          <dd>
+            <TagLinks tags={data.tags} />
+          </dd>
         </div>
       )
     }
@@ -55,7 +58,9 @@ const series = position && {
       data.tags.length > 0 && (
         <div class="row">
           <dt class="gutter label">filed under</dt>
-          <dd set:html={filed} />
+          <dd>
+            <TagLinks tags={data.tags} />
+          </dd>
         </div>
       )
     }

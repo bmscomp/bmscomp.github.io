@@ -40,7 +40,7 @@ const labSchema = z.object({
   platform: z.string().optional(),
   /** One-line conclusion, shown on the list and at the top of the note. */
   verdict: z.string().optional(),
-  repo: z.url().optional(),
+  repo: z.url({ protocol: /^https?$/ }).optional(),
   /** Force the contents list on or off (by default: 4+ sections on a long page). */
   toc: z.boolean().optional(),
   ...links(),

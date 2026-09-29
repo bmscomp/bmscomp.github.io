@@ -12,6 +12,7 @@ test('words: running text only', () => {
     '',
     '![alt text here](./a.png) Energy is $E = mc^2$ and $$x$$ done.',
     '<span class="sc">API</span> <!-- hidden --> https://example.com',
+    '',
     '[ref]: https://example.com',
   ].join('\n');
   // Run, on, the, site, it, takes, 1.8, s, Energy, is, and, done, API
@@ -33,4 +34,9 @@ test('length line: minutes only from five', () => {
   assert.deepEqual(lengthParts({ sections: 1, listings: 1, minutes: 6 }), ['1 listing', '6 min']);
   assert.equal(readingMinutes(460, 2), 3);
   assert.equal(readingMinutes(10), 1);
+});
+
+test('listings inside callouts and nested lists count; bold inside a word does not split it', () => {
+  assert.equal(countListings('> [!TIP]\n> ```sh\n> pnpm build\n> ```\n\n- Item\n\n  - Sub\n\n    ```sh\n    ls\n    ```\n'), 2);
+  assert.equal(countWords('Sät**teri** is *fast*.'), 3);
 });

@@ -390,8 +390,8 @@
   .article-body {
     margin-top: var(--block-gap);
   }
-  .facts dd,
-  .end-rows dd {
+  .facts dd:not(.date),
+  .end-rows dd:not(.date) {
     font-variant-numeric: lining-nums proportional-nums;
   }
   .end-rows dd {
@@ -560,24 +560,25 @@
   .entry + .entry {
     margin-top: 1.6rem;
   }
-  .entry > .gutter > * {
+  /* List entries (PostList, LabList, ArticleList: ol.body-size); the CV's entries are left alone. */
+  .body-size > .entry > .gutter > :not(.status) {
     display: block;
   }
   /* W6.4: compact entries on phones: date and status share a line above the title. */
   @media (max-width: 39.99rem) {
-    .entry + .entry {
+    .body-size > .entry + .entry {
       margin-top: 1.25rem;
     }
-    .entry > .gutter {
+    .body-size > .entry > .gutter {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
       column-gap: 0.75rem;
     }
-    .entry .entry-desc {
+    .body-size > .entry .entry-desc {
       margin-top: 0.15rem;
     }
-    .entry .keywords {
+    .body-size > .entry .keywords {
       line-height: 1.4;
     }
   }
@@ -863,6 +864,7 @@
     .contents-row,
     .contents-disclosure,
     .end-nav,
+    .end-narrow,
     .page-colophon {
       display: none;
     }
@@ -1193,6 +1195,8 @@
     }
   }
   @media screen and (min-width: 48rem) {
+    /* At least the margin column wide; a longer label ("Important" in a 6rem column) grows leftward
+       into the sheet's margin rather than into the text. */
     .prose.prose-paper .callout > .callout-label {
       position: absolute;
       top: 0;
@@ -1200,8 +1204,9 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      width: var(--gutter);
+      min-width: var(--gutter);
       line-height: inherit;
+      white-space: nowrap;
     }
     .prose.prose-paper .callout > .callout-label::before {
       content: '';
@@ -1221,6 +1226,13 @@
      active (h2s also draw the CV's accent bar there), at the end of the heading's line below that. */
   .prose.prose-paper .section-head {
     position: relative;
+  }
+  /* The wrapper hides the heading from Typography's resets; restore them. */
+  .prose.prose-paper > .section-head:first-child > :is(h2, h3) {
+    margin-top: 0;
+  }
+  .prose.prose-paper .section-head + :where(ul, ol, dl) {
+    margin-top: 0;
   }
   .prose.prose-paper .section-head > .anchor {
     position: absolute;
@@ -1389,7 +1401,10 @@
   .prose .expressive-code {
     --ec-brdRad: 0px;
   }
-  .prose .expressive-code :is(pre, .header) {
+  .prose .expressive-code :is(pre, .header),
+  .prose .expressive-code .frame.is-terminal .header,
+  .prose .expressive-code .frame.has-title:not(.is-terminal) .header::before,
+  .prose .expressive-code .frame.has-title:not(.is-terminal) .title {
     border-inline-width: 0;
   }
 }

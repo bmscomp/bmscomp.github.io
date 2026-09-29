@@ -1,8 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // Runs against `astro preview` of a FIXTURES=1 build (pnpm test:e2e builds it first).
-// Locally it drives the installed Chrome; CI uses Playwright's Chromium. WebKit (hyphenation and
-// Safari rendering) runs only with PW_WEBKIT=1, after `pnpm exec playwright install webkit`.
+// Locally it drives the installed Chrome; CI uses Playwright's Chromium. With PW_WEBKIT=1 (after
+// `pnpm exec playwright install webkit`) the font-independent @ci checks also run in WebKit, for
+// hyphenation and Safari rendering.
 const ci = !!process.env.CI;
 
 export default defineConfig({
@@ -23,10 +24,12 @@ export default defineConfig({
     timeout: 60_000,
   },
   projects: [
-    { name: 'light', use: { colorScheme: 'light' }, grepInvert: /@dark|@cls|@webkit/ },
+    { name: 'light', use: { colorScheme: 'light' }, grepInvert: /@dark|@cls/ },
     { name: 'dark', use: { colorScheme: 'dark' }, grep: /@dark/ },
     // Throttled layout shift: serial, local only (noisy on shared CI runners).
     { name: 'cls', grep: /@cls/, fullyParallel: false, workers: 1 },
-    ...(process.env.PW_WEBKIT ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] }, grep: /@webkit/ }] : []),
+    ...(process.env.PW_WEBKIT
+      ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] }, grep: /@ci/, grepInvert: /@dark|@cls/ }]
+      : []),
   ],
 });
