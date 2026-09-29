@@ -22,9 +22,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Types, CV schema and content lint
-        run: pnpm check && pnpm validate:cv && pnpm run --if-present lint:content
-      - name: Markdown plugin unit tests
-        run: pnpm run --if-present test
+        run: pnpm check && pnpm validate:cv && pnpm lint:content
+      - name: Unit tests (Markdown plugins, length, series)
+        run: pnpm test
       - name: Build with test fixtures
         run: pnpm build:fixtures
       - run: pnpm exec playwright install --with-deps chromium
@@ -35,3 +35,22 @@ jobs:
         with:
           args: --offline --root-dir "${{ github.workspace }}/dist" --index-files index.html --no-progress dist
           fail: true
+
+  # W1.5: Lighthouse on the production build, in parallel with the checks. Scores and byte budgets live
+  # in lighthouserc.json; layout shift is gated by the CDP-throttled harness instead (tests/cls.spec.ts),
+  # because Lighthouse's simulated throttling reports none.
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Production build
+        run: pnpm exec astro build
+      - name: Lighthouse budgets
+        run: npx -y @lhci/cli@0.15.1 autorun

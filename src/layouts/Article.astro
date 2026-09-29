@@ -2,6 +2,8 @@
 // Shared shell for posts and lab notes: letterhead, fact sheet, contents, text and end block.
 // Post.astro and LabNote.astro only decide the facts; everything an article has in common is here.
 import katexCss from 'katex/dist/katex.min.css?url';
+import katexMain from 'katex/dist/fonts/KaTeX_Main-Regular.woff2?url';
+import katexMath from 'katex/dist/fonts/KaTeX_Math-Italic.woff2?url';
 import type { MarkdownHeading } from 'astro';
 import type { render } from 'astro:content';
 import ArticleEnd from '../components/ArticleEnd.astro';
@@ -15,6 +17,13 @@ import Base from './Base.astro';
 export interface Neighbour {
   href: string;
   title: string;
+}
+
+export interface Series {
+  name: string;
+  part: number;
+  total: number;
+  parts: (Neighbour & { part: number; current: boolean })[];
 }
 
 interface Props {
@@ -35,6 +44,8 @@ interface Props {
   toc?: boolean;
   older?: Neighbour;
   newer?: Neighbour;
+  related?: Neighbour[];
+  series?: Series;
   noindex?: boolean;
 }
 
@@ -44,7 +55,7 @@ const SECTIONS = {
 };
 
 const { section, crumbs = [], title, description, pubDate, updatedDate, tags = [], image, rendered } = Astro.props;
-const { body = '', toc, older, newer, noindex } = Astro.props;
+const { body = '', toc, older, newer, related = [], series, noindex } = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = rendered;
 const home = SECTIONS[section];
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
@@ -84,7 +95,16 @@ const jsonLd = JSON.stringify({
     <link rel="alternate" type="application/rss+xml" title={`${SITE_TITLE} · ${home.name}`} href={home.feed} />
     {older && <link rel="prev" href={older.href} />}
     {newer && <link rel="next" href={newer.href} />}
-    {remarkPluginFrontmatter.hasMath && <link rel="stylesheet" href={katexCss} />}
+    {
+      /* W8.3: KaTeX's faces block text until they load, so the two every formula uses load early. */
+      remarkPluginFrontmatter.hasMath && (
+        <>
+          <link rel="stylesheet" href={katexCss} />
+          <link rel="preload" href={katexMain} as="font" type="font/woff2" crossorigin="anonymous" />
+          <link rel="preload" href={katexMath} as="font" type="font/woff2" crossorigin="anonymous" />
+        </>
+      )
+    }
     <script type="application/ld+json" set:html={jsonLd} />
   </Fragment>
 
@@ -98,6 +118,16 @@ const jsonLd = JSON.stringify({
 
     <dl class="facts">
       <slot name="facts" />
+      {
+        series && (
+          <div class="row">
+            <dt class="gutter label">series</dt>
+            <dd>
+              {series.name}, part {series.part} of {series.total}
+            </dd>
+          </div>
+        )
+      }
       {
         updatedDate && (
           <div class="row">
@@ -119,7 +149,15 @@ const jsonLd = JSON.stringify({
       </div>
     </div>
 
-    <ArticleEnd home={home} pubDate={pubDate} updatedDate={updatedDate} older={older} newer={newer}>
+    <ArticleEnd
+      home={home}
+      pubDate={pubDate}
+      updatedDate={updatedDate}
+      older={older}
+      newer={newer}
+      related={related}
+      series={series}
+    >
       <slot name="end" />
     </ArticleEnd>
   </article>

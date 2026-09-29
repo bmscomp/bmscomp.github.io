@@ -39,5 +39,7 @@ export default defineConfig({
     // Features and native plugins live in src/lib/markdown/ (tested with `pnpm test`).
     processor: satteri({ features, mdastPlugins, hastPlugins }),
   },
+  // W7.3: Markdown images get a srcset and scale down with the column.
+  image: { layout: 'constrained', responsiveStyles: true },
   vite: { plugins: [tailwindcss()] },
 });

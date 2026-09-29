@@ -50,7 +50,9 @@ export function headingAnchors(): HastPluginDefinition {
         const custom = heading.properties?.id;
         const id = typeof custom === 'string' ? custom : asciiSlug(slugger, text);
         if (typeof custom !== 'string') ctx.setProperty(node, 'id', id);
+        // The footnotes label is a label, not a section.
         if (heading.tagName !== 'h2' && heading.tagName !== 'h3') return;
+        if (id === 'footnote-label') return;
         ctx.wrapNode(node, {
           type: 'element',
           tagName: 'div',

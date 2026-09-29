@@ -1,5 +1,5 @@
 ---
-import { type LabNote, lastTouched } from '../lib/lab';
+import type { LabNote } from '../lib/lab';
 import { formatDate } from '../lib/posts';
 import { typeset } from '../lib/typeset';
 import StatusBadge from './StatusBadge.astro';
@@ -21,7 +21,12 @@ const Heading = `h${headingLevel}` as 'h2' | 'h3';
     notes.map((note) => (
       <li class="row entry" data-status={note.data.status} data-category={note.data.category}>
         <div class="gutter date">
-          <time datetime={lastTouched(note).toISOString()}>{formatDate(lastTouched(note))}</time>
+          <time datetime={note.data.pubDate.toISOString()}>{formatDate(note.data.pubDate)}</time>
+          {note.data.updatedDate && (
+            <span>
+              updated <time datetime={note.data.updatedDate.toISOString()}>{formatDate(note.data.updatedDate)}</time>
+            </span>
+          )}
           <StatusBadge status={note.data.status} />
         </div>
         <div>

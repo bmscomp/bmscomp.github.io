@@ -1,0 +1,38 @@
+---
+// Posts and lab notes in one list (tag pages): date in the margin, the section as a small label.
+import type { Article } from '../lib/articles';
+import { formatDate } from '../lib/posts';
+import { typeset } from '../lib/typeset';
+
+interface Props {
+  articles: Article[];
+  headingLevel?: 2 | 3;
+}
+
+const { articles, headingLevel = 2 } = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+---
+
+<ol class="body-size">
+  {
+    articles.map(({ kind, href, title, description, pubDate, updatedDate }) => (
+      <li class="row entry">
+        <p class="gutter date">
+          <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+          {updatedDate && (
+            <span>
+              updated <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time>
+            </span>
+          )}
+        </p>
+        <div>
+          <Heading class="entry-title">
+            <a href={href} set:html={typeset(title)} />
+          </Heading>
+          <p class="entry-desc hyphenate mt-0.5 text-muted" set:html={typeset(description)} />
+          <p class="keywords mt-1">{kind === 'lab' ? 'Lab note' : 'Post'}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>

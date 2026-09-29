@@ -5,6 +5,9 @@ pubDate: 2026-09-29
 category: software
 status: adopted
 tools: [Astro 7.3, Sätteri, KaTeX, Expressive Code, Tailwind CSS 4]
+tags: [astro, markdown, math]
+relatedPosts: [hello-world]
+relatedLab: [pnpm-12-typescript-7]
 platform: macOS · Node 26
 repo: https://github.com/bmscomp/bmscomp.github.io
 verdict: Adopted — fast builds and a clean plugin API, but remark/rehype plugins need porting or the legacy processor.

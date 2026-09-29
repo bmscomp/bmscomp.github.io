@@ -1,8 +1,10 @@
 ---
 import { type CollectionEntry, render } from 'astro:content';
 import StatusBadge from '../components/StatusBadge.astro';
-import { neighbours } from '../lib/articles';
+import { getArticles, neighbours, tagSlug } from '../lib/articles';
 import { filterGroups, getLabNotes } from '../lib/lab';
+import { resolveRelated } from '../lib/related';
+import { seriesPosition } from '../lib/series';
 import { typeset } from '../lib/typeset';
 import Article from './Article.astro';
 
@@ -26,6 +28,13 @@ const categoryHref = groups.category && `/lab/?category=${category}`;
 const categoryName = category[0].toUpperCase() + category.slice(1);
 const toolList = tools.map(typeset).join(', ');
 const repoLink = repo && `<a href="${repo}">${repo.replace(/^https?:\/\//, '')}</a>`;
+const filed = data.tags.map((tag) => `<a href="/tags/${tagSlug(tag)}/">${tag}</a>`).join(' · ');
+const related = await resolveRelated([...data.relatedPosts, ...data.relatedLab]);
+const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href: `/lab/${id}/`, title });
+const series = position && {
+  ...position,
+  parts: position.parts.map((p) => ({ href: p.href, title: p.title, part: p.seriesPart!, current: p.id === id })),
+};
 ---
 
 <Article
@@ -35,12 +44,15 @@ const repoLink = repo && `<a href="${repo}">${repo.replace(/^https?:\/\//, '')}<
   description={description}
   pubDate={data.pubDate}
   updatedDate={data.updatedDate}
+  tags={data.tags}
   image={`/og/lab/${id}.png`}
   rendered={rendered}
   body={body}
   toc={data.toc}
   older={link(older)}
   newer={link(newer)}
+  related={related}
+  series={series}
   noindex={noindex}
 >
   <Fragment slot="facts">
@@ -70,9 +82,15 @@ const repoLink = repo && `<a href="${repo}">${repo.replace(/^https?:\/\//, '')}<
   <Fragment slot="end">
     <div class="row">
       <dt class="gutter label">filed under</dt>
-      <dd>
-        <a href="/lab/">Lab</a> · {categoryHref ? <a href={categoryHref}>{categoryName}</a> : categoryName}
-      </dd>
+      {
+        filed ? (
+          <dd set:html={filed} />
+        ) : (
+          <dd>
+            <a href="/lab/">Lab</a> · {categoryHref ? <a href={categoryHref}>{categoryName}</a> : categoryName}
+          </dd>
+        )
+      }
     </div>
     {
       verdict && (

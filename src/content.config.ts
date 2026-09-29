@@ -1,6 +1,15 @@
-import { defineCollection } from 'astro:content';
+import { defineCollection, reference } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+
+// W6.6: links between articles. Ids are checked when the page is built (src/lib/related.ts), so a
+// misspelled one fails `pnpm build`. A series is a name shared by its parts, numbered from 1.
+const links = () => ({
+  relatedPosts: z.array(reference('posts')).default([]),
+  relatedLab: z.array(reference('lab')).default([]),
+  series: z.string().optional(),
+  seriesPart: z.number().int().positive().optional(),
+});
 
 const posts = defineCollection({
   loader: glob({ base: './src/content/posts', pattern: '**/*.md' }),
@@ -12,6 +21,7 @@ const posts = defineCollection({
     tags: z.array(z.string()).default([]),
     /** Force the contents list on or off (by default: 4+ sections on a long page). */
     toc: z.boolean().optional(),
+    ...links(),
     draft: z.boolean().default(false),
   }),
 });
@@ -25,12 +35,15 @@ const labSchema = z.object({
   category: z.enum(['software', 'system', 'hardware', 'homelab']),
   status: z.enum(['testing', 'adopted', 'dropped']),
   tools: z.array(z.string()).default([]),
+  /** Topics shared with posts: /tags/<tag>/ lists both. */
+  tags: z.array(z.string()).default([]),
   platform: z.string().optional(),
   /** One-line conclusion, shown on the list and at the top of the note. */
   verdict: z.string().optional(),
   repo: z.url().optional(),
   /** Force the contents list on or off (by default: 4+ sections on a long page). */
   toc: z.boolean().optional(),
+  ...links(),
   draft: z.boolean().default(false),
 });
 const lab = defineCollection({

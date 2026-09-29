@@ -1,27 +1,23 @@
 ---
+import ArticleList from '../../components/ArticleList.astro';
 import Colophon from '../../components/Colophon.astro';
 import PageHeader from '../../components/PageHeader.astro';
-import PostList from '../../components/PostList.astro';
 import Base from '../../layouts/Base.astro';
-import { getTags } from '../../lib/posts';
+import { getTags } from '../../lib/articles';
 
 export async function getStaticPaths() {
   const tags = await getTags();
-  return tags.map(({ slug, name, posts }) => ({ params: { tag: slug }, props: { name, posts } }));
+  return tags.map(({ slug, name, articles }) => ({ params: { tag: slug }, props: { name, articles } }));
 }
 
-const { name, posts } = Astro.props;
+const { name, articles } = Astro.props;
+const count = `${articles.length} ${articles.length === 1 ? 'article' : 'articles'}`;
 ---
 
-<Base title={`#${name}`} description={`Posts tagged ${name}`}>
-  <PageHeader
-    kicker="Tag"
-    kickerHref="/tags/"
-    title={`#${name}`}
-    lede={`${posts.length} post${posts.length === 1 ? '' : 's'} on this topic.`}
-  />
+<Base title={`#${name}`} description={`Posts and lab notes tagged ${name}`}>
+  <PageHeader kicker="Tag" kickerHref="/tags/" title={`#${name}`} lede={`${count} on this topic.`} />
   <div>
-    <PostList posts={posts} headingLevel={2} />
+    <ArticleList articles={articles} />
   </div>
   <p class="row mt-8">
     <span class="gutter" aria-hidden="true"></span>

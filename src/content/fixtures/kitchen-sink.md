@@ -9,6 +9,9 @@ tools: [Astro 7.3, Sätteri 0.10, KaTeX, Expressive Code]
 platform: macOS · Node 26
 verdict: Not a real note — the readability tests measure this page on every build.
 repo: https://github.com/bmscomp/bmscomp.github.io
+relatedLab: [astro-7-satteri]
+series: Test bed
+seriesPart: 1
 ---
 
 This page is a test bed. It is long enough to wrap across many lines at every viewport, and it mixes
@@ -94,7 +97,7 @@ $$
 > not a decoration.
 
 > [!WARNING]
-> A GitHub alert. It renders as a quotation until callouts are enabled.
+> A GitHub alert, set as a callout: the label sits in the margin, and the file still previews on GitHub.
 
 ## Notes and figures
 

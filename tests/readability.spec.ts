@@ -590,7 +590,8 @@ test.describe('W5 article shell and orientation', () => {
     for (const path of ARTICLES) {
       await open(page, path, desktop);
       const heads = await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLElement>('.prose h2, .prose h3')].map((h) => {
+        // The footnotes label is a label, not a section.
+        [...document.querySelectorAll<HTMLElement>('.prose h2:not(#footnote-label), .prose h3')].map((h) => {
           const anchor = h.nextElementSibling as HTMLAnchorElement | null;
           const box = anchor?.getBoundingClientRect();
           return {
@@ -840,8 +841,9 @@ test.describe('W7 long-form devices and print', () => {
       () => getComputedStyle(document.querySelector('.prose blockquote:not(.callout) p')!, '::before').content,
     );
     expect.soft(['none', 'normal', '""']).toContain(quoteMark);
-    await expect.soft(page.locator('.prose figure figcaption')).toHaveText('A three-stage pipeline');
-    expect.soft(await page.locator('.prose figure img').getAttribute('srcset')).toBeTruthy();
+    // Expressive Code frames are figure.frame; image figures are the others.
+    await expect.soft(page.locator('.prose figure:not(.frame) figcaption')).toHaveText('A three-stage pipeline');
+    expect.soft(await page.locator('.prose figure:not(.frame) img').getAttribute('srcset')).toBeTruthy();
     const [dt] = await computed(page, '.prose dt', ['font-variant-caps', 'font-weight']);
     expect.soft(dt['font-variant-caps']).toBe('all-small-caps');
     expect.soft(dt['font-weight']).toBe('500');

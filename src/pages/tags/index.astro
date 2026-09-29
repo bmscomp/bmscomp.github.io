@@ -2,26 +2,33 @@
 import Colophon from '../../components/Colophon.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Base from '../../layouts/Base.astro';
-import { getTags } from '../../lib/posts';
+import { getTags } from '../../lib/articles';
 
+// Set as a book index: tags in lowercase roman under their initial, with aligned counts.
 const tags = await getTags();
+const groups = Map.groupBy(tags, (tag) => tag.name[0].toUpperCase());
 ---
 
-<Base title="Tags" description="Posts grouped by topic">
-  <PageHeader kicker="Index" title="Tags" lede="Posts grouped by topic." />
-  <div class="row">
-    <p class="gutter label pt-1">{tags.length} topics</p>
-    <ul class="flex flex-wrap gap-2">
-      {
-        tags.map(({ slug, name, posts }) => (
-          <li>
-            <a href={`/tags/${slug}/`} class="pill">
-              #{name} <span class="pill-count">{posts.length}</span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+<Base title="Tags" description="Posts and lab notes by topic">
+  <PageHeader kicker="Index" title="Tags" lede="Posts and lab notes by topic." />
+  <div class="tag-index body-size">
+    {
+      [...groups].map(([initial, entries]) => (
+        <section class="row" aria-labelledby={`index-${initial}`}>
+          <h2 id={`index-${initial}`} class="gutter index-initial">
+            {initial}
+          </h2>
+          <ul>
+            {entries.map(({ slug, name, articles }) => (
+              <li>
+                <a href={`/tags/${slug}/`}>{name}</a>
+                <span class="index-count">{articles.length}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
   </div>
   <Colophon />
 </Base>

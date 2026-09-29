@@ -1,7 +1,9 @@
 ---
 import { type CollectionEntry, render } from 'astro:content';
-import { neighbours } from '../lib/articles';
-import { getPosts, tagSlug } from '../lib/posts';
+import { getArticles, neighbours, tagSlug } from '../lib/articles';
+import { getPosts } from '../lib/posts';
+import { resolveRelated } from '../lib/related';
+import { seriesPosition } from '../lib/series';
 import Article from './Article.astro';
 
 interface Props {
@@ -14,6 +16,12 @@ const rendered = await render(post);
 const { older, newer } = neighbours(await getPosts(), id);
 const link = (p?: CollectionEntry<'posts'>) => p && { href: `/blog/${p.id}/`, title: p.data.title };
 const filed = data.tags.map((tag) => `<a href="/tags/${tagSlug(tag)}/">${tag}</a>`).join(' · ');
+const related = await resolveRelated([...data.relatedPosts, ...data.relatedLab]);
+const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href: `/blog/${id}/`, title: data.title });
+const series = position && {
+  ...position,
+  parts: position.parts.map((p) => ({ href: p.href, title: p.title, part: p.seriesPart!, current: p.id === id })),
+};
 ---
 
 <Article
@@ -29,6 +37,8 @@ const filed = data.tags.map((tag) => `<a href="/tags/${tagSlug(tag)}/">${tag}</a
   toc={data.toc}
   older={link(older)}
   newer={link(newer)}
+  related={related}
+  series={series}
 >
   <Fragment slot="facts">
     {

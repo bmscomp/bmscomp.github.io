@@ -5,6 +5,9 @@ pubDate: 2026-09-29
 category: software
 status: adopted
 tools: [pnpm 12.6, TypeScript 7.0, TypeScript 6, Node 26, GitHub Actions]
+tags: [astro, pnpm, typescript]
+relatedPosts: [hello-world]
+relatedLab: [astro-7-satteri]
 platform: macOS · Node 26
 repo: https://github.com/bmscomp/bmscomp.github.io
 verdict: pnpm 12 adopted; TypeScript stays on 6 until astro check supports 7.

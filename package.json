@@ -9,12 +9,13 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && pnpm validate:cv && astro build",
+    "build": "astro check && pnpm validate:cv && pnpm lint:content && astro build",
     "validate:cv": "node scripts/validate-resume.mjs",
+    "lint:content": "node scripts/lint-content.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "build:fixtures": "FIXTURES=1 astro build",
-    "test": "node --test src/lib/markdown/",
+    "test": "node --test \"src/lib/**/*.test.ts\"",
     "test:e2e": "pnpm build:fixtures && playwright test",
     "measure": "pnpm build:fixtures && MEASURE=1 playwright test --project=light --project=dark"
   },

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { countListings, countWords, lengthParts, readingMinutes } from '../length.ts';
+import { countListings, countWords, lengthParts, readingMinutes } from './length.ts';
 
 test('words: running text only', () => {
   const md = [
