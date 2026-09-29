@@ -1,14 +1,20 @@
 # bmscomp.github.io
 
 Personal site of Said Boudjelda — built with [Astro](https://astro.build), deployed to GitHub Pages
-on every push to `main`. See [PLAN.md](PLAN.md) for the roadmap.
+on every push to `main` once the checks pass. See [PLAN.md](PLAN.md) for the roadmap and
+[READABILITY-PLAN.md](READABILITY-PLAN.md) for the typography and reading work, with its measurements.
 
 ## Develop
 
+Requires Node 22.18 or later (`.nvmrc`) and pnpm 12.6 (`packageManager` in `package.json`; `corepack
+enable` picks it up).
+
 ```bash
 pnpm install
-pnpm dev        # http://localhost:4321 (drafts visible)
-pnpm build      # type-check, validate the CV, static build into dist/
+pnpm dev             # http://localhost:4321 (drafts and the /dev/ test pages visible)
+pnpm build           # type-check, validate the CV, lint the content, static build into dist/
+pnpm preview         # serve dist/
+pnpm lint:content    # the Markdown checks alone (see "Writing features")
 ```
 
 ## Design
@@ -17,9 +23,15 @@ Every page is a typeset "sheet of paper": EB Garamond with true small caps and o
 and labels in a left margin column, small-caps section titles with an accent bar. The system lives in
 `src/styles/global.css` (palette tokens `page`, `paper`, `ink`, `muted`, `rule`, `accent` switch for dark
 mode and print); `src/styles/cv.css` only holds CV-specific pieces. Shared building blocks:
-`PageHeader`, `Section`, `PostList`, `LabList`, `TagList`, `Colophon`. Posts and lab notes share one
-shell, `src/layouts/Article.astro` (fact sheet, `Contents`, text, `ArticleEnd`). Social cards
-(`src/lib/og.ts`) use the same paper style.
+`PageHeader`, `Section`, `PostList`, `LabList`, `ArticleList`, `TagList`, `Colophon`. Posts and lab
+notes share one shell, `src/layouts/Article.astro` (fact sheet, `Contents`, text, `ArticleEnd`). Social
+cards (`src/lib/og.ts`) use the same paper style: `/og/<post>.png`, `/og/lab/<note>.png` and
+`/og/cv.png`.
+
+The type is **EB Garamond**, self-hosted from `src/assets/fonts/eb-garamond/` (OFL). It is a Latin subset
+of the full font, because the npm/Google Fonts builds drop the small caps, old-style figures and
+superior figures; the `pyftsubset` command is at the top of `src/styles/global.css`. A metric-matched
+fallback keeps the text from jumping while it loads.
 
 ## Write a post
 
@@ -28,14 +40,17 @@ Add a Markdown file to `src/content/posts/`. The file name becomes the URL (`/bl
 ```md
 ---
 title: My post
-description: One-line summary
+description: One-line summary, also the lede under the title
 pubDate: 2026-10-01
+updatedDate: 2026-10-15        # optional, shown as "updated" in lists and the fact sheet
 tags: [linux]
-draft: false
+draft: false                   # true: visible in `pnpm dev` only
 ---
 ```
 
-Tags link to `/tags/<tag>/`. Each post gets a generated social card at `/og/<file-name>.png`.
+Tags link to `/tags/<tag>/`. Each post gets a generated social card at `/og/<file-name>.png`. Optional
+fields shared with lab notes (`toc`, `relatedPosts`, `relatedLab`, `series`, `seriesPart`) are described
+under "Writing features".
 
 ## Write a lab note
 
@@ -56,7 +71,8 @@ tags: [terminal]               # optional, shared with posts
 ---
 ```
 
-Update `status`, `verdict`, and `updatedDate` as the test progresses; the list is sorted by last update.
+Update `status`, `verdict`, and `updatedDate` as the test progresses; the list is sorted by last update,
+and the note's category becomes its breadcrumb ("Lab · Software").
 
 ## Writing features
 
@@ -103,9 +119,36 @@ pnpm test:e2e     # build with the test fixtures, then the readability harness (
 pnpm measure      # the same harness, printing every measurement (test-results/metrics.json)
 ```
 
-The harness measures the articles and a fixture page, `/dev/kitchen-sink/`, that uses every construct
-above. The fixture is built only by `astro dev` and `pnpm build:fixtures`. CI runs the font-independent
-tests (`@ci`) before every deploy; see [READABILITY-PLAN.md](READABILITY-PLAN.md).
+The harness measures the articles and two fixture pages: `/dev/kitchen-sink/` uses every construct above,
+and `/dev/short-note/` is too short for a contents list. Fixtures live in `src/content/fixtures/` and are
+built only by `astro dev` and `pnpm build:fixtures`, never in the production build. `pnpm test:e2e` also
+runs the `cls` project: layout shift and math-font timing under a throttled network, local only because
+shared CI runners are too noisy for it. `PW_WEBKIT=1` adds a WebKit run of the `@ci` checks (after
+`pnpm exec playwright install webkit`).
+
+Lighthouse runs against `lighthouserc.json` (scores of 0.95 and byte budgets):
+
+```bash
+pnpm exec astro build && npx @lhci/cli@0.15.1 autorun
+```
+
+## CI and deploy
+
+`.github/workflows/check.yml` runs on every pull request, and the deploy workflow calls it, so nothing
+reaches GitHub Pages unless it passes:
+
+- types, the CV schema and the content lint;
+- the unit tests;
+- the font-independent readability checks (`@ci`) on a fixtures build;
+- an internal-link check (lychee, offline);
+- Lighthouse, as a parallel job.
+
+## Feeds
+
+- `/rss.xml` — everything: posts, and lab notes titled "Lab: …"
+- `/blog/rss.xml` — posts
+- `/lab/rss.xml` — lab notes, with their status
+- `/reading/rss.xml` — what I'm reading or have read; advertised once it has an item
 
 ## Update the CV
 
@@ -121,9 +164,7 @@ Roles that started before 2015 are listed compactly under "Earlier experience" (
 - **Talks and workshops** are `projects` entries with `type: "talk"` or `"workshop"` (the JSON Resume
   convention); `entity` is the venue, `translation` an English title, `with` the co-speakers.
 - **Publications** use the standard `publications` list; `authors` is the cited author line.
-- The page is typeset in **EB Garamond**, self-hosted from `src/assets/fonts/eb-garamond/` (OFL). It is
-  a Latin subset of the full font, because the npm/Google Fonts builds drop the small caps and
-  old-style figures; the `pyftsubset` command is at the top of `src/styles/global.css`.
+- The print layout is tested: `/cv/` must print to at least three A4 pages.
 
 ## Add to the reading list
 
