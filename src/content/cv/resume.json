@@ -143,6 +143,7 @@
     {
       "institution": "Ferhat Abbas University of Sétif — Institute of Technology & Science",
       "area": "Computer Science",
+      "specialization": "Artificial Intelligence",
       "studyType": "Engineer's degree",
       "endDate": "2007-06"
     }
@@ -398,7 +399,7 @@
   ],
   "meta": {
     "canonical": "https://bmscomp.github.io/cv.json",
-    "version": "v1.3.0",
+    "version": "v1.3.1",
     "lastModified": "2026-09-29"
   }
 }

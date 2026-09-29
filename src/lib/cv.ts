@@ -121,6 +121,12 @@ export function toJsonLd(resume: Resume, pageUrl: string) {
       sameAs: basics.profiles.map((p) => p.url),
       worksFor: current && { '@type': 'Organization', name: current.name },
       alumniOf: education.map((e) => ({ '@type': 'CollegeOrUniversity', name: e.institution })),
+      hasCredential: education.map((e) => ({
+        '@type': 'EducationalOccupationalCredential',
+        credentialCategory: 'degree',
+        name: `${e.studyType} in ${e.area}${e.specialization ? `, specialization in ${e.specialization}` : ''}`,
+        recognizedBy: { '@type': 'CollegeOrUniversity', name: e.institution },
+      })),
       knowsAbout: [...interests.map((i) => i.name), ...skills.flatMap((s) => s.keywords)],
       knowsLanguage: languages.map((l) => ({ '@type': 'Language', name: l.language })),
     },

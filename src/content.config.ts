@@ -119,6 +119,8 @@ const cv = defineCollection({
         z.object({
           institution: z.string(),
           area: z.string(),
+          /** Degree specialization (site-specific extension, allowed by the schema). */
+          specialization: z.string().optional(),
           studyType: z.string(),
           startDate: date.optional(),
           endDate: date.optional(),

@@ -311,10 +311,17 @@ const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)
         education.map((e) => (
           <div class="cv-row cv-compact">
             <p class="cv-gutter cv-date">{e.endDate && formatYear(e.endDate)}</p>
-            <p class="cv-prose">
-              <span class="font-semibold" set:html={typeset(`${e.studyType} in ${e.area}`)} />,{' '}
-              <span class="italic" set:html={typeset(e.institution)} />
-            </p>
+            <div class="cv-prose">
+              <p>
+                <span class="font-semibold" set:html={typeset(`${e.studyType} in ${e.area}`)} />
+                {e.specialization && (
+                  <>
+                    , specialization in <span class="font-semibold" set:html={typeset(e.specialization)} />
+                  </>
+                )}
+              </p>
+              <p class="italic" set:html={typeset(e.institution)} />
+            </div>
           </div>
         ))
       }
