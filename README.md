@@ -47,6 +47,17 @@ repo: https://github.com/…     # optional
 
 Update `status`, `verdict`, and `updatedDate` as the test progresses; the list is sorted by last update.
 
+## Update the CV
+
+Edit `src/content/cv/resume.json` ([JSON Resume v1.0.0](https://jsonresume.org/schema)). Every build
+validates it against the official schema (`pnpm validate:cv`), then publishes:
+
+- `/cv/` — the page, with schema.org `Person` structured data and an A4 print layout (print → PDF)
+- `/cv.json` — the file as-is, for JSON Resume tools and themes
+
+Roles that started before 2015 are listed compactly under "Earlier experience" (`EARLIER_BEFORE` in
+`src/lib/cv.ts`). Update `meta.lastModified` when you change the content.
+
 ## Add to the reading list
 
 **From any device:** open a new issue on GitHub → **Reading** template → paste the link, pick a status,

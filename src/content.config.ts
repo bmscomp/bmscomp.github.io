@@ -50,7 +50,8 @@ const reading = defineCollection({
   }),
 });
 
-// Public CV summary, a subset of the JSON Resume schema (https://jsonresume.org/schema).
+// Public CV summary in JSON Resume format (https://jsonresume.org/schema). The full file is also
+// validated against the official schema at build time by scripts/validate-resume.mjs.
 const date = z.string().regex(/^\d{4}(-\d{2})?$/, 'Use YYYY or YYYY-MM');
 const cv = defineCollection({
   loader: file('src/content/cv/resume.json', { parser: (text) => ({ resume: JSON.parse(text) }) }),
@@ -58,14 +59,18 @@ const cv = defineCollection({
     basics: z.object({
       name: z.string(),
       label: z.string(),
+      url: z.url().optional(),
       summary: z.string().default(''),
-      location: z.object({ city: z.string(), countryCode: z.string() }).optional(),
+      location: z
+        .object({ city: z.string().optional(), region: z.string().optional(), countryCode: z.string() })
+        .optional(),
       profiles: z.array(z.object({ network: z.string(), username: z.string(), url: z.url() })).default([]),
     }),
     work: z
       .array(
         z.object({
           name: z.string(),
+          location: z.string().optional(),
           position: z.string(),
           url: z.url().optional(),
           startDate: date,
@@ -81,6 +86,7 @@ const cv = defineCollection({
           name: z.string(),
           url: z.url().optional(),
           roles: z.array(z.string()).default([]),
+          type: z.string().optional(),
           description: z.string(),
         }),
       )
@@ -98,6 +104,7 @@ const cv = defineCollection({
       .default([]),
     skills: z.array(z.object({ name: z.string(), keywords: z.array(z.string()).default([]) })).default([]),
     languages: z.array(z.object({ language: z.string(), fluency: z.string() })).default([]),
+    meta: z.object({ canonical: z.url(), version: z.string(), lastModified: z.string() }).optional(),
   }),
 });
 

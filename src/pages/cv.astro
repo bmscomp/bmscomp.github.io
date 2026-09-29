@@ -1,132 +1,199 @@
 ---
 import { getEntry } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import { EARLIER_BEFORE, formatLocation, formatMonth, isEarlier, toJsonLd } from '../lib/cv';
 
 const entry = await getEntry('cv', 'resume');
 if (!entry) throw new Error('Missing src/content/cv/resume.json');
-const { basics, work, projects, education, skills, languages } = entry.data;
+const resume = entry.data;
+const { basics, work, projects, education, skills, languages } = resume;
 
-/** "2021-03" → "Mar 2021", "2019" → "2019". */
-function formatMonth(value?: string) {
-  if (!value) return 'Present';
-  const [year, month] = value.split('-');
-  if (!month) return year;
-  return new Date(Number(year), Number(month) - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-}
+const recent = work.filter((job) => !isEarlier(job));
+const earlier = work.filter(isEarlier);
+const location = formatLocation(basics.location);
+const jsonLd = JSON.stringify(toJsonLd(resume, new URL('/cv/', Astro.site).href)).replace(/</g, '\\u003c');
+const sectionTitle =
+  'mb-5 text-sm font-semibold uppercase tracking-wider text-zinc-500 print:mb-3 print:break-after-avoid print:text-black';
 ---
 
-<Base title="CV" description={`${basics.name} — ${basics.label}`}>
-  <header class="mb-10">
-    <h1 class="text-3xl font-bold tracking-tight">{basics.name}</h1>
-    <p class="mt-1 text-lg text-zinc-600 dark:text-zinc-400">
-      {basics.label}{basics.location && <span> · {basics.location.city}</span>}
-    </p>
-    {
-      basics.profiles.length > 0 && (
-        <ul class="mt-3 flex flex-wrap gap-4 text-sm">
-          {basics.profiles.map((p) => (
-            <li>
-              <a href={p.url} class="text-accent">{p.network}</a>
-            </li>
-          ))}
-        </ul>
-      )
-    }
-    {basics.summary && <p class="mt-6 leading-relaxed">{basics.summary}</p>}
-  </header>
+<Base title="CV" description={`${basics.name} — ${basics.label}`} image="/og/cv.png">
+  <Fragment slot="head">
+    <link rel="alternate" type="application/json" title="JSON Resume" href="/cv.json" />
+    <script type="application/ld+json" set:html={jsonLd} />
+  </Fragment>
 
-  {
-    work.length > 0 && (
-      <section class="mb-10">
-        <h2 class="mb-6 text-sm font-semibold uppercase tracking-wider text-zinc-500">Experience</h2>
-        <ol class="space-y-8 border-l border-zinc-200 pl-6 dark:border-zinc-800">
-          {work.map((job) => (
-            <li class="relative">
-              <span class="absolute -left-[1.85rem] top-2 size-2.5 rounded-full bg-accent" aria-hidden="true" />
-              <p class="text-sm text-zinc-500">
-                {formatMonth(job.startDate)} – {formatMonth(job.endDate)}
+  <article>
+    <header class="mb-10 print:mb-5">
+      <h1 class="text-3xl font-bold tracking-tight">{basics.name}</h1>
+      <p class="mt-1 text-lg text-zinc-700 dark:text-zinc-300">{basics.label}</p>
+      <ul class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-500">
+        {location && <li>{location}</li>}
+        {
+          basics.profiles.map((p) => (
+            <li>
+              <a href={p.url} class="text-accent print:text-inherit">
+                <span class="print:hidden">{p.network}</span>
+                <span class="hidden print:inline">{p.url.replace(/^https:\/\/(www\.)?/, '')}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      {basics.summary && <p class="mt-6 leading-relaxed print:mt-3 print:leading-snug">{basics.summary}</p>}
+    </header>
+
+    <section aria-labelledby="experience" class="mb-10 print:mb-5">
+      <h2 id="experience" class={sectionTitle}>Experience</h2>
+      <ol class="space-y-8 print:space-y-3">
+        {
+          recent.map((job) => (
+            <li class="break-inside-avoid">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+                <h3 class="text-lg font-semibold">{job.position}</h3>
+                <p class="text-sm text-zinc-500 tabular-nums">
+                  <time datetime={job.startDate}>{formatMonth(job.startDate)}</time> –{' '}
+                  {job.endDate ? <time datetime={job.endDate}>{formatMonth(job.endDate)}</time> : 'Present'}
+                </p>
+              </div>
+              <p class="font-medium text-accent print:text-inherit">
+                {job.url ? <a href={job.url}>{job.name}</a> : job.name}
+                {job.location && <span class="font-normal text-zinc-500"> · {job.location}</span>}
               </p>
-              <h3 class="text-lg font-medium">
-                {job.position} ·{' '}
-                {job.url ? <a href={job.url} class="text-accent">{job.name}</a> : job.name}
-              </h3>
-              {job.summary && <p class="mt-1 text-zinc-600 dark:text-zinc-400">{job.summary}</p>}
+              {job.summary && <p class="mt-2 text-zinc-700 dark:text-zinc-300 print:mt-0.5 print:leading-snug">{job.summary}</p>}
               {job.highlights.length > 0 && (
-                <ul class="mt-2 list-disc space-y-1 pl-5 text-zinc-600 dark:text-zinc-400">
-                  {job.highlights.map((h) => <li>{h}</li>)}
+                <ul class="mt-2 list-disc space-y-1 pl-5 text-zinc-600 marker:text-zinc-400 dark:text-zinc-400 print:mt-1 print:space-y-0 print:leading-snug">
+                  {job.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
                 </ul>
               )}
             </li>
-          ))}
-        </ol>
-      </section>
-    )
-  }
+          ))
+        }
+      </ol>
+    </section>
 
-  {
-    projects.length > 0 && (
-      <section class="mb-10">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">Open source</h2>
-        <ul class="space-y-3">
-          {projects.map((p) => (
-            <li>
-              <p>
-                {p.url ? <a href={p.url} class="font-medium text-accent">{p.name}</a> : <span class="font-medium">{p.name}</span>}
-                {p.roles.length > 0 && <span class="text-sm text-zinc-500"> · {p.roles.join(', ')}</span>}
-              </p>
-              <p class="text-zinc-600 dark:text-zinc-400">{p.description}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )
-  }
+    {
+      earlier.length > 0 && (
+        <section aria-labelledby="earlier" class="mb-10 print:mb-5">
+          <h2 id="earlier" class={sectionTitle}>
+            Earlier experience <span class="font-normal normal-case">(before {EARLIER_BEFORE})</span>
+          </h2>
+          <ul class="space-y-3 print:space-y-1.5">
+            {earlier.map((job) => (
+              <li class="break-inside-avoid">
+                <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+                  <p>
+                    <span class="font-medium">{job.position}</span>
+                    <span class="text-zinc-500"> · {job.name}</span>
+                    {job.location && <span class="text-zinc-500"> · {job.location}</span>}
+                  </p>
+                  <p class="text-sm text-zinc-500 tabular-nums">
+                    <time datetime={job.startDate}>{formatMonth(job.startDate)}</time> –{' '}
+                    <time datetime={job.endDate}>{formatMonth(job.endDate)}</time>
+                  </p>
+                </div>
+                {job.summary && <p class="text-sm text-zinc-600 dark:text-zinc-400">{job.summary}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
-  {
-    skills.length > 0 && (
-      <section class="mb-10">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">Skills</h2>
-        <dl class="space-y-3">
-          {skills.map((group) => (
-            <div class="sm:flex sm:gap-4">
-              <dt class="font-medium sm:w-40 sm:shrink-0">{group.name}</dt>
-              <dd class="flex flex-wrap gap-2">
-                {group.keywords.map((k) => (
-                  <span class="rounded bg-zinc-100 px-2 py-0.5 text-sm dark:bg-zinc-800">{k}</span>
-                ))}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-    )
-  }
+    {
+      projects.length > 0 && (
+        <section aria-labelledby="open-source" class="mb-10 print:mb-5 print:break-inside-avoid">
+          <h2 id="open-source" class={sectionTitle}>Open source</h2>
+          <ul class="space-y-3 print:space-y-1">
+            {projects.map((p) => (
+              <li class="break-inside-avoid">
+                <p>
+                  {p.url ? (
+                    <a href={p.url} class="font-medium text-accent print:text-inherit">
+                      {p.name}
+                    </a>
+                  ) : (
+                    <span class="font-medium">{p.name}</span>
+                  )}
+                  {p.roles.length > 0 && <span class="text-sm text-zinc-500"> · {p.roles.join(', ')}</span>}
+                </p>
+                <p class="text-zinc-600 dark:text-zinc-400 print:leading-snug">{p.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
-  {
-    education.length > 0 && (
-      <section class="mb-10">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">Education</h2>
-        <ul class="space-y-3">
-          {education.map((e) => (
-            <li>
-              <p class="font-medium">{e.studyType}, {e.area}</p>
-              <p class="text-sm text-zinc-500">
-                {e.institution}
-                {e.endDate && <span> · {formatMonth(e.endDate)}</span>}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )
-  }
+    {
+      skills.length > 0 && (
+        <section aria-labelledby="skills" class="mb-10 break-inside-avoid print:mb-5">
+          <h2 id="skills" class={sectionTitle}>Skills</h2>
+          <dl class="space-y-3 print:space-y-0.5">
+            {skills.map((group) => (
+              <div class="sm:flex sm:gap-4 print:flex print:gap-4">
+                <dt class="font-medium sm:w-32 sm:shrink-0 print:w-32 print:shrink-0">{group.name}</dt>
+                <dd class="flex flex-wrap gap-1.5 print:gap-y-0">
+                  {group.keywords.map((k) => (
+                    <span class="rounded bg-zinc-100 px-2 py-0.5 text-sm dark:bg-zinc-800 print:bg-transparent print:px-0 print:py-0 print:text-base print:after:content-[','] print:last:after:content-none">
+                      {k}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )
+    }
 
-  {
-    languages.length > 0 && (
-      <section>
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">Languages</h2>
-        <p>{languages.map((l) => `${l.language} (${l.fluency})`).join(' · ')}</p>
-      </section>
-    )
-  }
+    <div class="grid gap-10 sm:grid-cols-2 print:grid-cols-2 print:gap-6">
+      {
+        education.length > 0 && (
+          <section aria-labelledby="education" class="break-inside-avoid">
+            <h2 id="education" class={sectionTitle}>Education</h2>
+            <ul class="space-y-3">
+              {education.map((e) => (
+                <li>
+                  <p class="font-medium">
+                    {e.studyType}, {e.area}
+                  </p>
+                  <p class="text-sm text-zinc-500">
+                    {e.institution}
+                    {e.endDate && (
+                      <span>
+                        {' '}
+                        · <time datetime={e.endDate}>{formatMonth(e.endDate)}</time>
+                      </span>
+                    )}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+      {
+        languages.length > 0 && (
+          <section aria-labelledby="languages" class="break-inside-avoid">
+            <h2 id="languages" class={sectionTitle}>Languages</h2>
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+              {languages.map((l) => (
+                <>
+                  <dt class="font-medium">{l.language}</dt>
+                  <dd class="text-zinc-600 dark:text-zinc-400">{l.fluency}</dd>
+                </>
+              ))}
+            </dl>
+          </section>
+        )
+      }
+    </div>
+
+    <footer class="mt-12 border-t border-zinc-200 pt-4 text-sm text-zinc-500 dark:border-zinc-800 print:hidden">
+      {resume.meta && <span>Updated <time datetime={resume.meta.lastModified}>{formatMonth(resume.meta.lastModified.slice(0, 7))}</time> · </span>}
+      Also available as <a href="/cv.json" class="text-accent">JSON Resume</a> · Print this page for a PDF.
+    </footer>
+  </article>
 </Base>

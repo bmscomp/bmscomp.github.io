@@ -35,7 +35,7 @@ Pros/cons of every choice: [TECH-STUDY.md](TECH-STUDY.md). Review by leaving com
 | D8 | Search | **Pagefind** | Static full-text search index built post-build, ~no runtime cost | Algolia (external), Fuse.js (loads everything) |
 | D9 | Comments | **Giscus** (GitHub Discussions), opt-in per post | No DB, uses GitHub identity | None, utterances |
 | D10 | Analytics | **None** at launch; optional **GoatCounter** later | Privacy principle | Plausible (paid), Umami (self-host) |
-| D11 | CV | **Public summary only**: JSON Resume schema (`src/content/cv/resume.json`) → one-page `/cv` with headline, summary, roles (title/company/years), key skills, links. No phone/address, no PDF. | Standard schema keeps the door open for a full CV/PDF later | Full public CV + PDF |
+| D11 | CV | **Public summary only**: JSON Resume schema (`src/content/cv/resume.json`) → one-page `/cv` with headline, summary, roles (title/company/years), key skills, links. No phone/address. Validated against the official JSON Resume schema at build time, published as `/cv.json`, schema.org `Person` JSON-LD on the page, A4 print stylesheet instead of a generated PDF. | Standard schema keeps the door open for a full CV/PDF later | Full public CV + PDF |
 | D12 | Social cards | Auto-generated **Open Graph images** with `satori` + `@resvg/resvg-js` | Nice link previews without manual work | Manual images |
 | D13 | Feeds / SEO | `@astrojs/rss` (one feed per section + global), `@astrojs/sitemap`, JSON-LD (`Person`, `BlogPosting`) | Discoverability | — |
 | D14 | Code highlighting | **Expressive Code** (on Shiki) with dual light/dark themes | Copy buttons, file titles, diff markers for Lab posts | Prism |

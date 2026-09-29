@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Dark styles apply on screen only, so printed pages are always black on white. */
+@custom-variant dark (@media screen and (prefers-color-scheme: dark));
+
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
@@ -27,5 +30,24 @@
   }
   .prose .math-display {
     overflow-x: auto;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+  html {
+    font-size: 10pt;
+    color-scheme: light;
+  }
+  body {
+    background: white;
+    color: black;
+  }
+  main {
+    max-width: none;
+    padding: 0;
   }
 }
