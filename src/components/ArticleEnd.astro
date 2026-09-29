@@ -28,7 +28,7 @@ const steps = [
   <dl class="end-rows">
     {
       steps.map(({ label, href, title }) => (
-        <div class="row">
+        <div class="row end-nav">
           <dt class="gutter label">{label}</dt>
           <dd>
             <a href={href} set:html={typeset(title)} />
@@ -37,13 +37,13 @@ const steps = [
       ))
     }
     <slot />
-    <div class="row">
+    <div class="row end-nav">
       <dt class="gutter label">follow</dt>
       <dd>
         <a href={home.feed}>{home.name} feed</a> · <a href="/rss.xml">everything</a>
       </dd>
     </div>
-    <div class="row">
+    <div class="row end-nav">
       <dt class="gutter label">back</dt>
       <dd>
         <a href={home.href}>{home.all}</a> · <a href="#top">↑ top</a>

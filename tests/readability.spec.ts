@@ -513,7 +513,7 @@ test.describe('W5 article shell and orientation', () => {
       await page.keyboard.press('Shift+Tab');
       hidden += await page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
-        const header = document.querySelector('header')!.getBoundingClientRect();
+        const header = document.querySelector('body > header')!.getBoundingClientRect();
         if (!el || el === document.body) return 0;
         const r = el.getBoundingClientRect();
         // Fixed elements (the skip link) paint above the header, so they are never hidden by it.
@@ -780,7 +780,7 @@ test.describe('W6 endings and paths between articles', () => {
 });
 
 test.describe('W7 long-form devices and print', () => {
-  test('W7.1 print keeps code, shows link targets and hides section marks @ci', async ({ page }) => {
+  test('W7.1 print keeps code, shows link targets and hides section marks @ci', async ({ page }, info) => {
     for (const path of ARTICLES) {
       await open(page, path, desktop);
       await page.emulateMedia({ media: 'print' });
@@ -789,6 +789,7 @@ test.describe('W7 long-form devices and print', () => {
       const anchors = await computed(page, '.prose a.anchor', ['display']);
       expect.soft(anchors.every((a) => a.display === 'none')).toBe(true);
       await page.emulateMedia({ media: 'screen' });
+      record(info, `W7.1 A4 pages ${path}`, await printedPages(page));
     }
     await open(page, '/blog/hello-world/', desktop);
     await page.emulateMedia({ media: 'print' });
@@ -914,7 +915,7 @@ test.describe('W8 accessibility', () => {
       expect.soft(w).toBeGreaterThanOrEqual(24);
       expect.soft(h).toBeGreaterThanOrEqual(24);
     }
-    const header = (await page.locator('header').boundingBox())!.height;
+    const header = (await page.locator('body > header').boundingBox())!.height;
     record(info, 'W8.2 phone header height', header);
     expect.soft(header).toBeLessThanOrEqual(107.4);
     expect.soft((await overflow(page)).document).toBeLessThanOrEqual(0);

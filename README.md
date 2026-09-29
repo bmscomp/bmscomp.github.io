@@ -8,7 +8,7 @@ on every push to `main`. See [PLAN.md](PLAN.md) for the roadmap.
 ```bash
 pnpm install
 pnpm dev        # http://localhost:4321 (drafts visible)
-pnpm build      # type-check + static build into dist/
+pnpm build      # type-check, validate the CV, static build into dist/
 ```
 
 ## Design
@@ -17,8 +17,9 @@ Every page is a typeset "sheet of paper": EB Garamond with true small caps and o
 and labels in a left margin column, small-caps section titles with an accent bar. The system lives in
 `src/styles/global.css` (palette tokens `page`, `paper`, `ink`, `muted`, `rule`, `accent` switch for dark
 mode and print); `src/styles/cv.css` only holds CV-specific pieces. Shared building blocks:
-`PageHeader`, `Section`, `PostList`, `LabList`, `TagList`. Social cards (`src/lib/og.ts`) use the same
-paper style.
+`PageHeader`, `Section`, `PostList`, `LabList`, `TagList`, `Colophon`. Posts and lab notes share one
+shell, `src/layouts/Article.astro` (fact sheet, `Contents`, text, `ArticleEnd`). Social cards
+(`src/lib/og.ts`) use the same paper style.
 
 ## Write a post
 
@@ -56,6 +57,42 @@ repo: https://github.com/…     # optional
 
 Update `status`, `verdict`, and `updatedDate` as the test progresses; the list is sorted by last update.
 
+## Writing features
+
+Posts and lab notes are Markdown, rendered by Astro's native processor (Sätteri) with the features and
+plugins in `src/lib/markdown/`. What renders today:
+
+| Write | You get | Limits |
+|---|---|---|
+| `## Heading` | A section with an ASCII id (`Sätteri` → `satteri`) and a § link beside it, drawn with the accent bar in the margin. | Only h2 and h3 get a § link. |
+| `## Heading {#my-id}` | The heading keeps `my-id`; generated ids never take it. | |
+| Four or more `##` sections | A contents row in the fact sheet (a closed disclosure on phones), and "5 sections · 4 listings" under the date. | Only on a long page (250+ words or 4+ listings); set `toc: true` or `toc: false` in the frontmatter to decide. |
+| ```` ```ts title="src/file.ts" ```` | A listing with a file tab, copy button, light and dark themes. Long lines wrap with a hanging indent; copying returns the original line. | Listings break out into the margin column from 48rem. |
+| ```` ```ts {3} ```` | Line 3 marked. | |
+| ```` ```diff lang="ts" ```` | A diff with `+`/`-` lines highlighted as TypeScript. | |
+| ```` ```text frame="terminal" title="Output" ```` | Command output in a terminal frame. | Shell languages (`bash`, `sh`) get a terminal frame on their own. |
+| `` `code` `` | Inline code at the text's x-height, never hyphenated. | |
+| `$E = mc^2$`, `$$ … $$` | Math rendered to HTML at build time by KaTeX (`src/lib/markdown/katex.ts`); the stylesheet loads only on pages with math. | Two dollar amounts in one paragraph read as math: write `\$5`. |
+| `\| a \| b \|` with `\|---\|--:\|` | A table; `--:` right-aligns a column (use it for numbers). | |
+| `text[^1]` and `[^1]: note` | Numbered footnotes collected at the end. | |
+| `![Alt text](./image.png)` | A responsive image; the alt text is required reading for screen readers. | Keep images next to the Markdown file. |
+| `> quoted text` | A quotation. | `> [!NOTE]` alerts still render as plain quotations. |
+
+After changing `astro.config.ts` or anything in `src/lib/markdown/`, clear the content cache:
+`rm -rf node_modules/.astro .astro`.
+
+## Test
+
+```bash
+pnpm test         # Markdown plugins and the length cue (node --test)
+pnpm test:e2e     # build with the test fixtures, then the readability harness (Playwright + axe)
+pnpm measure      # the same harness, printing every measurement (test-results/metrics.json)
+```
+
+The harness measures the articles and a fixture page, `/dev/kitchen-sink/`, that uses every construct
+above. The fixture is built only by `astro dev` and `pnpm build:fixtures`. CI runs the font-independent
+tests (`@ci`) before every deploy; see [READABILITY-PLAN.md](READABILITY-PLAN.md).
+
 ## Update the CV
 
 Edit `src/content/cv/resume.json` ([JSON Resume v1.0.0](https://jsonresume.org/schema)). Every build
@@ -72,7 +109,7 @@ Roles that started before 2015 are listed compactly under "Earlier experience" (
 - **Publications** use the standard `publications` list; `authors` is the cited author line.
 - The page is typeset in **EB Garamond**, self-hosted from `src/assets/fonts/eb-garamond/` (OFL). It is
   a Latin subset of the full font, because the npm/Google Fonts builds drop the small caps and
-  old-style figures; the `pyftsubset` command is at the top of `src/styles/cv.css`.
+  old-style figures; the `pyftsubset` command is at the top of `src/styles/global.css`.
 
 ## Add to the reading list
 
@@ -99,16 +136,3 @@ Only issues opened by the repository owner are processed.
 ```
 
 The **Reading** link appears in the site menu once the list has at least one entry.
-
-### Code
-
-Fenced code blocks are rendered by [Expressive Code](https://expressive-code.com): copy button,
-light/dark themes, and optional titles and line markers — ```` ```ts title="file.ts" {3} ````.
-
-### Math
-
-LaTeX math is rendered to HTML at build time with KaTeX: `$inline$` or a `$$ … $$` block.
-Math is parsed by Astro's native Markdown processor (Sätteri) and rendered by `src/lib/katex.ts`.
-
-> If a Markdown change doesn't show up after editing `astro.config.ts` or `src/lib/`, clear the
-> content cache: `rm -rf node_modules/.astro .astro`.

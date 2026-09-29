@@ -13,7 +13,7 @@ const { id, title, note, variant = 'document', class: className } = Astro.props;
 ---
 
 <section aria-labelledby={id} class:list={['section', variant === 'list' && 'heading-list', className]}>
-  <h2 id={id} class="heading">
+  <h2 id={id} class="heading" aria-label={note ? `${title}, ${note}` : undefined}>
     <span class="heading-bar" aria-hidden="true"></span>
     <span class="heading-text">
       {title}

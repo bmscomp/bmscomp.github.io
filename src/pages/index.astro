@@ -1,4 +1,5 @@
 ---
+import Colophon from '../components/Colophon.astro';
 import LabList from '../components/LabList.astro';
 import PageHeader from '../components/PageHeader.astro';
 import PostList from '../components/PostList.astro';
@@ -42,4 +43,5 @@ const lab = (await getLabNotes()).slice(0, 3);
       </Section>
     )
   }
+  <Colophon />
 </Base>

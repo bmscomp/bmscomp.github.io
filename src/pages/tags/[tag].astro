@@ -1,4 +1,5 @@
 ---
+import Colophon from '../../components/Colophon.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import PostList from '../../components/PostList.astro';
 import Base from '../../layouts/Base.astro';
@@ -20,10 +21,11 @@ const { name, posts } = Astro.props;
     lede={`${posts.length} post${posts.length === 1 ? '' : 's'} on this topic.`}
   />
   <div>
-    <PostList posts={posts} />
+    <PostList posts={posts} headingLevel={2} />
   </div>
   <p class="row mt-8">
     <span class="gutter" aria-hidden="true"></span>
     <a href="/tags/" class="label">All tags →</a>
   </p>
+  <Colophon />
 </Base>

@@ -1,4 +1,5 @@
 ---
+import Colophon from '../../components/Colophon.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Base from '../../layouts/Base.astro';
 import { getTags } from '../../lib/posts';
@@ -22,4 +23,5 @@ const tags = await getTags();
       }
     </ul>
   </div>
+  <Colophon />
 </Base>

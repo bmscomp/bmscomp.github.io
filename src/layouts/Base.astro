@@ -62,12 +62,12 @@ const imageUrl = new URL(image, Astro.site);
       >Skip to content</a
     >
     <Header />
-    <main id="main" class="mx-auto w-full max-w-4xl flex-1 sm:px-4 sm:py-10 print:max-w-none print:p-0">
+    <main id="main" class="mx-auto flex w-full max-w-4xl flex-1 flex-col sm:px-4 sm:py-10 print:max-w-none print:p-0">
       {
         bare ? (
           <slot />
         ) : (
-          <div class="relative bg-paper px-6 pt-10 pb-12 sm:rounded-[3px] sm:px-12 sm:pt-14 sm:shadow-[0_1px_2px_rgb(60_45_20/0.06),0_18px_50px_-18px_rgb(60_45_20/0.3)] lg:px-16 dark:sm:shadow-[0_1px_2px_rgb(0_0_0/0.4),0_18px_50px_-18px_rgb(0_0_0/0.9)] print:bg-transparent print:p-0 print:shadow-none">
+          <div class="relative flex-1 bg-paper px-6 pt-10 pb-12 sm:rounded-[3px] sm:px-12 sm:pt-14 sm:shadow-[0_1px_2px_rgb(60_45_20/0.06),0_18px_50px_-18px_rgb(60_45_20/0.3)] lg:px-16 dark:sm:shadow-[0_1px_2px_rgb(0_0_0/0.4),0_18px_50px_-18px_rgb(0_0_0/0.9)] print:bg-transparent print:p-0 print:shadow-none">
             <div aria-hidden="true" class="absolute inset-x-0 top-0 h-1.5 bg-accent sm:rounded-t-[3px] print:hidden" />
             <slot />
           </div>

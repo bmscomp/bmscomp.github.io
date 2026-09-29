@@ -560,6 +560,35 @@
   .entry + .entry {
     margin-top: 1.6rem;
   }
+  .entry > .gutter > * {
+    display: block;
+  }
+  /* W6.4: compact entries on phones: date and status share a line above the title. */
+  @media (max-width: 39.99rem) {
+    .entry + .entry {
+      margin-top: 1.25rem;
+    }
+    .entry > .gutter {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 0.75rem;
+    }
+    .entry .entry-desc {
+      margin-top: 0.15rem;
+    }
+    .entry .keywords {
+      line-height: 1.4;
+    }
+  }
+  /* A list page ends like a document: the fleuron and a line of small print. */
+  .page-colophon {
+    margin-top: 3.5rem;
+    text-align: center;
+  }
+  .page-colophon .colophon {
+    margin-top: 0.4rem;
+  }
   .entry-compact + .entry-compact {
     margin-top: 0.7rem;
   }
@@ -658,10 +687,12 @@
     font-weight: 500;
     font-variant-numeric: lining-nums;
   }
+  /* W8.2: padding widens the target to 24px+ without moving the words. */
   .nav-link {
     position: relative;
     display: inline-block;
-    padding-block: 0.3rem;
+    padding: 0.3rem 0.35rem;
+    margin-inline: -0.35rem;
     color: var(--muted);
     font-size: 1.05rem;
     font-variant-caps: all-small-caps;
@@ -677,8 +708,8 @@
   .nav-link[aria-current='page']::after {
     content: '';
     position: absolute;
-    left: 0;
-    right: var(--track-head);
+    left: 0.35rem;
+    right: calc(0.35rem + var(--track-head));
     bottom: 0.1rem;
     height: 2px;
     border-radius: 1px;
@@ -801,8 +832,16 @@
       font-size: 0.92em;
       letter-spacing: var(--track-tight);
     }
-    .contents-disclosure {
+    /* W7.1: navigation that means nothing on paper. */
+    .contents-row,
+    .contents-disclosure,
+    .end-nav,
+    .page-colophon {
       display: none;
+    }
+    .article-end {
+      margin-top: 1rem;
+      break-inside: avoid;
     }
   }
 }
@@ -1048,6 +1087,18 @@
     .prose.prose-paper .section-head > .anchor {
       display: none;
     }
+    /* W7.1: headings stay with their text, listings and figures stay whole, no lone lines. */
+    .prose.prose-paper :where(.section-head, h2, h3, h4) {
+      break-after: avoid;
+      break-inside: avoid;
+    }
+    .prose.prose-paper :where(.expressive-code, .math-display, table, .table-scroll, figure, .callout) {
+      break-inside: avoid;
+    }
+    .prose.prose-paper :where(p, li) {
+      orphans: 3;
+      widows: 3;
+    }
   }
 }
 
@@ -1106,5 +1157,20 @@
   }
   .prose .expressive-code :is(pre, .header) {
     border-inline-width: 0;
+  }
+}
+/* W7.1: on paper, prose links keep their underline and print where they go (unlayered, like the rule
+   that removes underlines from everything else in print). */
+@media print {
+  .prose a {
+    text-decoration: underline;
+    text-decoration-thickness: 0.5pt;
+    text-underline-offset: 0.15em;
+  }
+  .prose a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: var(--muted);
+    overflow-wrap: anywhere;
   }
 }
