@@ -8,6 +8,7 @@ import type { Page, TestInfo } from '@playwright/test';
 export const PAGES = [
   '/',
   '/blog/',
+  '/blog/evolutionary-algorithms/',
   '/mathematics/',
   '/mathematics/basel-problem/',
   '/lab/',
@@ -18,6 +19,7 @@ export const PAGES = [
 ] as const;
 
 export const ARTICLES = [
+  '/blog/evolutionary-algorithms/',
   '/mathematics/basel-problem/',
   '/dev/kitchen-sink/',
 ] as const;

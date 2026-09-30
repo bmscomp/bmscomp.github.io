@@ -27,8 +27,9 @@ const LAB_NOTES: string[] = [];
 const NOTE = '/dev/kitchen-sink/';
 // First-screen rules hold for an ordinary note; the kitchen sink's fact sheet carries every row at once.
 const TYPICAL = '/dev/typical-note/';
+const POSTS = ['/blog/evolutionary-algorithms/'];
 const MATH = ['/mathematics/basel-problem/'];
-const REAL_ARTICLES = [...MATH, ...LAB_NOTES];
+const REAL_ARTICLES = [...POSTS, ...MATH, ...LAB_NOTES];
 const { xs, phone, phoneShort, tablet, laptop, desktop, wide } = VIEWPORTS;
 
 test.describe('W1.1 fixture', () => {
