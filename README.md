@@ -30,7 +30,7 @@ mathematics articles and lab notes share one shell, `src/layouts/Article.astro` 
 
 The type is **EB Garamond**, self-hosted from `src/assets/fonts/eb-garamond/` (OFL). It is a Latin subset
 of the full font, because the npm/Google Fonts builds drop the small caps, old-style figures and
-superior figures; the `pyftsubset` command is at the top of `src/styles/global.css`. A second subset
+superior figures; `scripts/subset-fonts.py` (fontTools) regenerates the subsets. A second subset
 holds the Greek letters and math symbols (π, ζ, ≈, ⋯), and a browser downloads it only for a page that
 uses one. A metric-matched fallback keeps the text from jumping while it loads.
 
