@@ -9,7 +9,7 @@ tools: [Astro 7.3, Sätteri 0.10, KaTeX, Expressive Code]
 platform: macOS · Node 26
 verdict: Not a real note — the readability tests measure this page on every build.
 repo: https://github.com/bmscomp/bmscomp.github.io
-relatedLab: [astro-7-satteri]
+relatedMath: [basel-problem]
 series: Test bed
 seriesPart: 1
 ---
@@ -61,7 +61,7 @@ export async function getPosts() {
 
 Command output:
 
-```text
+```text frame="terminal" title="Output"
 × adding a new package
 ╰─▶ Ignored build scripts: esbuild@0.28.2
 help: Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.

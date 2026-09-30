@@ -11,6 +11,8 @@ export default defineConfig({
   redirects: {
     '/blog/basel-problem': '/mathematics/basel-problem/',
     '/blog/hello-world': '/blog/',
+    '/lab/astro-7-satteri': '/lab/',
+    '/lab/pnpm-12-typescript-7': '/lab/',
   },
   integrations: [
     expressiveCode({

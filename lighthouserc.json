@@ -4,8 +4,8 @@
       "staticDistDir": "./dist",
       "url": [
         "http://localhost/",
-        "http://localhost/blog/hello-world/",
-        "http://localhost/lab/astro-7-satteri/",
+        "http://localhost/mathematics/",
+        "http://localhost/lab/",
         "http://localhost/tags/",
         "http://localhost/cv/"
       ],
