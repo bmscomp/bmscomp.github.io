@@ -63,8 +63,8 @@ export interface LineStats {
 
 /**
  * Characters per rendered line of article paragraphs. Each character's box is assigned to a line by
- * its vertical centre in units of the paragraph's line height; math and footnote references count
- * as they render. Paragraphs inside lists, quotations, callouts and footnotes are excluded.
+ * its vertical centre in units of the paragraph's line height. Lines that contain math are left out
+ * of every statistic, and paragraphs inside lists, quotations, callouts and footnotes are excluded.
  */
 export async function charactersPerLine(page: Page, selector = '.prose p'): Promise<LineStats> {
   return page.evaluate((sel) => {
@@ -105,9 +105,12 @@ export async function charactersPerLine(page: Page, selector = '.prose p'): Prom
         }),
       );
     }
-    // Measure is judged on full lines: every line except the last line of each paragraph.
-    const all = counts.map((c) => c.n);
-    const full = counts.filter((c) => !c.final).map((c) => c.n);
+    // Measure is judged on full lines of prose: every line except the last of each paragraph. Lines
+    // holding a formula are left out: stacked fractions and scripts put several characters in one
+    // column, so their count says nothing about the width of the line.
+    const prose = counts.filter((c) => !c.math);
+    const all = prose.map((c) => c.n);
+    const full = prose.filter((c) => !c.final).map((c) => c.n);
     const mean = full.reduce((a, b) => a + b, 0) / Math.max(full.length, 1);
     return {
       lines: all.length,

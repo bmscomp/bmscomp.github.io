@@ -615,9 +615,15 @@
     font-size: 0.9em;
     font-style: italic;
   }
+  @media screen {
+    .paper-head > div,
+    .paper-abstract > .abstract {
+      max-width: calc(26.5 * var(--text-body));
+    }
+  }
   .abstract {
-    max-width: 32em;
-    margin: 1.9rem auto 0;
+    margin-top: 1.9rem;
+    padding-inline: 1.5em;
     font-size: calc(var(--text-body) * 0.9);
     line-height: 1.5;
   }
@@ -1402,6 +1408,13 @@
   /* ---------- Blog posts as papers: the body of LaTeX's article class ---------- */
   .paper .prose.prose-paper {
     counter-reset: section figure table;
+  }
+  /* A paper's text block is a little narrower than a note's, about 66 characters, close to LaTeX's
+     article class; the title block and abstract are centred on it. */
+  @media screen {
+    .paper .prose.prose-paper {
+      max-width: 26.5em;
+    }
   }
   /* Paragraphs as in LaTeX: no space between them, an indent for each new one, justified. */
   .paper .prose.prose-paper :where(p) {
