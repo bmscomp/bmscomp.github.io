@@ -141,11 +141,9 @@
   ],
   "education": [
     {
-      "institution": "Ferhat Abbas University of Sétif — Institute of Technology & Science",
-      "area": "Computer Science",
-      "specialization": "Artificial Intelligence",
-      "studyType": "Engineer's degree",
-      "endDate": "2007-06"
+      "institution": "University of Oxford",
+      "area": "Computer Science and Artificial Intelligence",
+      "studyType": "PhD"
     }
   ],
   "publications": [
@@ -399,7 +397,7 @@
   ],
   "meta": {
     "canonical": "https://bmscomp.github.io/cv.json",
-    "version": "v1.3.1",
-    "lastModified": "2026-09-29"
+    "version": "v1.4.0",
+    "lastModified": "2026-09-30"
   }
 }
