@@ -2,19 +2,17 @@
 title: The Basel problem — what it asks, and how it was solved
 description: For almost ninety years nobody could say what 1 + 1/4 + 1/9 + ⋯ adds up to. How Euler found the answer, π²/6, how he proved it, and three later proofs that each find the π somewhere else.
 abstract: |
-  The Basel problem asks for the exact value of 1 + 1/4 + 1/9 + 1/16 + ⋯, the sum of the reciprocals
-  of the squares. It takes one line to state, and it defeated the best mathematicians of Europe for
-  almost ninety years. We explain why: the sum is easily seen to be finite, but its partial sums
-  approach the limit so slowly that a thousand terms give only three correct digits, and the answer,
-  π²/6, contains a constant that seems to have no business there.
+  Add one, a quarter, a ninth, a sixteenth, and keep going. The total stays below 2, yet for almost
+  ninety years nobody could say what it is. That was the Basel problem. The sum creeps towards its
+  limit so slowly that a thousand terms fix only three digits, and when the answer finally came, in
+  1735, it was π²/6: a number born from circles, in a sum with no circle in sight.
 
-  We then follow how the problem was solved. Euler computed the sum to six decimals in 1731, found
-  π²/6 in 1735 with an argument that was not yet a proof, and proved it in 1741 by computing one
-  integral in two ways. We give that proof, Cauchy's elementary proof of 1821, and two modern ones, by
-  Fourier series and by a double integral, and compare where each of them finds the π. We end with the
-  even powers, which Euler's method settles, and the odd powers, which are still open. Every tool the
-  proofs use is explained where it first appears, from the meaning of an infinite sum to Fourier series
-  and changes of variables, so that a reader who remembers some calculus can check each step.
+  Euler had six decimals of the sum by 1731. Four years later he found the formula, with an argument
+  he knew was not yet a proof, and in 1741 he found a proof. Cauchy's proof of 1821 needs only
+  trigonometry. Fourier series give another, and so does a double integral, and each of them finds
+  the π somewhere else. The even powers fell to Euler as well; the odd ones are still open, almost
+  three centuries on. Nothing here assumes more than some calculus, and each tool is explained where
+  it is first used.
 pubDate: 2026-09-30
 tags: [mathematics, series, history]
 msc: [11M06, 40A05, 42A16, 01A50]
@@ -40,12 +38,9 @@ Bernoulli proved that it is less than 2, spread the question, and admitted that 
 defeated him [2].[^bernoulli] The problem is named after Basel, the city of the Bernoullis and of the
 man who finally solved it, Leonhard Euler, in 1735 [3]. Ayoub tells the whole story [4].
 
-This article follows both halves of that story, and it explains every tool along the way. First the
-problem: what it means to add infinitely many numbers, why this sum is finite, why adding terms gets
-nowhere, and why the answer is a surprise. Then the solving, in the order it happened: Euler's
-discovery in 1735, the proof he found in 1741, Cauchy's proof of 1821, which needs nothing beyond
-trigonometry, and two modern proofs, by Fourier series and by a double integral. Each proof finds the
-$\pi$ in a different place, and Section 8 puts them side by side.
+This article tells it in the same order: the problem first, and why it was so stubborn, then the
+proofs one after another, from Euler's to one published in 1993. Each of them finds the $\pi$
+somewhere else.
 
 ## The problem
 
@@ -71,7 +66,7 @@ $$
 \frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \cdots = 1.
 $$
 
-That is exactly what the equals sign means for an infinite sum. Here is the definition in full.
+That is all the equals sign means for an infinite sum.
 
 > [!DEFINITION]
 > A series $a_1 + a_2 + a_3 + \cdots$ converges to a number $S$, its sum, when the partial sums
@@ -127,8 +122,7 @@ with one whose partial sums can be computed exactly.
 > neighbour, and only $1 - 1/N$ is left. So the partial sums satisfy $S_N < 1 + (1 - 1/N) < 2$. They
 > increase and are bounded, so they converge, and the limit is at least the first term, 1.
 
-Two ideas in this proof deserve a closer look. The first is the telescoping. Written out for $N = 4$,
-the comparison sum is
+The telescoping is easiest to see written out. For $N = 4$ the comparison sum is
 
 $$
 \begin{aligned}
@@ -142,7 +136,8 @@ because each fraction subtracted in one bracket is added back in the next, and t
 the sections of a telescope sliding into one another. However many terms we take, only the first and
 the last survive.
 
-The second is the step from bounded to convergent. The partial sums only go up, since every term is
+Then there is the step from bounded to convergent, which is subtler than it looks. The partial sums
+only go up, since every term is
 positive, and they never pass 2. A sequence that keeps increasing but stays below a ceiling cannot
 wander: it has to crowd towards some number at or below the ceiling. That such a sequence always has
 a limit is a basic property of the real numbers, called completeness, and it is why the proof can
@@ -161,15 +156,16 @@ is this.
 > 1 + \frac{1}{4} + \frac{1}{9} + \cdots = \frac{\pi^2}{6}. \label{eq:euler}
 > $$
 
-This is a strange answer, for two reasons. The first is where it comes from. The number $\pi$ is born
-from circles: it is the ratio of a circle's circumference to its diameter. Nothing in
-$\eqref{eq:basel}$ mentions a circle; the sum is built from whole numbers alone. The second is what
-kind of number it is. Every partial sum $S_N$ is a fraction, a ratio of two whole numbers, yet their
-limit $\pi^2/6$ is not a fraction at all: it is irrational, as Section 9 explains. The partial sums
-close in on a number that none of them can ever equal.
+It is a strange answer. The number $\pi$ comes from circles: it is the ratio of a circle's
+circumference to its diameter. Nothing in $\eqref{eq:basel}$ mentions a circle, and the sum is built
+from whole numbers alone.
 
-Much of the charm of the problem, and the key to every solution of it, lies in finding where the
-circle is hiding. Euler found it in the zeros of the sine.
+There is a second oddity, easier to miss. Every partial sum $S_N$ is a fraction, a ratio of two whole
+numbers, yet their limit $\pi^2/6$ is irrational (Section 9 says why). The partial sums close in on a
+number that none of them can ever equal.
+
+Every solution of the problem comes down to finding where the circle is hiding. Euler found it in the
+zeros of the sine.
 
 ## Why the sum resisted
 
@@ -211,7 +207,7 @@ seventeenth century, and it would still be slow today.
 Table: Partial sums of the series. The error left after $N$ terms is close to $1/N$, as $\eqref{eq:tail}$ predicts.
 
 The last column multiplies the error by $N$. It settles at 1, which is $\eqref{eq:tail}$ at work: a
-hundred times more terms buy exactly two more digits, and not one more.
+hundred times more terms buy two more digits.
 
 ### Euler's shortcut
 
@@ -227,12 +223,12 @@ $$
 \end{aligned} \label{eq:em}
 $$
 
-The first term is the area under the curve from the picture above. The second is a correction of half
-a term, of the kind the trapezoid rule makes when it replaces a curve by straight segments, and the
-later ones correct the correction. This is an instance of what is now called the Euler–Maclaurin
-formula, which relates sums to integrals in general. The expansion does not converge if it is continued
-forever, but its first few terms are remarkably accurate, and the numbers $\frac16$ and
-$-\frac{1}{30}$ in it are not accidental: they are Bernoulli numbers, which return in Section 9.
+The first term is the area under the curve from the picture above. Then comes a correction of half a
+term, the kind the trapezoid rule makes when it replaces a curve by straight segments, and the later
+terms correct the correction. This is an instance of what is now called the Euler–Maclaurin
+formula, which relates sums to integrals in general. Continued forever, the expansion would diverge,
+but its first few terms are remarkably accurate. The numbers $\frac16$ and $-\frac{1}{30}$ in it are
+Bernoulli numbers; they come back in Section 9.
 
 Adding the first three corrections to just ten terms of the series gives 1.64493440, correct to six
 decimals, where the raw sum of ten terms is not correct to even one. Ten terms and a little algebra do
@@ -244,14 +240,13 @@ Digits alone, though, do not name a number. Six decimals narrow the possibilitie
 between them, and nothing in 1.644934 announces a $\pi$, let alone a $\pi^2$. In hindsight the clue is
 there: multiply 1.644934 by 6 and take the square root, and out comes 3.141592…, the first seven digits
 of $\pi$. But nobody would try that particular pair of operations without already suspecting the
-answer. What the digits gave Euler was a target: any formula he proposed would have to hit it. To get
-from the digits to a formula took an idea, not more decimals.
+answer. What the digits gave Euler was a target that any formula would have to hit. The formula
+itself needed an idea, and his came from the sine.
 
 ## Euler's discovery, 1735
 
-Knowing that something is true and knowing why are different kinds of knowledge, and the Basel
-problem passed through both. Euler reached the first in 1735 [3], with an argument that borrows a fact
-about polynomials and applies it where it has no right to apply.
+In 1735 Euler found the value [3] with an argument that takes a fact about polynomials and applies it
+where it has no right to apply. It gave him the answer, though not yet a proof.
 
 ### Polynomials and their roots
 
@@ -490,13 +485,14 @@ The first few values are $I_0 = 1$, $I_1 = \frac23$, $I_2 = \frac{8}{15}$ and $I
 > $\sum 1/(2m)^2 = \frac{1}{4} \sum 1/m^2$, hence
 > $\sum 1/n^2 = \pi^2/8 + \frac{1}{4} \sum 1/n^2$, and $\sum 1/n^2 = \frac{4}{3} \cdot \frac{\pi^2}{8} = \frac{\pi^2}{6}$.
 
-The cancellation in the middle of the proof is the heart of it, and it is worth checking by hand. For
+The cancellation in the middle is the heart of the proof, and small cases show it at work. For
 $n = 1$ the arcsine coefficient is $c_1 = \frac12$, divided by 3, and the Wallis integral is $I_1 = \frac23$,
 so the term is $\frac12 \cdot \frac13 \cdot \frac23 = \frac19$. For $n = 2$ it is
 $\frac38 \cdot \frac15 \cdot \frac{8}{15} = \frac{1}{25}$. The coefficients of the arcsine and the
 Wallis integrals are built from the same odd and even products, one upside down relative to the other,
-and they cancel almost completely, leaving only $1/(2n+1)^2$. It is the kind of coincidence that is
-not a coincidence: both come from the same function, the sine, seen from two sides.
+and they cancel almost completely, leaving only $1/(2n+1)^2$. Both come from the sine, the
+coefficients through its inverse and the integrals through its powers, so it is no surprise that they
+fit.
 
 Why only the odd squares? Because the arcsine series contains only odd powers. That costs nothing. The
 even squares $\frac14 + \frac{1}{16} + \frac{1}{36} + \cdots$ are $\frac14$ of the whole sum, since
@@ -607,15 +603,15 @@ terms are 1.8944 and 0.1056. For $m = 3$ the three squared cotangents add up to 
 > $\pi^2 m(2m-1) / 3(2m+1)^2$ and $\pi^2\, 2m(m+1) / 3(2m+1)^2$. As $m \to \infty$ both bounds tend
 > to $2\pi^2/12 = \pi^2/6$, and so does $S_m$.
 
-The last step deserves a word. For large $m$, the numerator $m(2m-1)$ behaves like $2m^2$ and the
+Why do both bounds close on $\pi^2/6$? For large $m$, the numerator $m(2m-1)$ behaves like $2m^2$ and the
 denominator $3(2m+1)^2$ like $12m^2$, so the lower bound approaches $\pi^2 \cdot 2/12 = \pi^2/6$, and
 the upper bound does the same. The upper bound is in fact exactly
 $\frac{\pi^2}{6}\bigl(1 - \frac{1}{(2m+1)^2}\bigr)$, so it approaches the limit quickly: for
 $m = 1000$ it falls short of $\pi^2/6$ by only $4 \times 10^{-7}$.
 
-Notice what the proof did not need: no calculus beyond one limit at the very end, no infinite products,
-nothing from complex analysis beyond the formula of de Moivre. The price of that simplicity is a little
-algebra; the reward is a proof that a determined student can check line by line.
+The proof needs no calculus beyond one limit at the end, no infinite products, and nothing from
+complex analysis except de Moivre's formula. What it costs is a page of algebra, and a determined
+student can check every line of it.
 
 ## By Fourier series
 
@@ -822,20 +818,18 @@ Table: Five routes to $\pi^2/6$, from 1735 to 1993.
 Each route answers the question "where does $\pi$ come from?" differently. For Euler's product, it is
 the spacing of the zeros of the sine. For the arcsine proof, it is the angle $\pi/2$ whose sine is 1.
 For Cauchy, it is the angles at which $\sin((2m+1)x)$ vanishes. For Parseval, it is the period of the
-waves; for the double integral, the legs of a triangle. They are all the same circle, seen from
-different places, and a problem that can be approached from so many directions is usually telling us
-that it sits at a crossroads of mathematics.
+waves; for the double integral, the legs of a triangle. It is the same circle every time, met
+from five directions.
 
 ## What "solved" meant, and what is still open
 
 ### Four meanings of solved
 
-The problem was solved in 1735 in the sense that mattered to Euler: he had the answer and good reason
-to trust it. It was solved in the sense that matters to a proof in 1741, when every step could be
-checked by the standards of the day. By today's standards, it was secured in the nineteenth century,
-when the notions of limit and convergence that the arguments quietly rely on were finally made
-precise. And it has been solved again every few decades since, each new proof a small lesson in a
-different part of mathematics.
+In 1735 Euler had the answer and good reason to trust it. By 1741 he had a proof his contemporaries
+could check step by step. Today's standards came later, in the nineteenth
+century, when limit and convergence, which every one of these arguments quietly relies on, were
+finally made precise. And the proofs keep coming, each a small lesson in a different part of
+mathematics.
 
 ### The even powers
 
@@ -911,8 +905,7 @@ console.log(Math.PI ** 2 / 6); // 1.6449340668482264
 ```
 
 Ten terms and three corrections beat a thousand terms by three digits, and a hundred terms with the
-same corrections agree with $\pi^2/6$ to eleven decimal places. A little mathematics goes further
-than a lot of arithmetic.
+same corrections agree with $\pi^2/6$ to eleven decimal places.
 
 ## References
 
