@@ -141,9 +141,11 @@
   ],
   "education": [
     {
-      "institution": "University of Oxford",
-      "area": "Computer Science and Artificial Intelligence",
-      "studyType": "PhD"
+      "institution": "Oxford University",
+      "area": "Computer Science",
+      "specialization": "Artificial Intelligence",
+      "studyType": "Engineer's degree",
+      "endDate": "2007-06"
     }
   ],
   "publications": [
@@ -397,7 +399,7 @@
   ],
   "meta": {
     "canonical": "https://bmscomp.github.io/cv.json",
-    "version": "v1.4.0",
+    "version": "v1.3.2",
     "lastModified": "2026-09-30"
   }
 }
