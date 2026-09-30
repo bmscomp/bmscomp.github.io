@@ -1,5 +1,5 @@
 ---
-// Posts and lab notes in one list (tag pages): date in the margin, the section as a small label.
+// Articles from every section in one list (tag pages): date in the margin, the section as a label.
 import type { Article } from '../lib/articles';
 import { formatDate } from '../lib/posts';
 import { typeset } from '../lib/typeset';
@@ -30,7 +30,7 @@ const Heading = `h${headingLevel}` as 'h2' | 'h3';
             <a href={href} set:html={typeset(title)} />
           </Heading>
           <p class="entry-desc hyphenate mt-0.5 text-muted" set:html={typeset(description)} />
-          <p class="keywords mt-1">{kind === 'lab' ? 'Lab note' : 'Post'}</p>
+          <p class="keywords mt-1">{kind === 'lab' ? 'Lab note' : kind === 'math' ? 'Mathematics' : 'Post'}</p>
         </div>
       </li>
     ))

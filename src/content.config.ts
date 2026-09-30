@@ -7,13 +7,14 @@ import { z } from 'astro/zod';
 const links = () => ({
   relatedPosts: z.array(reference('posts')).default([]),
   relatedLab: z.array(reference('lab')).default([]),
+  relatedMath: z.array(reference('mathematics')).default([]),
   series: z.string().optional(),
   seriesPart: z.number().int().positive().optional(),
 });
 
-const posts = defineCollection({
-  loader: glob({ base: './src/content/posts', pattern: '**/*.md' }),
-  schema: z.object({
+// Blog posts and mathematics articles share one schema: both are set as papers.
+const paperSchema = () =>
+  z.object({
     title: z.string(),
     description: z.string(),
     pubDate: z.coerce.date(),
@@ -27,7 +28,17 @@ const posts = defineCollection({
     toc: z.boolean().optional(),
     ...links(),
     draft: z.boolean().default(false),
-  }),
+  });
+
+const posts = defineCollection({
+  loader: glob({ base: './src/content/posts', pattern: '**/*.md' }),
+  schema: paperSchema(),
+});
+
+// Mathematical problems, their history and their proofs (menu: Mathematics).
+const mathematics = defineCollection({
+  loader: glob({ base: './src/content/mathematics', pattern: '**/*.md' }),
+  schema: paperSchema(),
 });
 
 // Notes on software, systems, and hardware being tested.
@@ -163,4 +174,4 @@ const cv = defineCollection({
   }),
 });
 
-export const collections = { posts, lab, fixtures, reading, cv };
+export const collections = { posts, mathematics, lab, fixtures, reading, cv };

@@ -8,7 +8,9 @@ import type { Page, TestInfo } from '@playwright/test';
 export const PAGES = [
   '/',
   '/blog/',
-  '/blog/hello-world/',
+  '/mathematics/',
+  '/mathematics/basel-problem/',
+  '/mathematics/basel-problem-solved/',
   '/lab/',
   '/lab/astro-7-satteri/',
   '/lab/pnpm-12-typescript-7/',
@@ -19,8 +21,8 @@ export const PAGES = [
 ] as const;
 
 export const ARTICLES = [
-  '/blog/hello-world/',
-  '/blog/basel-problem/',
+  '/mathematics/basel-problem/',
+  '/mathematics/basel-problem-solved/',
   '/lab/astro-7-satteri/',
   '/lab/pnpm-12-typescript-7/',
   '/dev/kitchen-sink/',
@@ -61,12 +63,12 @@ export interface LineStats {
 
 /**
  * Characters per rendered line of article paragraphs. Each character's box is assigned to a line by
- * its vertical centre in units of the paragraph's line height; math and footnote references count
- * as they render. Paragraphs inside lists, quotations, callouts and footnotes are excluded.
+ * its vertical centre in units of the paragraph's line height. Lines that contain math are left out
+ * of every statistic, and paragraphs inside lists, quotations, callouts and footnotes are excluded.
  */
 export async function charactersPerLine(page: Page, selector = '.prose p'): Promise<LineStats> {
   return page.evaluate((sel) => {
-    const counts: { n: number; final: boolean; paraLines: number; words: number }[] = [];
+    const counts: { n: number; final: boolean; paraLines: number; words: number; math: boolean }[] = [];
     const paras = [...document.querySelectorAll<HTMLElement>(sel)].filter(
       (p) => !p.closest('li, blockquote, .callout, .footnotes, figure, .expressive-code'),
     );
@@ -75,6 +77,7 @@ export async function charactersPerLine(page: Page, selector = '.prose p'): Prom
       const lh = parseFloat(getComputedStyle(p).lineHeight);
       const top = p.getBoundingClientRect().top;
       const lines = new Map<number, string>();
+      const mathLines = new Set<number>();
       const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
       let node: Node | null;
       while ((node = walker.nextNode())) {
@@ -88,16 +91,26 @@ export async function charactersPerLine(page: Page, selector = '.prose p'): Prom
           if (!r || r.width === 0) continue;
           const line = Math.floor((r.top + r.height / 2 - top) / lh);
           lines.set(line, (lines.get(line) ?? '') + text[i]);
+          if (parent.closest('.katex')) mathLines.add(line);
         }
       }
-      const ordered = [...lines.entries()].sort((a, b) => a[0] - b[0]).map(([, s]) => s.trim());
-      ordered.forEach((s, i) =>
-        counts.push({ n: s.length, final: i === ordered.length - 1, paraLines: ordered.length, words: s.split(/\s+/).length }),
+      const ordered = [...lines.entries()].sort((a, b) => a[0] - b[0]);
+      ordered.forEach(([line, s], i) =>
+        counts.push({
+          n: s.trim().length,
+          final: i === ordered.length - 1,
+          paraLines: ordered.length,
+          words: s.trim().split(/\s+/).length,
+          math: mathLines.has(line),
+        }),
       );
     }
-    // Measure is judged on full lines: every line except the last line of each paragraph.
-    const all = counts.map((c) => c.n);
-    const full = counts.filter((c) => !c.final).map((c) => c.n);
+    // Measure is judged on full lines of prose: every line except the last of each paragraph. Lines
+    // holding a formula are left out: stacked fractions and scripts put several characters in one
+    // column, so their count says nothing about the width of the line.
+    const prose = counts.filter((c) => !c.math);
+    const all = prose.map((c) => c.n);
+    const full = prose.filter((c) => !c.final).map((c) => c.n);
     const mean = full.reduce((a, b) => a + b, 0) / Math.max(full.length, 1);
     return {
       lines: all.length,
@@ -105,8 +118,10 @@ export async function charactersPerLine(page: Page, selector = '.prose p'): Prom
       max: Math.max(0, ...all),
       over75: all.filter((n) => n > 75).length / Math.max(all.length, 1),
       over80: all.filter((n) => n > 80).length,
-      inner: counts.filter((c) => !c.final && c.paraLines >= 3).map((c) => c.n),
-      runts: counts.filter((c) => c.final && c.paraLines > 1 && c.words < 2).length,
+      // Lines holding a formula are left out of both: a formula cannot break like words, and a
+      // paragraph ending on one is normal mathematical writing, not a stranded word.
+      inner: counts.filter((c) => !c.final && c.paraLines >= 3 && !c.math).map((c) => c.n),
+      runts: counts.filter((c) => c.final && c.paraLines > 1 && c.words < 2 && !c.math).length,
     };
   }, selector);
 }

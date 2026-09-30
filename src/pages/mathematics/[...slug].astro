@@ -1,0 +1,13 @@
+---
+import Post from '../../layouts/Post.astro';
+import { getMathArticles } from '../../lib/mathematics';
+
+export async function getStaticPaths() {
+  const articles = await getMathArticles();
+  return articles.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+---
+
+<Post post={post} />

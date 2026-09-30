@@ -615,9 +615,15 @@
     font-size: 0.9em;
     font-style: italic;
   }
+  @media screen {
+    .paper-head > div,
+    .paper-abstract > .abstract {
+      max-width: calc(26.5 * var(--text-body));
+    }
+  }
   .abstract {
-    max-width: 32em;
-    margin: 1.9rem auto 0;
+    margin-top: 1.9rem;
+    padding-inline: 1.5em;
     font-size: calc(var(--text-body) * 0.9);
     line-height: 1.5;
   }
@@ -732,7 +738,8 @@
     font-variant-numeric: lining-nums proportional-nums;
   }
   .entry-desc {
-    max-width: 32em;
+    /* W2.4: at most about 72 characters a line, even for descriptions full of short words and numbers. */
+    max-width: 27em;
     font-variant-numeric: lining-nums proportional-nums;
   }
   /* W2.4: post and lab lists are set at the size of the articles they link to. */
@@ -837,6 +844,15 @@
   }
   .nav-link:hover {
     color: var(--ink);
+  }
+  /* Five sections fit one phone line with the label tracking instead of the heading tracking. */
+  @media (max-width: 39.99rem) {
+    .nav-link {
+      letter-spacing: var(--track-label);
+    }
+    .nav-link[aria-current='page']::after {
+      right: calc(0.35rem + var(--track-label));
+    }
   }
   .nav-link[aria-current='page'] {
     color: var(--accent);
@@ -1393,6 +1409,13 @@
   .paper .prose.prose-paper {
     counter-reset: section figure table;
   }
+  /* A paper's text block is a little narrower than a note's, about 66 characters, close to LaTeX's
+     article class; the title block and abstract are centred on it. */
+  @media screen {
+    .paper .prose.prose-paper {
+      max-width: 26.5em;
+    }
+  }
   /* Paragraphs as in LaTeX: no space between them, an indent for each new one, justified. */
   .paper .prose.prose-paper :where(p) {
     margin-block: 0;
@@ -1452,7 +1475,7 @@
     margin-inline: auto;
   }
   .paper .prose.prose-paper .table-scroll > table :where(th, td) {
-    padding-inline: 1em;
+    padding-inline: 0.7em;
   }
   /* Figures and captioned tables are numbered: "Figure 1: …", "Table 1: …". */
   .paper .prose.prose-paper figure:not(.frame) {

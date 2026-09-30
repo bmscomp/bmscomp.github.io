@@ -1,8 +1,8 @@
 ---
 // Shared shell for posts and lab notes: letterhead, fact sheet, contents, text and end block.
 // Post.astro and LabNote.astro only decide the facts; everything an article has in common is here.
-// Blog posts are set as papers (class "paper"): a LaTeX-style title block and abstract, numbered
-// sections, indented paragraphs; lab notes keep the notebook letterhead and fact sheet.
+// Blog posts and mathematics articles are set as papers (class "paper"): a LaTeX-style title block
+// and abstract, numbered sections, indented paragraphs; lab notes keep the notebook letterhead.
 import katexCss from 'katex/dist/katex.min.css?url';
 import katexMain from 'katex/dist/fonts/KaTeX_Main-Regular.woff2?url';
 import katexMath from 'katex/dist/fonts/KaTeX_Math-Italic.woff2?url';
@@ -30,7 +30,7 @@ export interface Series {
 }
 
 interface Props {
-  section: 'blog' | 'lab';
+  section: 'blog' | 'mathematics' | 'lab';
   /** Breadcrumb after the section name, e.g. the lab category. */
   crumbs?: { label: string; href?: string }[];
   title: string;
@@ -57,6 +57,7 @@ interface Props {
 
 const SECTIONS = {
   blog: { name: 'Blog', href: '/blog/', feed: '/blog/rss.xml', all: 'All posts' },
+  mathematics: { name: 'Mathematics', href: '/mathematics/', feed: '/mathematics/rss.xml', all: 'All mathematics' },
   lab: { name: 'Lab', href: '/lab/', feed: '/lab/rss.xml', all: 'All lab notes' },
 };
 
@@ -64,7 +65,7 @@ const { section, crumbs = [], title, description, pubDate, updatedDate, tags = [
 const { body = '', toc, older, newer, related = [], series, noindex, abstract, msc = [] } = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = rendered;
 const home = SECTIONS[section];
-const paper = section === 'blog';
+const paper = section === 'blog' || section === 'mathematics';
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 
 // Contents: the article's sections, when there are enough of them on a long page. Code makes a page

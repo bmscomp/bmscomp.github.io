@@ -22,7 +22,8 @@ import {
 // font-independent and gate the deploy (.github/workflows/check.yml).
 
 const LAB_NOTES = ['/lab/astro-7-satteri/', '/lab/pnpm-12-typescript-7/'];
-const REAL_ARTICLES = ['/blog/hello-world/', ...LAB_NOTES];
+const MATH = ['/mathematics/basel-problem/', '/mathematics/basel-problem-solved/'];
+const REAL_ARTICLES = [...MATH, ...LAB_NOTES];
 const { xs, phone, phoneShort, tablet, laptop, desktop, wide } = VIEWPORTS;
 
 test.describe('W1.1 fixture', () => {
@@ -538,8 +539,8 @@ test.describe('W5 article shell and orientation', () => {
       );
       expect.soft(types.filter((t) => t === 'BlogPosting')).toHaveLength(1);
     }
-    // Posts are set as papers: their tags are the keywords under the abstract.
-    await open(page, '/blog/hello-world/', desktop);
+    // Papers (posts and mathematics): their tags are the keywords under the abstract.
+    await open(page, '/mathematics/basel-problem/', desktop);
     await expect.soft(page.locator('.abstract .paper-meta a[href^="/tags/"]')).toHaveCount(2);
   });
 
@@ -694,8 +695,11 @@ test.describe('W5 article shell and orientation', () => {
 
 test.describe('W6 endings and paths between articles', () => {
   test('W6.1 articles link to each other; the Blog lede is its own @ci', async ({ page }) => {
-    await open(page, '/blog/hello-world/', desktop);
-    expect.soft(await page.locator('.prose a[href^="/"]').count()).toBeGreaterThanOrEqual(2);
+    // The two parts of the Basel series link to each other in their text.
+    await open(page, '/mathematics/basel-problem/', desktop);
+    await expect.soft(page.locator('.prose a[href="/mathematics/basel-problem-solved/"]')).not.toHaveCount(0);
+    await open(page, '/mathematics/basel-problem-solved/', desktop);
+    await expect.soft(page.locator('.prose a[href="/mathematics/basel-problem/"]')).not.toHaveCount(0);
     await open(page, '/lab/pnpm-12-typescript-7/', desktop);
     await expect.soft(page.locator('.prose a[href="/lab/astro-7-satteri/"]')).not.toHaveCount(0);
     await open(page, '/blog/', desktop);
@@ -739,7 +743,7 @@ test.describe('W6 endings and paths between articles', () => {
   test('W6.4 index pages keep heading order and hide empty filters @ci', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    for (const path of ['/blog/', '/lab/', '/tags/', '/tags/astro/', '/reading/']) {
+    for (const path of ['/blog/', '/mathematics/', '/lab/', '/tags/', '/tags/astro/', '/reading/']) {
       await open(page, path, desktop);
       expect.soft((await headingSkips(page)).skips, path).toEqual([]);
     }
@@ -764,7 +768,7 @@ test.describe('W6 endings and paths between articles', () => {
 
   test('W6.4 short pages end at the sheet, and phone entries are compact', async ({ page }, info) => {
     for (const vp of [tablet, desktop, wide]) {
-      for (const path of ['/blog/', '/tags/', '/reading/', '/tags/meta/', '/404.html']) {
+      for (const path of ['/blog/', '/tags/', '/reading/', '/tags/history/', '/404.html']) {
         await open(page, path, vp);
         const gap = await page.evaluate(
           () => document.querySelector('body > footer')!.getBoundingClientRect().top - document.querySelector('main > div')!.getBoundingClientRect().bottom,
@@ -787,15 +791,21 @@ test.describe('W6 endings and paths between articles', () => {
   test('W6.5 feeds: a global feed and one per section @ci', async ({ request, page }) => {
     const links = async (path: string) =>
       [...(await (await request.get(path)).text()).matchAll(/<item>.*?<link>([^<]+)<\/link>/gs)].map((m) => new URL(m[1]).pathname);
-    const [all, blog, lab] = [await links('/rss.xml'), await links('/blog/rss.xml'), await links('/lab/rss.xml')];
-    // Each section feed carries exactly its section's list; the global feed carries both.
-    await open(page, '/blog/', desktop);
-    const posts = await page.locator('main .entry-title a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    await open(page, '/lab/', desktop);
-    const notes = await page.locator('main .entry-title a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    expect.soft(blog.toSorted()).toEqual(posts.toSorted());
-    expect.soft(lab.toSorted()).toEqual(notes.toSorted());
-    expect.soft(all.toSorted()).toEqual([...blog, ...lab].toSorted());
+    const [all, blog, math, lab] = [
+      await links('/rss.xml'),
+      await links('/blog/rss.xml'),
+      await links('/mathematics/rss.xml'),
+      await links('/lab/rss.xml'),
+    ];
+    // Each section feed carries exactly its section's list; the global feed carries them all.
+    const listed = async (path: string) => {
+      await open(page, path, desktop);
+      return page.locator('main .entry-title a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+    };
+    expect.soft(blog.toSorted()).toEqual((await listed('/blog/')).toSorted());
+    expect.soft(math.toSorted()).toEqual((await listed('/mathematics/')).toSorted());
+    expect.soft(lab.toSorted()).toEqual((await listed('/lab/')).toSorted());
+    expect.soft(all.toSorted()).toEqual([...blog, ...math, ...lab].toSorted());
     expect.soft(all.every((p) => !p.startsWith('/dev/'))).toBe(true);
   });
 
@@ -830,10 +840,10 @@ test.describe('W7 long-form devices and print', () => {
       await page.emulateMedia({ media: 'screen' });
       record(info, `W7.1 A4 pages ${path}`, await printedPages(page));
     }
-    await open(page, '/blog/hello-world/', desktop);
+    await open(page, '/mathematics/basel-problem/', desktop);
     await page.emulateMedia({ media: 'print' });
     const after = await page.evaluate(() => getComputedStyle(document.querySelector('.prose a[href^="http"]')!, '::after').content);
-    expect.soft(after).toMatch(/astro\.build|attr\(href\)/);
+    expect.soft(after).toMatch(/https?:\/\/|attr\(href\)/);
   });
 
   test('W7.1 the CV prints to at least three A4 pages (owner decision O2)', async ({ page }, info) => {
@@ -913,7 +923,7 @@ test.describe('W8 accessibility', () => {
     test(`W8.1 link underlines and status colours are legible (${scheme}) ${scheme === 'dark' ? '@dark' : ''} @ci`, async ({
       page,
     }, info) => {
-      await open(page, '/blog/hello-world/', desktop);
+      await open(page, '/mathematics/basel-problem/', desktop);
       const [paper] = await computed(page, 'main > div', ['background-color']);
       const [prose] = await computed(page, '.prose a[href^="http"]', ['text-decoration-color', 'text-decoration-thickness']);
       const [other] = await computed(page, '.article-end a', ['text-decoration-color', 'text-decoration-thickness']);

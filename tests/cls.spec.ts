@@ -7,8 +7,8 @@ import { record } from './lib/measure';
 // /cv/ keeps a looser limit: its synthesized fallback small caps cannot be matched by @font-face
 // overrides (tracked separately, per the plan).
 const CASES = [
-  ['/blog/hello-world/', 1280, 900, 0.05],
-  ['/blog/hello-world/', 768, 1024, 0.05],
+  ['/mathematics/basel-problem/', 1280, 900, 0.05],
+  ['/mathematics/basel-problem/', 768, 1024, 0.05],
   ['/', 375, 812, 0.05],
   ['/lab/astro-7-satteri/', 1280, 900, 0.05],
   ['/cv/', 768, 1024, 0.1],
@@ -58,7 +58,7 @@ for (const [path, width, height, limit] of CASES) {
 
 // W8.3: KaTeX's faces use font-display: block, so formulas stay blank until they load. Preloaded, the
 // two every formula uses arrive within 100 ms of first contentful paint (baseline about 500 ms).
-for (const path of ['/lab/astro-7-satteri/', '/blog/hello-world/']) {
+for (const path of ['/lab/astro-7-satteri/', '/mathematics/basel-problem/']) {
   test(`W8.3 math fonts arrive with first paint on ${path} @cls`, async ({ browser }, info) => {
     const runs: number[] = [];
     for (let i = 0; i < 5; i++) {

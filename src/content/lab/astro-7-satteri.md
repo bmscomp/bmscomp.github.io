@@ -6,7 +6,7 @@ category: software
 status: adopted
 tools: [Astro 7.3, Sätteri, KaTeX, Expressive Code, Tailwind CSS 4]
 tags: [astro, markdown, math]
-relatedPosts: [hello-world]
+relatedMath: [basel-problem]
 relatedLab: [pnpm-12-typescript-7]
 platform: macOS · Node 26
 repo: https://github.com/bmscomp/bmscomp.github.io

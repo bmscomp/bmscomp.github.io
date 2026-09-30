@@ -1,11 +1,13 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { formatDate } from '../lib/posts';
+import { articleHref } from '../lib/related';
 import { typeset } from '../lib/typeset';
 import TagList from './TagList.astro';
 
 interface Props {
-  posts: CollectionEntry<'posts'>[];
+  /** Blog posts or mathematics articles. */
+  posts: (CollectionEntry<'posts'> | CollectionEntry<'mathematics'>)[];
   /** h2 where the list is the page's content, h3 inside a Section (W6.4: no skipped levels). */
   headingLevel?: 2 | 3;
 }
@@ -28,7 +30,7 @@ const Heading = `h${headingLevel}` as 'h2' | 'h3';
         </p>
         <div>
           <Heading class="entry-title">
-            <a href={`/blog/${post.id}/`} set:html={typeset(post.data.title)} />
+            <a href={articleHref(post.collection, post.id)} set:html={typeset(post.data.title)} />
             {post.data.draft && <span class="label text-muted"> · draft</span>}
           </Heading>
           <p class="entry-desc hyphenate mt-0.5 text-muted" set:html={typeset(post.data.description)} />
