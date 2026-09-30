@@ -27,7 +27,7 @@ const LAB_NOTES: string[] = [];
 const NOTE = '/dev/kitchen-sink/';
 // First-screen rules hold for an ordinary note; the kitchen sink's fact sheet carries every row at once.
 const TYPICAL = '/dev/typical-note/';
-const MATH = ['/mathematics/basel-problem/', '/mathematics/basel-problem-solved/'];
+const MATH = ['/mathematics/basel-problem/'];
 const REAL_ARTICLES = [...MATH, ...LAB_NOTES];
 const { xs, phone, phoneShort, tablet, laptop, desktop, wide } = VIEWPORTS;
 
@@ -546,7 +546,11 @@ test.describe('W5 article shell and orientation', () => {
     }
     // Papers (posts and mathematics): their tags are the keywords under the abstract.
     await open(page, '/mathematics/basel-problem/', desktop);
-    await expect.soft(page.locator('.abstract .paper-meta a[href^="/tags/"]')).toHaveCount(2);
+    const keywords = await page.evaluate(
+      () => JSON.parse(document.querySelector('script[type="application/ld+json"]')!.textContent!).keywords.length,
+    );
+    expect.soft(keywords).toBeGreaterThan(0);
+    await expect.soft(page.locator('.abstract .paper-meta a[href^="/tags/"]')).toHaveCount(keywords);
   });
 
   test('W5.2 math-free articles load no KaTeX @ci', async ({ page }) => {
@@ -699,12 +703,12 @@ test.describe('W5 article shell and orientation', () => {
 });
 
 test.describe('W6 endings and paths between articles', () => {
-  test('W6.1 articles link to each other; the Blog lede is its own @ci', async ({ page }) => {
-    // The two parts of the Basel series link to each other in their text.
-    await open(page, '/mathematics/basel-problem/', desktop);
-    await expect.soft(page.locator('.prose a[href="/mathematics/basel-problem-solved/"]')).not.toHaveCount(0);
-    await open(page, '/mathematics/basel-problem-solved/', desktop);
-    await expect.soft(page.locator('.prose a[href="/mathematics/basel-problem/"]')).not.toHaveCount(0);
+  test('W6.1 old article addresses lead to the article; the Blog lede is its own @ci', async ({ page }) => {
+    // The Basel article was a blog post, then two parts; both old addresses redirect to it.
+    for (const old of ['/blog/basel-problem/', '/mathematics/basel-problem-solved/']) {
+      const html = await (await page.request.get(old)).text();
+      expect.soft(html, old).toContain('url=/mathematics/basel-problem/');
+    }
     await open(page, '/blog/', desktop);
     expect.soft(await page.locator('.lede').textContent()).not.toMatch(/notes/i);
   });
@@ -723,12 +727,13 @@ test.describe('W6 endings and paths between articles', () => {
     }
   });
 
-  test('W6.2 from the end of an article, the next one is one tap away on a phone', async ({ page }) => {
+  test('W6.2 from the end of an article, the way on is one tap away on a phone', async ({ page }) => {
     await open(page, '/mathematics/basel-problem/', phone);
-    // The text ends where the prose does: a paper's references and notes are part of it.
+    // The text ends where the prose does: a paper's references and notes are part of it. With no
+    // other article to point to, the way on is the section's index.
     const distance = await page.evaluate(() => {
       const last = document.querySelector('.prose')!.getBoundingClientRect().bottom;
-      const link = document.querySelector('.article-end a[href="/mathematics/basel-problem-solved/"]')!.getBoundingClientRect().top;
+      const link = document.querySelector('.article-end a[href="/mathematics/"]')!.getBoundingClientRect().top;
       return link - last;
     });
     expect.soft(distance).toBeLessThanOrEqual(812);
@@ -817,19 +822,24 @@ test.describe('W6 endings and paths between articles', () => {
   });
 
   test('W6.5 tag pages list every tagged article; /tags/ reads as an index', async ({ page }, info) => {
+    // Every article carrying the tag, as the global feed lists them by category.
+    const feed = await (await page.request.get('/rss.xml')).text();
+    const tagged = [...feed.matchAll(/<item>(.*?)<\/item>/gs)].filter((m) => m[1].includes('<category>series</category>')).length;
+    expect.soft(tagged).toBeGreaterThanOrEqual(1);
     await open(page, '/tags/series/', desktop);
-    expect.soft(await page.locator('main .entry').count()).toBeGreaterThanOrEqual(2);
+    expect.soft(await page.locator('main .entry').count()).toBe(tagged);
     await open(page, '/tags/', desktop);
     const s = await smallCaps(page, 'main');
     record(info, 'W6.5 /tags/ small caps in main', s.share);
     expect.soft(s.share).toBeLessThanOrEqual(0.25);
   });
 
-  test('W6.6 every article links to a related one @ci', async ({ page }) => {
-    for (const path of REAL_ARTICLES) {
-      await open(page, path, desktop);
-      await expect.soft(page.locator('.article-end dt', { hasText: /related|series/ }).first(), path).toBeVisible();
-    }
+  test('W6.6 related articles are listed in the end block @ci', async ({ page }) => {
+    // The site has one article at the moment, so the fixture, which names it as related, carries the
+    // row. (A series row needs two parts; src/lib/series.test.ts covers it.)
+    await open(page, NOTE, desktop);
+    await expect.soft(page.locator('.article-end dt', { hasText: 'related' })).toBeVisible();
+    await expect.soft(page.locator('.article-end a[href="/mathematics/basel-problem/"]')).not.toHaveCount(0);
   });
 });
 
