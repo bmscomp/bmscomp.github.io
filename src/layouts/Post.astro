@@ -40,19 +40,9 @@ const series = position && {
   newer={link(newer)}
   related={related}
   series={series}
+  abstract={data.abstract}
+  msc={data.msc}
 >
-  <Fragment slot="facts">
-    {
-      data.tags.length > 0 && (
-        <div class="row">
-          <dt class="gutter label">filed under</dt>
-          <dd>
-            <TagLinks tags={data.tags} />
-          </dd>
-        </div>
-      )
-    }
-  </Fragment>
   <Fragment slot="end">
     {
       data.tags.length > 0 && (

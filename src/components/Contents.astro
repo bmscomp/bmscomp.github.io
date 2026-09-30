@@ -4,12 +4,13 @@
 import type { MarkdownHeading } from 'astro';
 
 interface Props {
-  headings: MarkdownHeading[];
+  /** Section headings; papers pass their section numbers too. */
+  headings: (MarkdownHeading & { number?: number })[];
   variant: 'row' | 'disclosure';
 }
 
 const { headings, variant } = Astro.props;
-const links = headings.map(({ slug, text }) => ({ href: `#${slug}`, text }));
+const links = headings.map(({ slug, text, number }) => ({ href: `#${slug}`, text, number }));
 ---
 
 {
@@ -18,8 +19,9 @@ const links = headings.map(({ slug, text }) => ({ href: `#${slug}`, text }));
       <dt class="gutter label">contents</dt>
       <dd>
         <ol class="run-in">
-          {links.map(({ href, text }) => (
+          {links.map(({ href, text, number }) => (
             <li>
+              {number && <span class="contents-number">{number}</span>}
               <a href={href}>{text}</a>
             </li>
           ))}
@@ -35,8 +37,9 @@ const links = headings.map(({ slug, text }) => ({ href: `#${slug}`, text }));
         </span>
       </summary>
       <ol>
-        {links.map(({ href, text }) => (
-          <li>
+        {links.map(({ href, text, number }) => (
+          <li class:list={[number && 'numbered']}>
+            {number && <span class="contents-number">{number}</span>}
             <a href={href}>{text}</a>
           </li>
         ))}

@@ -26,6 +26,30 @@
   font-style: italic;
   font-display: swap;
 }
+/*
+ * Greek letters and math symbols (π, ζ, ≈, ⋯) for mathematical writing, in a separate subset: the
+ * unicode-range means a browser downloads it only for a page that uses one of them, so the rest of the
+ * site (the CV included) loads nothing new. Same source fonts, without small caps:
+ *   pyftsubset "EBGaramond[wght].ttf" --flavor=woff2 \
+ *     --unicodes="U+0391-03A1,U+03A3-03A9,U+03B1-03C9,U+03D1,U+03D5-03D6,U+03F5,U+2200-22FF,U+25A1" \
+ *     --layout-features="kern,liga,clig,calt,ccmp,locl,mark,mkmk,onum,lnum,pnum,tnum,case,sups"
+ */
+@font-face {
+  font-family: 'EB Garamond Web';
+  src: url('../assets/fonts/eb-garamond/EBGaramond-GreekMath-VF.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0391-03A1, U+03A3-03A9, U+03B1-03C9, U+03D1, U+03D5-03D6, U+03F5, U+2200-22FF, U+25A1;
+}
+@font-face {
+  font-family: 'EB Garamond Web';
+  src: url('../assets/fonts/eb-garamond/EBGaramond-Italic-GreekMath-VF.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0391-03A1, U+03A3-03A9, U+03B1-03C9, U+03D1, U+03D5-03D6, U+03F5, U+2200-22FF, U+25A1;
+}
 
 /*
  * W2.1: a local serif stretched to EB Garamond's metrics, so text does not reflow when the webfont
@@ -556,6 +580,90 @@
     }
   }
 
+  /* ---------- Blog posts as papers: the front matter of LaTeX's article class ---------- */
+  .paper-head,
+  .paper-abstract {
+    text-align: center;
+  }
+  .paper-title {
+    margin-top: 0.75rem;
+    font-size: clamp(2rem, 1.55rem + 1.9vw, 2.75rem);
+    font-weight: 500;
+    line-height: 1.12;
+    font-variant-numeric: lining-nums;
+    text-wrap: balance;
+  }
+  .paper-author {
+    margin-top: 1.1rem;
+    font-size: 1.15em;
+    font-variant-caps: small-caps;
+    letter-spacing: var(--track-sc);
+  }
+  .paper-author a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .paper-author a:hover {
+    color: var(--accent);
+  }
+  .paper-date {
+    margin-top: 0.2rem;
+    color: var(--muted);
+  }
+  .paper-length {
+    display: block;
+    font-size: 0.9em;
+    font-style: italic;
+  }
+  .abstract {
+    max-width: 32em;
+    margin: 1.9rem auto 0;
+    font-size: calc(var(--text-body) * 0.9);
+    line-height: 1.5;
+  }
+  .abstract-title {
+    margin-bottom: 0.3em;
+    font-size: 1em;
+    font-weight: 600;
+    font-variant-caps: small-caps;
+    letter-spacing: var(--track-sc);
+  }
+  .abstract > p {
+    text-align: left;
+    hyphens: auto;
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+  .abstract > p + p {
+    text-indent: 1.5em;
+  }
+  .abstract > .paper-meta {
+    margin-top: 0.6em;
+    color: var(--muted);
+    text-align: left;
+    font-variant-numeric: lining-nums;
+  }
+  .paper-meta-label {
+    font-style: italic;
+  }
+  .paper-meta .run-in {
+    display: inline;
+  }
+  @media (min-width: 40rem) {
+    .abstract > p {
+      text-align: justify;
+    }
+  }
+  /* Section numbers in the contents, as in the text. */
+  .contents-number {
+    margin-inline-end: 0.35em;
+    color: var(--accent);
+    font-variant-numeric: lining-nums;
+  }
+  .paper .contents-disclosure > ol {
+    padding-inline-start: 0;
+    list-style: none;
+  }
+
   /* ---------- Entries ---------- */
   .entry + .entry {
     margin-top: 1.6rem;
@@ -905,6 +1013,8 @@
     hyphens: auto;
     hyphenate-limit-chars: 8 4 4;
     text-wrap: pretty;
+    /* A string with no break (a DOI, a long URL) wraps rather than widen a narrow page. */
+    overflow-wrap: break-word;
   }
   .prose.prose-paper > :first-child {
     margin-top: 0;
@@ -1222,6 +1332,160 @@
       margin-inline-start: 0;
     }
   }
+  /* Mathematical environments (callouts.ts): run-in labels as in amsthm. Statements of theorems,
+     lemmas, propositions and corollaries are italic; definitions, examples, remarks and proofs are
+     upright; a proof ends with an open square at the right margin. */
+  .prose.prose-paper .env {
+    margin-block: calc(0.75 * var(--lh));
+  }
+  .prose.prose-paper .env > :first-child {
+    margin-top: 0;
+  }
+  .prose.prose-paper .env > :last-child {
+    margin-bottom: 0;
+  }
+  .prose.prose-paper :where(.env-theorem, .env-lemma, .env-proposition, .env-corollary) {
+    font-style: italic;
+  }
+  .prose.prose-paper .env-label {
+    font-style: normal;
+    font-weight: 600;
+  }
+  .prose.prose-paper :where(.env-proof, .env-remark) .env-label {
+    font-style: italic;
+    font-weight: 400;
+  }
+  .prose.prose-paper .env-note {
+    font-style: normal;
+  }
+  .prose.prose-paper .env-proof > p:last-child::after,
+  .prose.prose-paper .env-proof:not(:has(> p:last-child))::after {
+    content: '';
+    width: 0.62em;
+    height: 0.62em;
+    border: 1px solid currentColor;
+  }
+  .prose.prose-paper .env-proof > p:last-child::after {
+    float: right;
+    margin: 0.42em 0 0 1em;
+  }
+  .prose.prose-paper .env-proof:not(:has(> p:last-child))::after {
+    display: block;
+    margin-left: auto;
+  }
+  /* Table captions ("Table: …" after a table); numbered in papers. */
+  .prose.prose-paper caption {
+    caption-side: top;
+    padding-bottom: 0.6em;
+    color: var(--muted);
+    font-size: 1em;
+    font-style: italic;
+    text-align: center;
+  }
+  /* Equation numbers and citations stay upright, even inside an italic statement. */
+  .prose.prose-paper .eqref,
+  .prose.prose-paper .cite {
+    font-style: normal;
+    font-variant-numeric: lining-nums;
+  }
+
+  /* ---------- Blog posts as papers: the body of LaTeX's article class ---------- */
+  .paper .prose.prose-paper {
+    counter-reset: section figure table;
+  }
+  /* Paragraphs as in LaTeX: no space between them, an indent for each new one, justified. */
+  .paper .prose.prose-paper :where(p) {
+    margin-block: 0;
+  }
+  .paper .prose.prose-paper :where(p + p) {
+    text-indent: 1.5em;
+  }
+  .paper .prose.prose-paper :where(li > p, .env > p) {
+    margin-block: 0;
+  }
+  @media (min-width: 40rem) {
+    .paper .prose.prose-paper :where(p, li) {
+      text-align: justify;
+    }
+  }
+  /* Numbered sections and subsections, bold and roman; the number in the accent colour. */
+  .paper .prose.prose-paper .section-head:has(> h2:not(#references, #bibliography)) {
+    counter-increment: section;
+    counter-reset: subsection;
+  }
+  .paper .prose.prose-paper .section-head:has(> h3) {
+    counter-increment: subsection;
+  }
+  .paper .prose.prose-paper .section-head > :is(h2, h3) {
+    color: var(--ink);
+    font-variant-caps: normal;
+    letter-spacing: 0;
+    font-weight: 600;
+  }
+  .paper .prose.prose-paper .section-head > h2 {
+    font-size: 1.25em;
+  }
+  .paper .prose.prose-paper .section-head > h3 {
+    font-size: 1.05em;
+    font-style: normal;
+  }
+  .paper .prose.prose-paper .section-head > h2:not(#references, #bibliography)::before {
+    content: counter(section) '\2002\2002';
+    color: var(--accent);
+  }
+  .paper .prose.prose-paper .section-head > h3::before {
+    content: counter(section) '.' counter(subsection) '\2002\2002';
+    color: var(--accent);
+  }
+  .paper .prose.prose-paper :where(h4) {
+    font-variant-caps: normal;
+    letter-spacing: 0;
+    font-weight: 600;
+  }
+  /* A paper sets its tables at their natural width, centred on the text, instead of breaking them out. */
+  .paper .prose.prose-paper .table-scroll {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+  .paper .prose.prose-paper .table-scroll > table {
+    width: auto;
+    margin-inline: auto;
+  }
+  .paper .prose.prose-paper .table-scroll > table :where(th, td) {
+    padding-inline: 1em;
+  }
+  /* Figures and captioned tables are numbered: "Figure 1: …", "Table 1: …". */
+  .paper .prose.prose-paper figure:not(.frame) {
+    counter-increment: figure;
+  }
+  .paper .prose.prose-paper figure:not(.frame) > figcaption::before {
+    content: 'Figure ' counter(figure) ': ';
+    font-style: normal;
+  }
+  .paper .prose.prose-paper table:has(> caption) {
+    counter-increment: table;
+  }
+  .paper .prose.prose-paper caption::before {
+    content: 'Table ' counter(table) ': ';
+    font-style: normal;
+  }
+  /* The reference list: [1], [2]… in a hanging column, set a little smaller. */
+  .paper .prose.prose-paper ol.references {
+    padding-inline-start: 2.6em;
+    list-style: none;
+    font-size: 0.92em;
+  }
+  .paper .prose.prose-paper ol.references > li {
+    position: relative;
+    text-align: left;
+  }
+  .paper .prose.prose-paper ol.references > li::before {
+    content: '[' counter(list-item) ']';
+    position: absolute;
+    right: calc(100% + 0.6em);
+    color: var(--muted);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
   /* W5.4: section marks. A § link beside each h2 and h3: in the margin column where the article grid is
      active (h2s also draw the CV's accent bar there), at the end of the heading's line below that. */
   .prose.prose-paper .section-head {
@@ -1421,5 +1685,9 @@
     font-size: 0.85em;
     color: var(--muted);
     overflow-wrap: anywhere;
+  }
+  /* A DOI printed as its link text is its own address. */
+  .prose ol.references a[href^='https://doi.org/']::after {
+    content: none;
   }
 }

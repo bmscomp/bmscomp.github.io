@@ -47,3 +47,10 @@ test('line numbers: indented code, and CRLF files', () => {
   const crlf = `Intro.\r\n\r\n\`\`\`\r\n${'z'.repeat(110)}\r\n\`\`\`\r\n`;
   assert.deepEqual(check(crlf), []);
 });
+
+test('equations: unknown \\eqref and inline \\label are warnings', () => {
+  assert.deepEqual(check('$$\na = b \\label{eq:a}\n$$\n\nSee $\\eqref{eq:a}$ and $\\eqref{eq:b}$.\n'), [
+    '5 warning \\eqref{eq',
+  ]);
+  assert.deepEqual(check('Inline $x \\label{eq:x}$ here.\n'), ['1 warning \\label in inline math numbers nothing']);
+});

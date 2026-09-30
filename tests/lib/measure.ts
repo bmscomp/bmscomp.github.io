@@ -20,6 +20,7 @@ export const PAGES = [
 
 export const ARTICLES = [
   '/blog/hello-world/',
+  '/blog/basel-problem/',
   '/lab/astro-7-satteri/',
   '/lab/pnpm-12-typescript-7/',
   '/dev/kitchen-sink/',
