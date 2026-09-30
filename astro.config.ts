@@ -7,6 +7,11 @@ import { features, hastPlugins, mdastPlugins } from './src/lib/markdown/index.ts
 
 export default defineConfig({
   site: 'https://bmscomp.github.io',
+  // Old addresses keep working: the Basel article moved to Mathematics; Hello, world was removed.
+  redirects: {
+    '/blog/basel-problem': '/mathematics/basel-problem/',
+    '/blog/hello-world': '/blog/',
+  },
   integrations: [
     expressiveCode({
       themes: ['github-light', 'github-dark'],

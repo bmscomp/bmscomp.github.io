@@ -29,7 +29,7 @@ const categoryHref = groups.category && `/lab/?category=${category}`;
 const categoryName = category[0].toUpperCase() + category.slice(1);
 const toolList = tools.map(typeset).join(', ');
 const href = `/lab/${id}/`;
-const related = await resolveRelated([...data.relatedPosts, ...data.relatedLab]);
+const related = await resolveRelated([...data.relatedPosts, ...data.relatedMath, ...data.relatedLab]);
 const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href, title });
 const series = position && {
   ...position,

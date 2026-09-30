@@ -23,10 +23,10 @@ Every page is a typeset "sheet of paper": EB Garamond with true small caps and o
 and labels in a left margin column, small-caps section titles with an accent bar. The system lives in
 `src/styles/global.css` (palette tokens `page`, `paper`, `ink`, `muted`, `rule`, `accent` switch for dark
 mode and print); `src/styles/cv.css` only holds CV-specific pieces. Shared building blocks:
-`PageHeader`, `Section`, `PostList`, `LabList`, `ArticleList`, `TagList`, `Colophon`. Posts and lab
-notes share one shell, `src/layouts/Article.astro` (fact sheet, `Contents`, text, `ArticleEnd`). Social
-cards (`src/lib/og.ts`) use the same paper style: `/og/<post>.png`, `/og/lab/<note>.png` and
-`/og/cv.png`.
+`PageHeader`, `Section`, `PostList`, `LabList`, `ArticleList`, `TagList`, `Colophon`. Posts,
+mathematics articles and lab notes share one shell, `src/layouts/Article.astro` (fact sheet,
+`Contents`, text, `ArticleEnd`). Social cards (`src/lib/og.ts`) use the same paper style:
+`/og/<post>.png`, `/og/mathematics/<article>.png`, `/og/lab/<note>.png` and `/og/cv.png`.
 
 The type is **EB Garamond**, self-hosted from `src/assets/fonts/eb-garamond/` (OFL). It is a Latin subset
 of the full font, because the npm/Google Fonts builds drop the small caps, old-style figures and
@@ -34,9 +34,11 @@ superior figures; the `pyftsubset` command is at the top of `src/styles/global.c
 holds the Greek letters and math symbols (π, ζ, ≈, ⋯), and a browser downloads it only for a page that
 uses one. A metric-matched fallback keeps the text from jumping while it loads.
 
-## Write a post
+## Write a post or a mathematics article
 
-Add a Markdown file to `src/content/posts/`. The file name becomes the URL (`/blog/<file-name>/`).
+Add a Markdown file to `src/content/posts/` for the blog (`/blog/<file-name>/`), or to
+`src/content/mathematics/` for the Mathematics section (`/mathematics/<file-name>/`). Both take the same
+frontmatter:
 
 ```md
 ---
@@ -52,15 +54,15 @@ draft: false                   # true: visible in `pnpm dev` only
 ---
 ```
 
-Posts are set as papers, in the manner of LaTeX's article class and in the site's type: a title block
+Both are set as papers, in the manner of LaTeX's article class and in the site's type: a title block
 centred over the text (title, author, date), the abstract with keywords and subject classification,
 numbered sections, indented and justified paragraphs, theorem environments, numbered equations,
 tables and figures, and a numbered reference list (see "Writing features"). Lab notes keep the
 notebook letterhead and fact sheet; the CV is unaffected.
 
-Tags link to `/tags/<tag>/`. Each post gets a generated social card at `/og/<file-name>.png`. Optional
-fields shared with lab notes (`toc`, `relatedPosts`, `relatedLab`, `series`, `seriesPart`) are described
-under "Writing features".
+Tags link to `/tags/<tag>/`. Each article gets a generated social card. Optional fields shared with lab
+notes (`toc`, `relatedPosts`, `relatedMath`, `relatedLab`, `series`, `seriesPart`) are described under
+"Writing features". The blog is empty for now; its page says so and points to Mathematics.
 
 ## Write a lab note
 
@@ -113,10 +115,11 @@ plugins in `src/lib/markdown/`. What renders today:
 | `## References` followed by a numbered list | Entries labelled [1], [2]…; `[1]` or `[1, 3]` in the text link to them. | Only numbers the list has are linked. |
 | `API`, `CSS`, `URLs` | Acronyms in small caps, as in titles. | Not in code, links or headings. |
 
-Frontmatter can also link articles: `relatedPosts: [hello-world]` and `relatedLab: [astro-7-satteri]` add
-a "related" row to the end block (a misspelled id fails the build), and `series: Name` with
-`seriesPart: 2` adds "Name, part 2 of 3" to the fact sheet and the other parts to the end block. Tags on
-posts and lab notes share one index at `/tags/`.
+Frontmatter can also link articles: `relatedMath: [basel-problem]`, `relatedLab: [astro-7-satteri]` and
+`relatedPosts: [...]` add a "related" row to the end block (a misspelled id fails the build), and
+`series: Name` with `seriesPart: 2` adds "Name, part 2 of 3" to the fact sheet and the other parts to
+the end block; on the same day, a later part lists as the newer one. Tags on every section share one
+index at `/tags/`.
 
 `pnpm lint:content` (part of `pnpm build`) checks every file and prints `path:line`: an image without alt
 text, a reference-style image, a raw `<img>`, an h1 or a skipped heading level fail the build; a code
@@ -160,8 +163,10 @@ reaches GitHub Pages unless it passes:
 
 ## Feeds
 
-- `/rss.xml` — everything: posts, and lab notes titled "Lab: …"
+- `/rss.xml` — everything: posts, mathematics articles titled "Mathematics: …", and lab notes titled
+  "Lab: …"
 - `/blog/rss.xml` — posts
+- `/mathematics/rss.xml` — mathematics articles
 - `/lab/rss.xml` — lab notes, with their status
 - `/reading/rss.xml` — what I'm reading or have read; advertised once it has an item
 

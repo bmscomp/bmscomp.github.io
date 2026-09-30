@@ -6,7 +6,6 @@ category: software
 status: adopted
 tools: [pnpm 12.6, TypeScript 7.0, TypeScript 6, Node 26, GitHub Actions]
 tags: [astro, pnpm, typescript]
-relatedPosts: [hello-world]
 relatedLab: [astro-7-satteri]
 platform: macOS · Node 26
 repo: https://github.com/bmscomp/bmscomp.github.io

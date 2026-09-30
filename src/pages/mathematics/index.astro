@@ -1,0 +1,21 @@
+---
+import Colophon from '../../components/Colophon.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PostList from '../../components/PostList.astro';
+import Base from '../../layouts/Base.astro';
+import { getMathArticles } from '../../lib/mathematics';
+
+const articles = await getMathArticles();
+const lede = 'Problems, their history and their proofs, set as papers.';
+---
+
+<Base title="Mathematics" description={lede}>
+  <link slot="head" rel="alternate" type="application/rss+xml" title="Mathematics" href="/mathematics/rss.xml" />
+  <PageHeader kicker="Papers" title="Mathematics" lede={lede}>
+    <p class="mt-5"><a href="/mathematics/rss.xml" class="pill">RSS feed</a></p>
+  </PageHeader>
+  <div>
+    <PostList posts={articles} headingLevel={2} />
+  </div>
+  <Colophon />
+</Base>

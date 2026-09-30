@@ -6,9 +6,11 @@ import PostList from '../components/PostList.astro';
 import Section from '../components/Section.astro';
 import Base from '../layouts/Base.astro';
 import { getLabNotes } from '../lib/lab';
+import { getMathArticles } from '../lib/mathematics';
 import { getPosts } from '../lib/posts';
 
 const latest = (await getPosts()).slice(0, 5);
+const math = (await getMathArticles()).slice(0, 3);
 const lab = (await getLabNotes()).slice(0, 3);
 ---
 
@@ -16,7 +18,7 @@ const lab = (await getLabNotes()).slice(0, 3);
   <PageHeader
     kicker="Welcome"
     title="Hi, I'm Said."
-    lede="Software engineer. I write about what I build, the software and systems I test, the articles I read, and the places I travel to."
+    lede="Software engineer. I write about mathematics, what I build, the software and systems I test, the articles I read, and the places I travel to."
   >
     <p class="mt-5 flex flex-wrap gap-2">
       <a href="/cv/" class="pill">Curriculum vitæ</a>
@@ -24,13 +26,33 @@ const lab = (await getLabNotes()).slice(0, 3);
     </p>
   </PageHeader>
 
-  <Section id="latest" title="Latest posts" variant="list">
-    <PostList posts={latest} />
-    <p class="row mt-6">
-      <span class="gutter" aria-hidden="true"></span>
-      <a href="/blog/" class="label">All posts →</a>
-    </p>
-  </Section>
+  {
+    latest.length > 0 && (
+      <Section id="latest" title="Latest posts" variant="list">
+        <PostList posts={latest} />
+        <p class="row mt-6">
+          <span class="gutter" aria-hidden="true" />
+          <a href="/blog/" class="label">
+            All posts →
+          </a>
+        </p>
+      </Section>
+    )
+  }
+
+  {
+    math.length > 0 && (
+      <Section id="mathematics" title="Mathematics" variant="list">
+        <PostList posts={math} />
+        <p class="row mt-6">
+          <span class="gutter" aria-hidden="true" />
+          <a href="/mathematics/" class="label">
+            All mathematics →
+          </a>
+        </p>
+      </Section>
+    )
+  }
 
   {
     lab.length > 0 && (

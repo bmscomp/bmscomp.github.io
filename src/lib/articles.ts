@@ -1,9 +1,10 @@
 import { getLabNotes, type LabNote } from './lab';
+import { getMathArticles, type MathArticle } from './mathematics';
 import { getPosts, type Post } from './posts';
 
-/** A post or a lab note, as lists and tag pages show it. */
+/** A post, a mathematics article or a lab note, as lists and tag pages show it. */
 export interface Article {
-  kind: 'post' | 'lab';
+  kind: 'post' | 'math' | 'lab';
   id: string;
   href: string;
   title: string;
@@ -13,13 +14,13 @@ export interface Article {
   tags: string[];
   series?: string;
   seriesPart?: number;
-  entry: Post | LabNote;
+  entry: Post | MathArticle | LabNote;
 }
 
-const fromPost = (post: Post): Article => ({
-  kind: 'post',
+const fromPost = (post: Post | MathArticle): Article => ({
+  kind: post.collection === 'mathematics' ? 'math' : 'post',
   id: post.id,
-  href: `/blog/${post.id}/`,
+  href: post.collection === 'mathematics' ? `/mathematics/${post.id}/` : `/blog/${post.id}/`,
   title: post.data.title,
   description: post.data.description,
   pubDate: post.data.pubDate,
@@ -44,9 +45,13 @@ const fromNote = (note: LabNote): Article => ({
   entry: note,
 });
 
-/** Posts and lab notes together, newest first; same-day articles by URL, so the order is stable. */
+/** Every article together, newest first; same-day articles by URL, so the order is stable. */
 export async function getArticles() {
-  const articles = [...(await getPosts()).map(fromPost), ...(await getLabNotes()).map(fromNote)];
+  const articles = [
+    ...(await getPosts()).map(fromPost),
+    ...(await getMathArticles()).map(fromPost),
+    ...(await getLabNotes()).map(fromNote),
+  ];
   return articles.sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf() || a.href.localeCompare(b.href));
 }
 
@@ -57,7 +62,7 @@ export function tagSlug(tag: string) {
     .replace(/^-|-$/g, '');
 }
 
-/** Every tag used by a post or a lab note, keyed by slug, in alphabetical order (a book index). */
+/** Every tag used by an article, keyed by slug, in alphabetical order (a book index). */
 export async function getTags() {
   const tags = new Map<string, { name: string; articles: Article[] }>();
   for (const article of await getArticles()) {

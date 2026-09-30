@@ -12,6 +12,8 @@ abstract: |
 pubDate: 2026-09-30
 tags: [mathematics, series]
 msc: [11M06, 40A05, 01A50]
+series: The Basel problem
+seriesPart: 1
 ---
 
 In 1650 Pietro Mengoli asked for the value of an infinite sum that looks as innocent as a sum can [1]:
@@ -24,7 +26,9 @@ Mengoli had found the sums of similar series, such as the reciprocals of the tri
 whose terms telescope. This one resisted him, and everyone after him. Jakob Bernoulli proved that
 the sum is less than 2, spread the question, and admitted that its exact value had defeated him
 [2].[^bernoulli] It is named after Basel, the city of the Bernoullis and of the man who finally
-solved it, Leonhard Euler, in 1735 [3]. Ayoub tells the whole story [4].
+solved it, Leonhard Euler, in 1735 [3]. Ayoub tells the whole story [4]. This is the first of two
+parts; the second, [How the Basel problem was solved](/mathematics/basel-problem-solved/), follows how
+Euler and those after him met the challenge.
 
 ## The problem
 
@@ -70,7 +74,7 @@ Each further correct digit therefore costs ten times as many terms. A thousand t
 1.643935, of which only the first three digits are right (Table 1). A numerical hunt for the
 answer, by adding terms and guessing, was hopeless.
 
-| $N$ | $S_N$ | $N \cdot (\pi^2/6 - S_N)$ |
+| Terms $N$ | Partial sum $S_N$ | Error times $N$ |
 |--:|--:|--:|
 | $10$ | 1.549768 | 0.951663 |
 | $10^2$ | 1.634984 | 0.995017 |
@@ -158,7 +162,10 @@ collected in _Proofs from THE BOOK_ [7]. It needs one identity for the cotangent
 > the two leading coefficients:
 >
 > $$
-> \sum_{k=1}^{m} t_k = \binom{n}{3} \Big/ \binom{n}{1} = \frac{(2m+1)\,2m\,(2m-1)}{6\,(2m+1)} = \frac{m(2m-1)}{3}.
+> \begin{aligned}
+> \sum_{k=1}^{m} t_k &= \binom{n}{3} \Big/ \binom{n}{1} \\
+> &= \frac{(2m+1)\,2m\,(2m-1)}{6\,(2m+1)} = \frac{m(2m-1)}{3}.
+> \end{aligned}
 > $$
 
 > [!PROOF] of Theorem 2
@@ -182,7 +189,10 @@ Write $\zeta(s) = \sum_{n \ge 1} 1/n^s$, the function Riemann later made famous.
 reaches every even value; in the form he later gave it,
 
 $$
-\zeta(2k) = \frac{(-1)^{k+1} B_{2k} (2\pi)^{2k}}{2\,(2k)!}, \qquad \zeta(2) = \frac{\pi^2}{6}, \quad \zeta(4) = \frac{\pi^4}{90}, \quad \zeta(6) = \frac{\pi^6}{945}, \label{eq:even}
+\begin{gathered}
+\zeta(2k) = \frac{(-1)^{k+1} B_{2k} (2\pi)^{2k}}{2\,(2k)!}, \\
+\zeta(2) = \frac{\pi^2}{6}, \quad \zeta(4) = \frac{\pi^4}{90}, \quad \zeta(6) = \frac{\pi^6}{945},
+\end{gathered} \label{eq:even}
 $$
 
 where $B_2 = 1/6$, $B_4 = -1/30$, $B_6 = 1/42$, … are the Bernoulli numbers. For the odd values,

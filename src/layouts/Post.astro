@@ -2,22 +2,26 @@
 import { type CollectionEntry, render } from 'astro:content';
 import TagLinks from '../components/TagLinks.astro';
 import { getArticles, neighbours } from '../lib/articles';
+import { getMathArticles } from '../lib/mathematics';
 import { getPosts } from '../lib/posts';
-import { resolveRelated } from '../lib/related';
+import { articleHref, resolveRelated } from '../lib/related';
 import { seriesPosition } from '../lib/series';
 import Article from './Article.astro';
 
+// A blog post or a mathematics article: both are set as papers.
 interface Props {
-  post: CollectionEntry<'posts'>;
+  post: CollectionEntry<'posts'> | CollectionEntry<'mathematics'>;
 }
 
 const { post } = Astro.props;
-const { id, body, data } = post;
+const { id, body, data, collection } = post;
+const math = collection === 'mathematics';
 const rendered = await render(post);
-const { older, newer } = neighbours(await getPosts(), id);
-const link = (p?: CollectionEntry<'posts'>) => p && { href: `/blog/${p.id}/`, title: p.data.title };
-const href = `/blog/${id}/`;
-const related = await resolveRelated([...data.relatedPosts, ...data.relatedLab]);
+const siblings: { id: string; data: { title: string } }[] = math ? await getMathArticles() : await getPosts();
+const { older, newer } = neighbours(siblings, id);
+const link = (p?: { id: string; data: { title: string } }) => p && { href: articleHref(collection, p.id), title: p.data.title };
+const href = articleHref(collection, id);
+const related = await resolveRelated([...data.relatedPosts, ...data.relatedMath, ...data.relatedLab]);
 const position = seriesPosition(await getArticles(), { id, series: data.series, seriesPart: data.seriesPart, href, title: data.title });
 const series = position && {
   ...position,
@@ -26,13 +30,13 @@ const series = position && {
 ---
 
 <Article
-  section="blog"
+  section={math ? 'mathematics' : 'blog'}
   title={data.title}
   description={data.description}
   pubDate={data.pubDate}
   updatedDate={data.updatedDate}
   tags={data.tags}
-  image={`/og/${id}.png`}
+  image={math ? `/og/mathematics/${id}.png` : `/og/${id}.png`}
   rendered={rendered}
   body={body}
   toc={data.toc}

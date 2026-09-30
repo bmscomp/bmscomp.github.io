@@ -13,8 +13,19 @@ const posts = await getPosts();
   <PageHeader kicker="Writing" title="Blog" lede="Essays, announcements and how-tos, newest first.">
     <p class="mt-5"><a href="/blog/rss.xml" class="pill">RSS feed</a></p>
   </PageHeader>
-  <div>
-    <PostList posts={posts} headingLevel={2} />
-  </div>
+  {
+    posts.length > 0 ? (
+      <div>
+        <PostList posts={posts} headingLevel={2} />
+      </div>
+    ) : (
+      <p class="row italic text-muted">
+        <span class="gutter" aria-hidden="true" />
+        <span>
+          No posts yet. The mathematics articles are under <a href="/mathematics/">Mathematics</a>.
+        </span>
+      </p>
+    )
+  }
   <Colophon />
 </Base>

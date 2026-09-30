@@ -732,7 +732,8 @@
     font-variant-numeric: lining-nums proportional-nums;
   }
   .entry-desc {
-    max-width: 32em;
+    /* W2.4: at most about 72 characters a line, even for descriptions full of short words and numbers. */
+    max-width: 27em;
     font-variant-numeric: lining-nums proportional-nums;
   }
   /* W2.4: post and lab lists are set at the size of the articles they link to. */
@@ -837,6 +838,15 @@
   }
   .nav-link:hover {
     color: var(--ink);
+  }
+  /* Five sections fit one phone line with the label tracking instead of the heading tracking. */
+  @media (max-width: 39.99rem) {
+    .nav-link {
+      letter-spacing: var(--track-label);
+    }
+    .nav-link[aria-current='page']::after {
+      right: calc(0.35rem + var(--track-label));
+    }
   }
   .nav-link[aria-current='page'] {
     color: var(--accent);
@@ -1452,7 +1462,7 @@
     margin-inline: auto;
   }
   .paper .prose.prose-paper .table-scroll > table :where(th, td) {
-    padding-inline: 1em;
+    padding-inline: 0.7em;
   }
   /* Figures and captioned tables are numbered: "Figure 1: …", "Table 1: …". */
   .paper .prose.prose-paper figure:not(.frame) {
