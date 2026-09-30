@@ -478,8 +478,9 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
   for (const vp of [phone, desktop]) {
     test(`W4.7 list-page section titles outrank their entries at ${vp.width}px`, async ({ page }, info) => {
       await open(page, '/', vp);
-      const heading = await glyphHeights(page, '.heading-text');
-      const entry = await glyphHeights(page, '.entry-title a');
+      // Measured on the same glyph, so the comparison does not depend on how the titles begin.
+      const heading = await glyphHeights(page, '.heading-text', 'H');
+      const entry = await glyphHeights(page, '.entry-title a', 'H');
       record(info, `W4.7 section/entry ${vp.width}`, heading!.cap / entry!.cap);
       expect.soft(heading!.cap / entry!.cap).toBeGreaterThanOrEqual(1.1);
     });
@@ -529,7 +530,7 @@ test.describe('W5 article shell and orientation', () => {
     expect.soft(hidden).toBe(0);
   });
 
-  test('W5.2 every article has one BlogPosting record; post tags sit in a fact row @ci', async ({ page }) => {
+  test('W5.2 every article has one BlogPosting record; post tags sit in the paper keywords @ci', async ({ page }) => {
     for (const path of REAL_ARTICLES) {
       await open(page, path, desktop);
       const types = await page.evaluate(() =>
@@ -537,8 +538,9 @@ test.describe('W5 article shell and orientation', () => {
       );
       expect.soft(types.filter((t) => t === 'BlogPosting')).toHaveLength(1);
     }
+    // Posts are set as papers: their tags are the keywords under the abstract.
     await open(page, '/blog/hello-world/', desktop);
-    await expect.soft(page.locator('.facts dt', { hasText: 'filed under' })).toHaveCount(1);
+    await expect.soft(page.locator('.abstract .paper-meta a[href^="/tags/"]')).toHaveCount(2);
   });
 
   test('W5.2 math-free articles load no KaTeX @ci', async ({ page }) => {

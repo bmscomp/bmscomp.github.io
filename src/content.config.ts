@@ -19,6 +19,10 @@ const posts = defineCollection({
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
+    /** The paper's abstract (posts are set as papers); the description is used when it is absent. */
+    abstract: z.string().optional(),
+    /** Mathematics Subject Classification (MSC 2020) codes, e.g. [11M06, 40A05]. */
+    msc: z.array(z.string()).default([]),
     /** Force the contents list on or off (by default: 4+ sections on a long page). */
     toc: z.boolean().optional(),
     ...links(),

@@ -1,6 +1,8 @@
 ---
 // Shared shell for posts and lab notes: letterhead, fact sheet, contents, text and end block.
 // Post.astro and LabNote.astro only decide the facts; everything an article has in common is here.
+// Blog posts are set as papers (class "paper"): a LaTeX-style title block and abstract, numbered
+// sections, indented paragraphs; lab notes keep the notebook letterhead and fact sheet.
 import katexCss from 'katex/dist/katex.min.css?url';
 import katexMain from 'katex/dist/fonts/KaTeX_Main-Regular.woff2?url';
 import katexMath from 'katex/dist/fonts/KaTeX_Math-Italic.woff2?url';
@@ -9,6 +11,7 @@ import type { render } from 'astro:content';
 import ArticleEnd from '../components/ArticleEnd.astro';
 import Contents from '../components/Contents.astro';
 import PageHeader from '../components/PageHeader.astro';
+import PaperHeader from '../components/PaperHeader.astro';
 import { SITE_TITLE } from '../consts';
 import { lengthParts, measureLength, readingMinutes } from '../lib/length';
 import { formatDate } from '../lib/posts';
@@ -38,6 +41,9 @@ interface Props {
   /** Social card path. */
   image: string;
   rendered: Awaited<ReturnType<typeof render>>;
+  /** Paper posts: the abstract (defaults to the description) and MSC 2020 codes. */
+  abstract?: string;
+  msc?: string[];
   /** Markdown source, for the length cue. */
   body?: string;
   /** Force the contents list on or off. */
@@ -55,21 +61,30 @@ const SECTIONS = {
 };
 
 const { section, crumbs = [], title, description, pubDate, updatedDate, tags = [], image, rendered } = Astro.props;
-const { body = '', toc, older, newer, related = [], series, noindex } = Astro.props;
+const { body = '', toc, older, newer, related = [], series, noindex, abstract, msc = [] } = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = rendered;
 const home = SECTIONS[section];
+const paper = section === 'blog';
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 
 // Contents: the article's sections, when there are enough of them on a long page. Code makes a page
 // long too, so four listings count as much as 250 words.
 const titles = (remarkPluginFrontmatter.sectionTitles ?? {}) as Record<string, string>;
+// Papers number their sections (the CSS does the same in the text); References stays unnumbered.
+let counter = 0;
 const sections = headings
   .filter((h: MarkdownHeading) => h.depth === 2 && h.slug !== 'footnote-label')
-  .map((h: MarkdownHeading) => ({ ...h, text: titles[h.slug] ?? h.text }));
+  .map((h: MarkdownHeading) => {
+    const text = titles[h.slug] ?? h.text;
+    const numbered = paper && !['references', 'bibliography'].includes(text.trim().toLowerCase());
+    return { ...h, text, number: numbered ? ++counter : undefined };
+  });
 const { words, listings } = measureLength(body);
 // `toc: true` forces it on, but a list needs two sections to be one.
 const showContents = sections.length >= 2 && (toc ?? (sections.length >= 4 && (words >= 250 || listings >= 4)));
-const length = lengthParts({ sections: sections.length, listings, minutes: readingMinutes(words, listings) });
+// A paper counts its numbered sections (References is not one).
+const sectionCount = paper ? sections.filter((s) => s.number).length : sections.length;
+const length = lengthParts({ sections: sectionCount, listings, minutes: readingMinutes(words, listings) });
 
 const jsonLd = JSON.stringify({
   '@context': 'https://schema.org',
@@ -111,14 +126,39 @@ const jsonLd = JSON.stringify({
     <script type="application/ld+json" set:html={jsonLd} />
   </Fragment>
 
-  <article class="article" data-pagefind-body>
-    <PageHeader crumbs={[{ label: home.name, href: home.href }, ...crumbs]} title={title} lede={description}>
-      <Fragment slot="gutter">
-        <time class="block" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-        {length.length > 0 && <span class="length">{length.map((part) => <span class="block">{part}</span>)}</span>}
-      </Fragment>
-    </PageHeader>
+  <article class:list={['article', paper && 'paper']} data-pagefind-body>
+    {
+      paper ? (
+        <PaperHeader
+          home={home}
+          title={title}
+          pubDate={pubDate}
+          updatedDate={updatedDate}
+          abstract={abstract ?? description}
+          tags={tags}
+          msc={msc}
+          length={length}
+        />
+      ) : (
+        <PageHeader crumbs={[{ label: home.name, href: home.href }, ...crumbs]} title={title} lede={description}>
+          <Fragment slot="gutter">
+            <time class="block" datetime={pubDate.toISOString()}>
+              {formatDate(pubDate)}
+            </time>
+            {length.length > 0 && (
+              <span class="length">
+                {length.map((part) => (
+                  <span class="block">{part}</span>
+                ))}
+              </span>
+            )}
+          </Fragment>
+        </PageHeader>
+      )
+    }
 
+    {
+      (Astro.slots.has('facts') || series || (updatedDate && !paper) || showContents) && (
     <dl class="facts">
       <slot name="facts" />
       {
@@ -132,7 +172,7 @@ const jsonLd = JSON.stringify({
         )
       }
       {
-        updatedDate && (
+        updatedDate && !paper && (
           <div class="row">
             <dt class="gutter label">updated</dt>
             <dd class="date">
@@ -143,6 +183,8 @@ const jsonLd = JSON.stringify({
       }
       {showContents && <Contents headings={sections} variant="row" />}
     </dl>
+      )
+    }
     {showContents && <Contents headings={sections} variant="disclosure" />}
 
     <div class="row article-body">

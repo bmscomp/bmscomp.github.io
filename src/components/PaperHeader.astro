@@ -1,0 +1,67 @@
+---
+// The front matter of a blog post, set like LaTeX's article class: a running head, then the title,
+// author and date centred over the text column, the abstract with keywords and subject
+// classification, and the letterhead's double rule.
+import { SITE_TITLE } from '../consts';
+import { formatLongDate } from '../lib/posts';
+import { typeset } from '../lib/typeset';
+import TagLinks from './TagLinks.astro';
+
+interface Props {
+  home: { name: string; href: string };
+  title: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  abstract: string;
+  tags: string[];
+  msc: string[];
+  /** Length cue, e.g. ["6 sections", "1 listing"]. */
+  length: string[];
+}
+
+const { home, title, pubDate, updatedDate, abstract, tags, msc, length } = Astro.props;
+const paragraphs = abstract.split(/\n\s*\n/).map((p) => p.replace(/\s+/g, ' ').trim()).filter(Boolean);
+// A dash never starts a line of the title: it stays with the word before it.
+const heading = typeset(title.replace(/ — /g, '\u00a0— '));
+---
+
+<header class="row paper-head">
+  <span class="gutter" aria-hidden="true"></span>
+  <div>
+    <p class="kicker"><a href={home.href}>{home.name}</a></p>
+    <h1 class="paper-title" set:html={heading} />
+    <p class="paper-author"><a href="/cv/">{SITE_TITLE}</a></p>
+    <p class="paper-date">
+      <time datetime={pubDate.toISOString()}>{formatLongDate(pubDate)}</time>{
+        updatedDate && (
+          <>
+            ; revised <time datetime={updatedDate.toISOString()}>{formatLongDate(updatedDate)}</time>
+          </>
+        )
+      }
+      {length.length > 0 && <span class="paper-length">{length.join(' · ')}</span>}
+    </p>
+  </div>
+</header>
+<section class="row paper-abstract" aria-labelledby="abstract-title">
+  <span class="gutter" aria-hidden="true"></span>
+  <div class="abstract">
+    <h2 id="abstract-title" class="abstract-title">Abstract</h2>
+    {paragraphs.map((p) => <p set:html={typeset(p)} />)}
+    {
+      tags.length > 0 && (
+        <div class="paper-meta">
+          <span class="paper-meta-label">Keywords:</span> <TagLinks tags={tags} />
+        </div>
+      )
+    }
+    {
+      msc.length > 0 && (
+        <div class="paper-meta">
+          <span class="paper-meta-label">MSC 2020:</span> {msc.join(', ')}
+        </div>
+      )
+    }
+  </div>
+</section>
+<hr class="double-rule mt-(--rule-gap) print:mt-3" />

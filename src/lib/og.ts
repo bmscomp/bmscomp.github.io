@@ -6,11 +6,17 @@ import satori from 'satori';
 // Social cards in the site's "typeset paper" style. Satori needs WOFF/TTF (not WOFF2) and cannot use
 // OpenType features, so the cards use the static EB Garamond files and plain uppercase for small caps.
 const fontDir = join(process.cwd(), 'node_modules/@fontsource/eb-garamond/files');
+// Greek letters, math symbols and superscripts ("π²/6", "⋯"), which the Latin files lack: static
+// instances of the same EB Garamond, used only for glyphs the Latin fonts do not have. Built with
+// fontTools from the variable fonts (instancer at wght 400/500, then subset to U+0391–03C9, the
+// variants ϑ ϕ ϖ ϵ, U+2200–22FF, □ and the superscript digits).
+const mathDir = join(process.cwd(), 'src/assets/fonts/eb-garamond/og');
 let fonts: Promise<Buffer[]> | undefined;
 const loadFonts = () =>
-  (fonts ??= Promise.all(
-    ['latin-400-normal', 'latin-500-normal', 'latin-400-italic'].map((f) => readFile(join(fontDir, `eb-garamond-${f}.woff`))),
-  ));
+  (fonts ??= Promise.all([
+    ...['latin-400-normal', 'latin-500-normal', 'latin-400-italic'].map((f) => readFile(join(fontDir, `eb-garamond-${f}.woff`))),
+    ...['400', '500', '400-italic'].map((f) => readFile(join(mathDir, `EBGaramond-Math-${f}.woff`))),
+  ]));
 
 const NAVY = '#213f73';
 const INK = '#221f1a';
@@ -83,7 +89,7 @@ export async function renderCard({
   initials,
   variant = 'mark',
 }: CardOptions) {
-  const [regular, medium, italic] = await loadFonts();
+  const [regular, medium, italic, math, mathMedium, mathItalic] = await loadFonts();
   const titleSize = title.length <= 28 ? 100 : title.length <= 45 ? 78 : title.length <= 70 ? 62 : 52;
   const kickerLine = div({ fontSize: 24, letterSpacing: 9, color: NAVY }, kicker.toUpperCase());
   const text = div(
@@ -112,7 +118,7 @@ export async function renderCard({
         padding: '64px 84px 56px',
         background: PAPER,
         borderTop: `14px solid ${NAVY}`,
-        fontFamily: 'EB Garamond',
+        fontFamily: 'EB Garamond, EB Garamond Math, EB Garamond Symbols',
         color: INK,
       },
       [
@@ -133,6 +139,12 @@ export async function renderCard({
         { name: 'EB Garamond', data: regular, weight: 400, style: 'normal' },
         { name: 'EB Garamond', data: medium, weight: 500, style: 'normal' },
         { name: 'EB Garamond', data: italic, weight: 400, style: 'italic' },
+        { name: 'EB Garamond Math', data: math, weight: 400, style: 'normal' },
+        { name: 'EB Garamond Math', data: mathMedium, weight: 500, style: 'normal' },
+        { name: 'EB Garamond Math', data: mathItalic, weight: 400, style: 'italic' },
+        // EB Garamond Italic has no superscript digits: italic text borrows the upright ones, as a
+        // browser would.
+        { name: 'EB Garamond Symbols', data: math, weight: 400, style: 'italic' },
       ],
     },
   );

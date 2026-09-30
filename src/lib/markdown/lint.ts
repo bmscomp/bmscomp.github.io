@@ -32,6 +32,17 @@ export function lint(tree: Node, source = ''): Problem[] {
   const report = (node: Node, severity: Problem['severity'], message: string, offset = 0) =>
     problems.push({ line: (node.position?.start.line ?? 0) + offset, severity, message });
   let previous = 0;
+  // Equation labels, for checking \eqref (katex.ts numbers only labelled displays).
+  const labels = new Set<string>();
+  for (const node of walk(tree)) {
+    const key = node.type === 'math' ? node.value?.match(/\\label\{([^}]+)\}/)?.[1] : undefined;
+    if (key) labels.add(key.trim());
+  }
+  const checkRefs = (node: Node) => {
+    for (const [, key] of (node.value ?? '').matchAll(/\\eqref\{([^}]+)\}/g)) {
+      if (!labels.has(key.trim())) report(node, 'warning', `\\eqref{${key}} has no matching \\label; it prints (??)`);
+    }
+  };
   for (const node of walk(tree)) {
     switch (node.type) {
       case 'heading': {
@@ -63,7 +74,14 @@ export function lint(tree: Node, source = ''): Problem[] {
         });
         break;
       }
+      case 'math':
+        checkRefs(node);
+        break;
       case 'inlineMath': {
+        checkRefs(node);
+        if (/\\label\{/.test(node.value ?? '')) {
+          report(node, 'warning', '\\label in inline math numbers nothing: put the formula between $$ lines of its own');
+        }
         // "$5 and $6" or "$5-$10" parse as math: a digit first, then a space before the closing $ or a
         // digit right after it, is a price, not a formula (the Pandoc rule).
         const value = node.value ?? '';

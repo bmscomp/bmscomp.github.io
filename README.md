@@ -30,8 +30,9 @@ cards (`src/lib/og.ts`) use the same paper style: `/og/<post>.png`, `/og/lab/<no
 
 The type is **EB Garamond**, self-hosted from `src/assets/fonts/eb-garamond/` (OFL). It is a Latin subset
 of the full font, because the npm/Google Fonts builds drop the small caps, old-style figures and
-superior figures; the `pyftsubset` command is at the top of `src/styles/global.css`. A metric-matched
-fallback keeps the text from jumping while it loads.
+superior figures; the `pyftsubset` command is at the top of `src/styles/global.css`. A second subset
+holds the Greek letters and math symbols (π, ζ, ≈, ⋯), and a browser downloads it only for a page that
+uses one. A metric-matched fallback keeps the text from jumping while it loads.
 
 ## Write a post
 
@@ -40,13 +41,22 @@ Add a Markdown file to `src/content/posts/`. The file name becomes the URL (`/bl
 ```md
 ---
 title: My post
-description: One-line summary, also the lede under the title
+description: One-line summary, for lists, feeds and social cards
+abstract: |                    # optional, the paper's abstract (the description is used without it)
+  A paragraph or two. Leave a blank line between paragraphs.
 pubDate: 2026-10-01
-updatedDate: 2026-10-15        # optional, shown as "updated" in lists and the fact sheet
-tags: [linux]
+updatedDate: 2026-10-15        # optional, shown as "revised" under the date and "updated" in lists
+tags: [linux]                  # the paper's keywords
+msc: [11M06, 40A05]            # optional, Mathematics Subject Classification (MSC 2020)
 draft: false                   # true: visible in `pnpm dev` only
 ---
 ```
+
+Posts are set as papers, in the manner of LaTeX's article class and in the site's type: a title block
+centred over the text (title, author, date), the abstract with keywords and subject classification,
+numbered sections, indented and justified paragraphs, theorem environments, numbered equations,
+tables and figures, and a numbered reference list (see "Writing features"). Lab notes keep the
+notebook letterhead and fact sheet; the CV is unaffected.
 
 Tags link to `/tags/<tag>/`. Each post gets a generated social card at `/og/<file-name>.png`. Optional
 fields shared with lab notes (`toc`, `relatedPosts`, `relatedLab`, `series`, `seriesPart`) are described
@@ -97,6 +107,10 @@ plugins in `src/lib/markdown/`. What renders today:
 | `> quoted text` | A quotation, upright, with a quiet rule. | |
 | `> [!NOTE]` (also `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`) on the first line of a quotation | A callout with its label in the margin; GitHub previews the same file as an alert. | `:::` directives are not supported (they would eat text such as `localhost:4321`). |
 | `Term` then `: definition` on the next line | A definition list, the term in the margin like the fact sheet. | |
+| `> [!THEOREM] Euler, 1735` then the statement on `>` lines | **Theorem 1** (Euler, 1735). *Statement in italic.* Also `LEMMA`, `PROPOSITION`, `COROLLARY`, `DEFINITION`, `EXAMPLE` (one numbered sequence), `REMARK`, and `PROOF` (`> [!PROOF] of Theorem 1`), which ends with □. | GitHub shows these as plain quotations. |
+| `$$` lines around a formula containing `\label{eq:basel}` | A display numbered (1), (2)… at the right margin; `$\eqref{eq:basel}$` in the text links to it. | Only labelled displays are numbered; an unknown `\eqref` prints (??) and the lint warns. |
+| A paragraph `Table: caption` right after a table | The table's caption, numbered "Table 1:" in posts. | |
+| `## References` followed by a numbered list | Entries labelled [1], [2]…; `[1]` or `[1, 3]` in the text link to them. | Only numbers the list has are linked. |
 | `API`, `CSS`, `URLs` | Acronyms in small caps, as in titles. | Not in code, links or headings. |
 
 Frontmatter can also link articles: `relatedPosts: [hello-world]` and `relatedLab: [astro-7-satteri]` add
@@ -106,7 +120,8 @@ posts and lab notes share one index at `/tags/`.
 
 `pnpm lint:content` (part of `pnpm build`) checks every file and prints `path:line`: an image without alt
 text, a reference-style image, a raw `<img>`, an h1 or a skipped heading level fail the build; a code
-line over 110 characters and a dollar amount read as math (`$5 and $6`, `$5-$10`) are warnings.
+line over 110 characters, a dollar amount read as math (`$5 and $6`, `$5-$10`), an `\eqref` without a
+`\label` and a `\label` in inline math are warnings.
 
 After changing `astro.config.ts` or anything in `src/lib/markdown/`, clear the content cache:
 `rm -rf node_modules/.astro .astro`.

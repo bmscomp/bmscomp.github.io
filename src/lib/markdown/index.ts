@@ -3,6 +3,7 @@
 import type { Features } from 'satteri';
 import { acronyms } from './acronyms.ts';
 import { calloutsPlugin } from './callouts.ts';
+import { citations } from './citations.ts';
 import { figures } from './figures.ts';
 import { headingAnchors } from './heading-anchors.ts';
 import { katexPlugin } from './katex.ts';
@@ -17,7 +18,8 @@ export const features: Features = {
   gfm: { footnotes: { label: 'Notes', backContent: '↑' } },
 };
 
+// Factories, so each document gets fresh state: its own equation, theorem and table numbers, and one
+// slugger for its heading ids. Citations run after heading-anchors, which wraps the References heading.
 export const mdastPlugins = [katexPlugin, calloutsPlugin];
 
-// Factories, so each document gets fresh state (one slugger, one table count).
-export const hastPlugins = [() => headingAnchors(), () => tables(), () => figures(), () => acronyms()];
+export const hastPlugins = [() => headingAnchors(), () => tables(), () => figures(), () => citations(), () => acronyms()];
