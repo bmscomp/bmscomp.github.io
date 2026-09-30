@@ -22,7 +22,7 @@ abstraction with the thing itself: a number, a name, a date, a file, an example.
 
 | Generic | Specific |
 |---|---|
-| We optimized font loading for better performance. | The Basel page loads 233.6 KB of fonts; the budget is 230 KB. |
+| We optimized font loading for better performance. | The Basel page loaded 233.6 KB of fonts against a 230 KB budget. |
 | Several tests needed adjustments. | Four tests failed, all by 4–12 px, because the kitchen sink's fact sheet is taller than a real note's. |
 | The Basel problem is a famous and fascinating challenge that captivated mathematicians for centuries. | Some problems are hard because they are complicated. The Basel problem is hard for the opposite reason: it takes one line to state, anyone can check the first few terms by hand, and yet for almost ninety years nobody could finish it. |
 

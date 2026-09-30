@@ -1683,6 +1683,17 @@
 .prose .math-display > .katex-display {
   margin: 0;
 }
+/* Below 64rem a numbered display can be wider than the column. KaTeX pins the number to the right
+   edge of the visible box, on top of the formula; sized to the formula instead, with room kept for the
+   number, the box scrolls and the number follows the formula. */
+@media screen and (max-width: 63.99rem) {
+  .prose .math-display .katex-display > .katex > .katex-html:has(> .katex-tag) {
+    box-sizing: border-box;
+    width: max-content;
+    min-width: 100%;
+    padding-inline-end: 2.5em;
+  }
+}
 /* W5.3: on phones, listings bleed to the sheet edge with square corners and no side borders. */
 @media screen and (max-width: 39.99rem) {
   .prose .expressive-code {

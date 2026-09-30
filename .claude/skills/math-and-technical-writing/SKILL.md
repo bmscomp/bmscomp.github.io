@@ -8,7 +8,7 @@ description: House style and workflow for writing on this site. Use when writing
 Posts and mathematics articles are set as papers, in the manner of LaTeX's article class; lab notes
 keep a notebook letterhead. `README.md` ("Write a post or a mathematics article", "Write a lab note",
 "Writing features") is the full reference for what renders. This skill is the house style on top of it.
-The two Basel articles in `src/content/mathematics/` are the model to imitate.
+The Basel problem article, `src/content/mathematics/basel-problem.md`, is the model to imitate.
 
 ## Before writing: facts first
 
@@ -19,7 +19,7 @@ An article that is elegant and wrong is worse than no article. Every factual cla
    Archive, Numdam or a library catalogue. Open every DOI and check that it resolves to that work.
 2. **Tie each historical claim to a cited source**: who proved what, when, and in which work. If a
    claim can't be traced, soften it to what the sources support, or cut it. Claims cut or corrected in
-   the Basel articles for this reason:
+   the Basel article for this reason:
    - that Mengoli connected the problem to the triangular numbers;
    - that *Proofs from THE BOOK* collects exactly three proofs;
    - that Wallis "first evaluated" the sum;
@@ -59,18 +59,18 @@ Mathematics articles and posts share one schema (`src/content.config.ts`, `paper
 
 ```md
 ---
-title: The Basel problem — why the squares sum to π²/6
+title: The Basel problem — what it asks, and how it was solved
 description: One line for lists, feeds and the social card.
 abstract: |
   One paragraph of about 100–150 words, in "we": what the article explains, follows and proves.
   A blank line starts a second paragraph.
 pubDate: 2026-09-30
 updatedDate: 2026-10-15          # only for a real revision
-tags: [mathematics, series]      # the paper's keywords; reuse existing tags (see /tags/)
-msc: [11M06, 40A05, 01A50]
-series: The Basel problem        # optional; parts share the name
+tags: [mathematics, series, history]   # the paper's keywords; reuse existing tags (see /tags/)
+msc: [11M06, 40A05, 42A16, 01A50]
+series: A series name           # optional, for an article in parts; parts share the name
 seriesPart: 1
-relatedMath: [basel-problem-solved]   # optional, articles to list as related; a wrong id fails the build
+relatedMath: [another-article]  # optional, articles to list as related; a wrong id fails the build
 ---
 ```
 
@@ -122,8 +122,10 @@ KaTeX renders math at build time; see `src/lib/markdown/katex.ts` and `callouts.
   sequence (Theorem 1, Lemma 2, …); `REMARK` and `PROOF` are unnumbered, and a proof ends with □. Every
   line of the block, blank ones included, starts with `>`. Refer to results by number in the text
   ("By Lemma 3").
-- **Fit phones (375 px).** Keep each display narrow. Split a long one over lines with `aligned` (at `&`)
-  or `gathered`, one relation per line. A display that scrolls sideways fails the accessibility check.
+- **Fit phones (375 px).** A display wider than the column scrolls sideways inside its own box, and an
+  equation number can land on top of the formula. Keep displays narrow: split a long one over lines
+  with `aligned` (at `&`) or `gathered`, one relation per line, and look at every numbered display at
+  375 px.
 - **Dollar amounts:** write `\$5`, or two of them in a paragraph read as math.
 - Prefer `\frac12` inline to a tall fraction when it keeps the line spacing even; use `\,` for thin
   spaces in products and differentials (`\,dx`).
@@ -136,7 +138,7 @@ KaTeX renders math at build time; see `src/lib/markdown/katex.ts` and `callouts.
 - **Figures:** `![Alt text](./file.png "Caption")`, alone in its paragraph. The alt text is required
   and describes the content.
 - **References:** end with `## References` and a numbered list. Cite in the text with `[1]` or `[1, 3]`.
-  Use the Basel articles' format:
+  Use the Basel article's format:
 
   ```md
   3. L. Euler, “De summis serierum reciprocarum,” _Commentarii academiae scientiarum Petropolitanae_ 7

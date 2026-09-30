@@ -10,6 +10,7 @@ export default defineConfig({
   // Old addresses keep working: the Basel article moved to Mathematics; Hello, world was removed.
   redirects: {
     '/blog/basel-problem': '/mathematics/basel-problem/',
+    '/mathematics/basel-problem-solved': '/mathematics/basel-problem/',
     '/blog/hello-world': '/blog/',
     '/lab/astro-7-satteri': '/lab/',
     '/lab/pnpm-12-typescript-7': '/lab/',
