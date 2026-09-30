@@ -42,12 +42,17 @@ const groups = Object.entries(filterGroups(notes));
     )
   }
 
-  <div class:list={[groups.length > 0 && 'mt-8']}>
-    <LabList notes={notes} id="lab-notes" headingLevel={2} />
-  </div>
-  <p id="lab-empty" class="row mt-4 italic text-muted" hidden>
+  {
+    notes.length > 0 && (
+      <div class:list={[groups.length > 0 && 'mt-8']}>
+        <LabList notes={notes} id="lab-notes" headingLevel={2} />
+      </div>
+    )
+  }
+  {/* With no notes at all, the same line says so, and shows without JavaScript. */}
+  <p id="lab-empty" class:list={['row italic text-muted', notes.length > 0 && 'mt-4']} hidden={notes.length > 0}>
     <span class="gutter" aria-hidden="true"></span>
-    <span>No notes match these filters.</span>
+    <span>{notes.length > 0 ? 'No notes match these filters.' : 'No notes yet.'}</span>
   </p>
   <Colophon />
 </Base>

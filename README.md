@@ -66,7 +66,8 @@ notes (`toc`, `relatedPosts`, `relatedMath`, `relatedLab`, `series`, `seriesPart
 
 ## Write a lab note
 
-Lab notes are Markdown files in `src/content/lab/`, published at `/lab/<file-name>/`:
+The lab is empty for now; its page says so until the first note is published. Lab notes are Markdown
+files in `src/content/lab/`, published at `/lab/<file-name>/`:
 
 ```md
 ---
@@ -115,7 +116,7 @@ plugins in `src/lib/markdown/`. What renders today:
 | `## References` followed by a numbered list | Entries labelled [1], [2]…; `[1]` or `[1, 3]` in the text link to them. | Only numbers the list has are linked. |
 | `API`, `CSS`, `URLs` | Acronyms in small caps, as in titles. | Not in code, links or headings. |
 
-Frontmatter can also link articles: `relatedMath: [basel-problem]`, `relatedLab: [astro-7-satteri]` and
+Frontmatter can also link articles: `relatedMath: [basel-problem]`, `relatedLab: [<note>]` and
 `relatedPosts: [...]` add a "related" row to the end block (a misspelled id fails the build), and
 `series: Name` with `seriesPart: 2` adds "Name, part 2 of 3" to the fact sheet and the other parts to
 the end block; on the same day, a later part lists as the newer one. Tags on every section share one
