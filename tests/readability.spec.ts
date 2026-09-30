@@ -21,8 +21,13 @@ import {
 // Each test title starts with the READABILITY-PLAN.md item it verifies. Tests tagged @ci are
 // font-independent and gate the deploy (.github/workflows/check.yml).
 
-const LAB_NOTES = ['/lab/astro-7-satteri/', '/lab/pnpm-12-typescript-7/'];
-const MATH = ['/mathematics/basel-problem/', '/mathematics/basel-problem-solved/'];
+// Published lab notes are measured with the mathematics articles. There are none at the moment, so the
+// lab-note layout is measured on the kitchen-sink fixture (NOTE), which renders through the same layout.
+const LAB_NOTES: string[] = [];
+const NOTE = '/dev/kitchen-sink/';
+// First-screen rules hold for an ordinary note; the kitchen sink's fact sheet carries every row at once.
+const TYPICAL = '/dev/typical-note/';
+const MATH = ['/mathematics/basel-problem/'];
 const REAL_ARTICLES = [...MATH, ...LAB_NOTES];
 const { xs, phone, phoneShort, tablet, laptop, desktop, wide } = VIEWPORTS;
 
@@ -60,13 +65,13 @@ test.describe('W1.1 fixture', () => {
 
 test.describe('W2 body text and measure', () => {
   test('W2.2 font smoothing is left alone in light mode @ci', async ({ page }) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const [body] = await computed(page, 'body', ['-webkit-font-smoothing']);
     expect.soft(body['-webkit-font-smoothing']).toBe('auto');
   });
 
   test('W2.2 font smoothing is antialiased in dark mode @dark @ci', async ({ page }) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const [body] = await computed(page, 'body', ['-webkit-font-smoothing']);
     expect.soft(body['-webkit-font-smoothing']).toBe('antialiased');
   });
@@ -78,7 +83,7 @@ test.describe('W2 body text and measure', () => {
     [desktop, 21],
   ] as const) {
     test(`W2.3 article body is ${size}px at ${vp.width}px @ci`, async ({ page }) => {
-      await open(page, '/lab/astro-7-satteri/', vp);
+      await open(page, NOTE, vp);
       const [p] = await computed(page, '.prose p', ['font-size']);
       expect.soft(Math.abs(parseFloat(p['font-size']) - size)).toBeLessThanOrEqual(0.2);
     });
@@ -113,7 +118,7 @@ test.describe('W2 body text and measure', () => {
   }
 
   test('W2.3 body x-height is at least 8.4px from 1024px', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', laptop);
+    await open(page, NOTE, laptop);
     const g = await glyphHeights(page, '.prose p');
     record(info, 'W2.3 body x-height @1024', g?.x);
     expect.soft(g!.x).toBeGreaterThanOrEqual(8.4);
@@ -121,7 +126,7 @@ test.describe('W2 body text and measure', () => {
 
   for (const vp of [phone, tablet, desktop, wide]) {
     test(`W2.4 the lede is larger than the body at ${vp.width}px @ci`, async ({ page }) => {
-      await open(page, '/lab/astro-7-satteri/', vp);
+      await open(page, NOTE, vp);
       const [lede] = await computed(page, '.lede', ['font-size']);
       const [p] = await computed(page, '.prose p', ['font-size']);
       expect.soft(parseFloat(lede['font-size']) / parseFloat(p['font-size'])).toBeGreaterThanOrEqual(1.12);
@@ -129,7 +134,7 @@ test.describe('W2 body text and measure', () => {
   }
 
   test('W2.4 list descriptions stay within 72 characters per line at 1280px', async ({ page }, info) => {
-    for (const path of ['/', '/lab/']) {
+    for (const path of ['/', '/mathematics/']) {
       await open(page, path, desktop);
       const s = await page.evaluate(() => {
         const range = document.createRange();
@@ -161,7 +166,7 @@ test.describe('W2 body text and measure', () => {
   });
 
   test('W2.5 the article column never shrinks by more than 8% as the window widens', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', { width: 600, height: 900 });
+    await open(page, NOTE, { width: 600, height: 900 });
     const widths: [number, number][] = [];
     for (let w = 600; w <= 1600; w += 8) {
       await page.setViewportSize({ width: w, height: 900 });
@@ -255,7 +260,7 @@ test.describe('W3 code, math and technical text', () => {
   });
 
   test('W3.3 inline code and code blocks use the same font; frame titles are readable', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('DOM.enable');
     await cdp.send('CSS.enable');
@@ -275,13 +280,13 @@ test.describe('W3 code, math and technical text', () => {
   });
 
   test('W3.3 command output renders in terminal frames @ci', async ({ page }) => {
-    await open(page, '/lab/pnpm-12-typescript-7/', desktop);
+    await open(page, NOTE, desktop);
     const titles = await page.locator('.expressive-code .frame.is-terminal .title').allTextContents();
-    expect.soft(titles.filter((t) => t === 'Output').length).toBeGreaterThanOrEqual(2);
+    expect.soft(titles.filter((t) => t === 'Output').length).toBeGreaterThanOrEqual(1);
   });
 
   test('W3.4 math is set at text size and keeps the line spacing', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const m = await page.evaluate(() => {
       const p = document.querySelector('.prose p .katex')!.closest('p')!;
       const k = p.querySelector<HTMLElement>('.katex')!;
@@ -322,7 +327,7 @@ test.describe('W3 code, math and technical text', () => {
   });
 
   test('W3.6 code-block size sits just under the body size from 1024px', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const body = await glyphHeights(page, '.prose p');
     const block = await glyphHeights(page, '.expressive-code .ec-line .code');
     const inline = await glyphHeights(page, '.prose p code');
@@ -347,7 +352,7 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
   test('W4.1 small caps are no longer the dominant texture of list pages', async ({ page }, info) => {
     for (const [path, max] of [
       ['/', 0.21],
-      ['/lab/', 0.2],
+      ['/mathematics/', 0.2],
     ] as const) {
       await open(page, path, desktop);
       const s = await smallCaps(page);
@@ -357,7 +362,7 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
   });
 
   test('W4.2 numbers read as lining figures in titles, headings, ledes and keywords @ci', async ({ page }) => {
-    await open(page, '/lab/', desktop);
+    await open(page, '/mathematics/', desktop);
     for (const sel of ['.entry-title', '.entry-desc', '.keywords', '.lede']) {
       const [c] = await computed(page, sel, ['font-variant-numeric']);
       expect.soft(c['font-variant-numeric'], sel).toContain('lining-nums');
@@ -469,7 +474,7 @@ test.describe('W4 headings, small caps, figures and rhythm', () => {
   });
 
   test('W4.6 running prose uses lining figures; dates stay old-style @ci', async ({ page }) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const [p] = await computed(page, '.prose p', ['font-variant-numeric']);
     expect.soft(p['font-variant-numeric']).toContain('lining-nums');
     const [date] = await computed(page, '.date', ['font-variant-numeric']);
@@ -494,7 +499,7 @@ test.describe('W5 article shell and orientation', () => {
       // Reduced motion makes the jump instant, so the check reads where the heading settles.
       await page.emulateMedia({ reducedMotion: 'reduce' });
       for (const [path, id] of [
-        ['/lab/astro-7-satteri/', 'two-gotchas'],
+        [NOTE, 'tables'],
         ['/cv/', 'experience'],
       ]) {
         await page.setViewportSize(vp);
@@ -513,7 +518,7 @@ test.describe('W5 article shell and orientation', () => {
   test('W5.1 keyboard focus is never hidden under the sticky header @ci', async ({ page }) => {
     // Reduced motion makes focus scrolling instant, so each check reads the settled position.
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     let hidden = 0;
     for (let i = 0; i < 40; i++) {
@@ -541,21 +546,25 @@ test.describe('W5 article shell and orientation', () => {
     }
     // Papers (posts and mathematics): their tags are the keywords under the abstract.
     await open(page, '/mathematics/basel-problem/', desktop);
-    await expect.soft(page.locator('.abstract .paper-meta a[href^="/tags/"]')).toHaveCount(2);
+    const keywords = await page.evaluate(
+      () => JSON.parse(document.querySelector('script[type="application/ld+json"]')!.textContent!).keywords.length,
+    );
+    expect.soft(keywords).toBeGreaterThan(0);
+    await expect.soft(page.locator('.abstract .paper-meta a[href^="/tags/"]')).toHaveCount(keywords);
   });
 
   test('W5.2 math-free articles load no KaTeX @ci', async ({ page }) => {
     const requests: string[] = [];
     page.on('request', (r) => requests.push(r.url()));
-    await open(page, '/lab/pnpm-12-typescript-7/', desktop);
+    await open(page, '/dev/short-note/', desktop);
     expect.soft(requests.filter((u) => /katex/i.test(u))).toHaveLength(0);
     requests.length = 0;
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     expect.soft(requests.some((u) => /katex/i.test(u))).toBe(true);
   });
 
   test('W5.3 code frames align with the double rule and hold 82 columns at 1280px', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const r = await page.evaluate(() => {
       const rule = document.querySelector('hr.double-rule')!.getBoundingClientRect().left;
       const frames = [...document.querySelectorAll('.prose .expressive-code')].map((f) => f.getBoundingClientRect().left);
@@ -581,7 +590,7 @@ test.describe('W5 article shell and orientation', () => {
   });
 
   test('W5.3 phones show at least 44 code columns', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', phone);
+    await open(page, NOTE, phone);
     const cols = await page.evaluate(() => {
       const line = document.querySelector<HTMLElement>('.expressive-code .ec-line .code')!;
       const pre = document.querySelector<HTMLElement>('.expressive-code pre')!;
@@ -621,8 +630,8 @@ test.describe('W5 article shell and orientation', () => {
         expect.soft(h.h).toBeGreaterThanOrEqual(24);
       }
     }
-    await open(page, '/lab/astro-7-satteri/', desktop);
-    await expect.soft(page.getByRole('heading', { name: 'Two gotchas', exact: true })).toHaveCount(1);
+    await open(page, NOTE, desktop);
+    await expect.soft(page.getByRole('heading', { name: 'Headings and identifiers', exact: true })).toHaveCount(1);
   });
 
   test('W5.5 long notes list their sections; short posts do not @ci', async ({ page }) => {
@@ -643,14 +652,14 @@ test.describe('W5 article shell and orientation', () => {
   });
 
   test('W5.5 the first line of the text stays on the first desktop screen', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, TYPICAL, desktop);
     const bottom = await page.evaluate(() => {
       const p = document.querySelector<HTMLElement>('.prose > p')!;
       return p.getBoundingClientRect().top + parseFloat(getComputedStyle(p).lineHeight);
     });
     record(info, 'W5.5 first line bottom @1280x900', bottom);
     expect.soft(bottom).toBeLessThanOrEqual(0.85 * 900);
-    await open(page, '/lab/astro-7-satteri/', phone);
+    await open(page, TYPICAL, phone);
     const disclosure = await page.locator('.contents-disclosure').boundingBox();
     expect.soft(disclosure!.height).toBeLessThanOrEqual(32);
   });
@@ -660,7 +669,7 @@ test.describe('W5 article shell and orientation', () => {
       [phone, 3],
       [phoneShort, 1],
     ] as const) {
-      await open(page, '/lab/astro-7-satteri/', vp);
+      await open(page, TYPICAL, vp);
       const r = await page.evaluate((n) => {
         const p = document.querySelector<HTMLElement>('.prose > p')!;
         const facts = document.querySelector<HTMLElement>('.facts')!;
@@ -682,7 +691,7 @@ test.describe('W5 article shell and orientation', () => {
   });
 
   test('W5.6 the fact sheet stays compact from 768px', async ({ page }, info) => {
-    await open(page, '/lab/astro-7-satteri/', tablet);
+    await open(page, TYPICAL, tablet);
     const h = await page.evaluate(() => {
       const facts = document.querySelector<HTMLElement>('.facts')!;
       const contents = facts.querySelector<HTMLElement>('.contents-row');
@@ -694,14 +703,12 @@ test.describe('W5 article shell and orientation', () => {
 });
 
 test.describe('W6 endings and paths between articles', () => {
-  test('W6.1 articles link to each other; the Blog lede is its own @ci', async ({ page }) => {
-    // The two parts of the Basel series link to each other in their text.
-    await open(page, '/mathematics/basel-problem/', desktop);
-    await expect.soft(page.locator('.prose a[href="/mathematics/basel-problem-solved/"]')).not.toHaveCount(0);
-    await open(page, '/mathematics/basel-problem-solved/', desktop);
-    await expect.soft(page.locator('.prose a[href="/mathematics/basel-problem/"]')).not.toHaveCount(0);
-    await open(page, '/lab/pnpm-12-typescript-7/', desktop);
-    await expect.soft(page.locator('.prose a[href="/lab/astro-7-satteri/"]')).not.toHaveCount(0);
+  test('W6.1 old article addresses lead to the article; the Blog lede is its own @ci', async ({ page }) => {
+    // The Basel article was a blog post, then two parts; both old addresses redirect to it.
+    for (const old of ['/blog/basel-problem/', '/mathematics/basel-problem-solved/']) {
+      const html = await (await page.request.get(old)).text();
+      expect.soft(html, old).toContain('url=/mathematics/basel-problem/');
+    }
     await open(page, '/blog/', desktop);
     expect.soft(await page.locator('.lede').textContent()).not.toMatch(/notes/i);
   });
@@ -720,19 +727,20 @@ test.describe('W6 endings and paths between articles', () => {
     }
   });
 
-  test('W6.2 from the end of a note, the next one is one tap away on a phone', async ({ page }) => {
-    await open(page, '/lab/astro-7-satteri/', phone);
+  test('W6.2 from the end of an article, the way on is one tap away on a phone', async ({ page }) => {
+    await open(page, '/mathematics/basel-problem/', phone);
+    // The text ends where the prose does: a paper's references and notes are part of it. With no
+    // other article to point to, the way on is the section's index.
     const distance = await page.evaluate(() => {
-      const ps = document.querySelectorAll('.prose > p');
-      const last = ps[ps.length - 1].getBoundingClientRect().bottom;
-      const link = document.querySelector('.article-end a[href="/lab/pnpm-12-typescript-7/"]')!.getBoundingClientRect().top;
+      const last = document.querySelector('.prose')!.getBoundingClientRect().bottom;
+      const link = document.querySelector('.article-end a[href="/mathematics/"]')!.getBoundingClientRect().top;
       return link - last;
     });
     expect.soft(distance).toBeLessThanOrEqual(812);
   });
 
   test('W6.3 the kicker is a visible breadcrumb @ci', async ({ page }) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const link = page.locator('.kicker a').first();
     const [deco] = await computed(page, '.kicker a', ['text-decoration-line']);
     expect.soft(deco['text-decoration-line']).toBe('underline');
@@ -743,7 +751,7 @@ test.describe('W6 endings and paths between articles', () => {
   test('W6.4 index pages keep heading order and hide empty filters @ci', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    for (const path of ['/blog/', '/mathematics/', '/lab/', '/tags/', '/tags/astro/', '/reading/']) {
+    for (const path of ['/blog/', '/mathematics/', '/lab/', '/tags/', '/tags/series/', '/reading/']) {
       await open(page, path, desktop);
       expect.soft((await headingSkips(page)).skips, path).toEqual([]);
     }
@@ -768,7 +776,7 @@ test.describe('W6 endings and paths between articles', () => {
 
   test('W6.4 short pages end at the sheet, and phone entries are compact', async ({ page }, info) => {
     for (const vp of [tablet, desktop, wide]) {
-      for (const path of ['/blog/', '/tags/', '/reading/', '/tags/history/', '/404.html']) {
+      for (const path of ['/blog/', '/lab/', '/tags/', '/reading/', '/tags/history/', '/404.html']) {
         await open(page, path, vp);
         const gap = await page.evaluate(
           () => document.querySelector('body > footer')!.getBoundingClientRect().top - document.querySelector('main > div')!.getBoundingClientRect().bottom,
@@ -778,13 +786,17 @@ test.describe('W6 endings and paths between articles', () => {
         expect.soft(gap, `${path} @${vp.width}`).toBeLessThanOrEqual(48);
       }
     }
+    // Lab entries sit high on a phone and stay compact. With no notes published, the page says so
+    // instead, on the first screen.
     await open(page, '/lab/', phone);
     const r = await page.evaluate(() => ({
-      first: document.querySelector('.entry')!.getBoundingClientRect().top,
+      first: (document.querySelector('.entry') ?? document.getElementById('lab-empty'))!.getBoundingClientRect().top,
       heights: [...document.querySelectorAll('.entry')].map((e) => e.getBoundingClientRect().height),
+      empty: !document.getElementById('lab-empty')!.hidden,
     }));
     record(info, 'W6.4 lab list @375', r);
     expect.soft(r.first).toBeLessThanOrEqual(0.62 * 812);
+    expect.soft(r.empty, 'the empty line shows exactly when there are no notes').toBe(r.heights.length === 0);
     for (const h of r.heights) expect.soft(h).toBeLessThanOrEqual(230);
   });
 
@@ -809,20 +821,25 @@ test.describe('W6 endings and paths between articles', () => {
     expect.soft(all.every((p) => !p.startsWith('/dev/'))).toBe(true);
   });
 
-  test('W6.5 tag pages list both collections; /tags/ reads as an index', async ({ page }, info) => {
-    await open(page, '/tags/astro/', desktop);
-    expect.soft(await page.locator('main .entry').count()).toBeGreaterThanOrEqual(2);
+  test('W6.5 tag pages list every tagged article; /tags/ reads as an index', async ({ page }, info) => {
+    // Every article carrying the tag, as the global feed lists them by category.
+    const feed = await (await page.request.get('/rss.xml')).text();
+    const tagged = [...feed.matchAll(/<item>(.*?)<\/item>/gs)].filter((m) => m[1].includes('<category>series</category>')).length;
+    expect.soft(tagged).toBeGreaterThanOrEqual(1);
+    await open(page, '/tags/series/', desktop);
+    expect.soft(await page.locator('main .entry').count()).toBe(tagged);
     await open(page, '/tags/', desktop);
     const s = await smallCaps(page, 'main');
     record(info, 'W6.5 /tags/ small caps in main', s.share);
     expect.soft(s.share).toBeLessThanOrEqual(0.25);
   });
 
-  test('W6.6 every article links to a related one @ci', async ({ page }) => {
-    for (const path of REAL_ARTICLES) {
-      await open(page, path, desktop);
-      await expect.soft(page.locator('.article-end dt', { hasText: /related|series/ }).first(), path).toBeVisible();
-    }
+  test('W6.6 related articles are listed in the end block @ci', async ({ page }) => {
+    // The site has one article at the moment, so the fixture, which names it as related, carries the
+    // row. (A series row needs two parts; src/lib/series.test.ts covers it.)
+    await open(page, NOTE, desktop);
+    await expect.soft(page.locator('.article-end dt', { hasText: 'related' })).toBeVisible();
+    await expect.soft(page.locator('.article-end a[href="/mathematics/basel-problem/"]')).not.toHaveCount(0);
   });
 });
 
@@ -907,7 +924,7 @@ test.describe('W7 long-form devices and print', () => {
   });
 
   test('W7.6 acronyms in article bodies are set in small caps like titles @ci', async ({ page }) => {
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const caps = await page.evaluate(() => {
       const body = [...document.querySelectorAll('.prose .sc')].map((e) => e.textContent);
       const inCode = document.querySelectorAll('.prose code .sc, .prose a .sc').length;
@@ -982,7 +999,7 @@ test.describe('W8 accessibility', () => {
 test.describe('W2.2 ink', () => {
   test('W2.2 light mode is darker without antialiasing (local, macOS)', async ({ page }, info) => {
     test.skip(process.platform !== 'darwin', 'font smoothing only differs on macOS');
-    await open(page, '/lab/astro-7-satteri/', desktop);
+    await open(page, NOTE, desktop);
     const shot = async () => {
       const box = (await page.locator('.prose > p').first().boundingBox())!;
       const png = await page.screenshot({ clip: box });
