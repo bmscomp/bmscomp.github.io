@@ -50,6 +50,8 @@ line by line, but who wasn't in the room.
 - **Keep paragraphs to one idea**, in plain words, with no hype ("stunning", "mind-blowing") and no
   filler ("it is interesting to note that"). Credit people by name and date.
 - **Name the article's plan** in its introduction; in a series, link the other part in the text.
+- For the sentences themselves (words and shapes that sound generated, and a revision pass), follow
+  the `human-writing` skill.
 
 ## Frontmatter
 
