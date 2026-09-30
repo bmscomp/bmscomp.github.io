@@ -26,7 +26,7 @@ const PHRASES = {
     'vibrant', 'boasts',
   ],
   'throat-clearing': [
-    "it'?s worth noting", 'it is worth (noting|pausing|checking)', 'it is important to', 'interestingly,',
+    "it'?s worth noting", "in today'?s fast-paced", 'it is worth (noting|pausing|checking)', 'it is important to', 'interestingly,',
     'notably,', 'essentially,', 'in essence', 'at its core', 'when it comes to', "let'?s dive", "here'?s the thing",
   ],
   announcing: [
@@ -70,7 +70,7 @@ lines.forEach((raw, i) => {
   if (inMath) return;
   if (/^##\s+References/.test(text)) inReferences = true;
   else if (/^##\s/.test(text)) inReferences = false;
-  if (inReferences || /^#/.test(text) || /^\|/.test(text) || /^Table:/.test(text) || /^\[\^/.test(text)) {
+  if (inReferences || /^#/.test(text) || /^\s*\|/.test(text) || /^Table:/.test(text) || /^\[\^/.test(text)) {
     prose.push({ line: n, text: '' });
     return;
   }

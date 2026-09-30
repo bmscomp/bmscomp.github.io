@@ -122,11 +122,10 @@ These are from revising the Basel article. Each one appeared more than once.
 
 Tools that score text as "AI" or "human" estimate how predictable each word is and how uniform the
 sentences are. The scores are unreliable. The same paragraph gets different results from different
-tools, and careful, formal writing is often flagged. Liang et al. tested several widely used detectors
-and found that they consistently misclassify writing by non-native English speakers as AI-generated,
-while native writing is identified correctly ("GPT detectors are biased against non-native English
-writers", Patterns 4:7, 2023, article 100779). A result like "47% AI probability" is close to a coin
-toss.
+tools, and careful, formal writing is often flagged. Liang et al. report that GPT detectors
+"frequently misclassify non-native English writing as AI generated" ("GPT detectors are biased against
+non-native English writers", Patterns 4:7, 2023, article 100779). A result like "47% AI probability"
+is close to a coin toss.
 
 Use a score only as a hint about where the text is flat, then fix those passages for the reader's
 sake. Never add typos, odd synonyms or random words to move a number. That makes the text worse for
@@ -136,13 +135,14 @@ the person reading it, and the reader is who the text is for.
 
 `check-prose.mjs` in this skill's folder reads a Markdown file and reports:
 
-- the phrases listed above, with line numbers;
+- most of the phrases listed above, and a few more announcing patterns such as "as we will see" and
+  "this article follows", with line numbers;
 - how much the sentence lengths vary, and how many sentences are short;
 - how long the paragraphs are, in sentences;
 - which words open sentences most often.
 
-It skips code, math, tables and the reference list, and it reads an article's abstract from the
-frontmatter.
+It skips code, math, tables (indented ones too), headings and the reference list, and it reads an
+article's `abstract: |` block from the frontmatter.
 
 ```bash
 node .claude/skills/human-writing/check-prose.mjs src/content/mathematics/basel-problem.md

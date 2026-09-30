@@ -5,14 +5,15 @@ abstract: |
   Add one, a quarter, a ninth, a sixteenth, and keep going. The total stays below 2, yet for almost
   ninety years nobody could say what it is. That was the Basel problem. The sum creeps towards its
   limit so slowly that a thousand terms fix only three digits, and when the answer finally came, in
-  1735, it was π²/6: a number born from circles, in a sum with no circle in sight.
+  1735, it was π²/6: π, the constant of the circle, in a sum with no circle in sight.
 
   Euler had six decimals of the sum by 1731. Four years later he found the formula, with an argument
   he knew was not yet a proof, and in 1741 he found a proof. Cauchy's proof of 1821 needs only
-  trigonometry. Fourier series give another, and so does a double integral, and each of them finds
-  the π somewhere else. The even powers fell to Euler as well; the odd ones are still open, almost
-  three centuries on. Nothing here assumes more than some calculus, and each tool is explained where
-  it is first used.
+  trigonometry, the binomial theorem and one limit. Fourier series give another, and so does a double
+  integral, and each of them finds the π somewhere else. The even powers fell to Euler as well; the odd
+  ones are still open, almost three centuries on. A reader who remembers some calculus can follow every
+  step. Each tool is explained where it is first used, and the two deeper theorems the proofs lean on,
+  Weierstrass's and Parseval's, are stated with references.
 pubDate: 2026-09-30
 tags: [mathematics, series, history]
 msc: [11M06, 40A05, 42A16, 01A50]
@@ -38,9 +39,9 @@ Bernoulli proved that it is less than 2, spread the question, and admitted that 
 defeated him [2].[^bernoulli] The problem is named after Basel, the city of the Bernoullis and of the
 man who finally solved it, Leonhard Euler, in 1735 [3]. Ayoub tells the whole story [4].
 
-This article tells it in the same order: the problem first, and why it was so stubborn, then the
-proofs one after another, from Euler's to one published in 1993. Each of them finds the $\pi$
-somewhere else.
+This article tells the story in the order it happened: the problem first, and why it was so
+stubborn, then the proofs one after another, from Euler's to a double-integral proof found in 1983
+and given its present form in 1993. Each of them finds the $\pi$ somewhere else.
 
 ## The problem
 
@@ -610,8 +611,8 @@ $\frac{\pi^2}{6}\bigl(1 - \frac{1}{(2m+1)^2}\bigr)$, so it approaches the limit 
 $m = 1000$ it falls short of $\pi^2/6$ by only $4 \times 10^{-7}$.
 
 The proof needs no calculus beyond one limit at the end, no infinite products, and nothing from
-complex analysis except de Moivre's formula. What it costs is a page of algebra, and a determined
-student can check every line of it.
+complex analysis except de Moivre's formula. What it costs is some algebra, and a determined student
+can check every line of it.
 
 ## By Fourier series
 
@@ -826,9 +827,9 @@ from five directions.
 ### Four meanings of solved
 
 In 1735 Euler had the answer and good reason to trust it. By 1741 he had a proof his contemporaries
-could check step by step. Today's standards came later, in the nineteenth
-century, when limit and convergence, which every one of these arguments quietly relies on, were
-finally made precise. And the proofs keep coming, each a small lesson in a different part of
+could check step by step. By today's standards it was secured in the nineteenth century, when limit
+and convergence, which every one of these arguments quietly relies on, were finally made precise. And
+it has been proved again every few decades since, each new proof a small lesson in a different part of
 mathematics.
 
 ### The even powers
