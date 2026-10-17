@@ -31,12 +31,9 @@ Kates has three parts [2]:
   keeps the test runs in PostgreSQL, for 90 days by default (`kates.cleanup.retention-days`);
 - the Helm charts that install Kafka and everything around it.
 
-The CLI talks to the backend over REST, with an API key. The backend generates load with real Kafka
-producers and consumers, running on virtual threads inside the service by default, or hands the
-workload to a Trogdor coordinator you run yourself. It injects faults through LitmusChaos [3] or
-straight through the Kubernetes API, and Prometheus scrapes its metrics. Load tests work against any
-Kafka the backend can reach. Fault injection targets brokers managed by Strimzi [4], by default the
-cluster `krafter` in namespace `kafka`.
+It injects faults through LitmusChaos [3] or straight through the Kubernetes API. Load tests work
+against any Kafka the backend can reach. Fault injection targets brokers managed by Strimzi [4], by
+default the cluster `krafter` in namespace `kafka`.
 
 What it measures falls into four groups.
 
@@ -65,6 +62,66 @@ application's. In a disruption plan, a fault can aim at the leader of a partitio
 that topic's in-sync replicas. And unlike `kafka-producer-perf-test`, which prints its numbers and
 exits, Kates stores the run, checks it against the targets you gave it and keeps the history for
 trends [1].
+
+## How it is built
+
+Kates has no web front end: the CLI is the front end. Figure 1 shows the pieces at release 1.25.1
+and how they talk to each other [2].
+
+![Two zones. On your machine, the kates CLI, with its commands, terminal views and MCP server, and contexts in ~/.kates.yaml that hold the API URL and key. From the CLI, a solid arrow labelled REST and SSE with the API key, through kates ports or a NodePort, goes into the Kubernetes cluster to the Kates backend, one Quarkus pod with an API layer (REST, SSE and gRPC on port 8080), orchestrators (tests, resilience, plans, schedules), a load engine (native by default, or trogdor) and a fault engine (litmus-crd by default, kubernetes or hybrid, and noop when the configured one is unavailable). The backend connects to PostgreSQL, which holds runs, reports and schedules, and to Prometheus, which scrapes /q/metrics. It reaches the Kafka cluster krafter, three rack-aware brokers in zones alpha, sigma and gamma, with load producers and consumers, an AdminClient and outbox events. The fault engine goes through the Kubernetes API, to the LitmusChaos operator, or to the brokers for pod deletes, with rolling restarts and scale-downs carried out by Strimzi. A dashed arrow labelled kubectl and helm runs from the CLI straight to the Kubernetes API.](./kates-architecture.svg "The kates CLI on your machine, and the backend, Kafka and LitmusChaos in the cluster.")
+
+The CLI is one Go binary, and its commands take two paths. Most of them, `test`, `report`,
+`disruption`, `security` and the rest, call the Kates API over REST with the API key as a Bearer
+token, read from a named context in `~/.kates.yaml`; a flag or a `KATES_*` variable overrides the
+context. On Kind they reach the API through the port-forward that `kates ports` starts, or through a
+NodePort.
+
+The terminal views poll the same API: `kates kafka tui` and `kates lab` are full-screen
+Bubble Tea programs, `kates dashboard` and `kates top` redraw the screen in a loop, and only
+`kates disruption watch` streams, over Server-Sent Events.
+
+The other path skips the API: `deploy`, `ports`, `clean`, `detect`, `kyverno` and `migrate` run
+`kubectl` and Helm against your kubeconfig, and Kind and Docker against your local Docker, as child
+processes; the CLI links no Kubernetes client library. `doctor` takes both paths: it checks the
+backend through the API and Kyverno through `kubectl`.
+
+Last, `kates mcp` serves an AI agent over standard input and output, read-only, and only for the
+clusters you allow.
+
+The backend is one Quarkus process, the Deployment `kates`, with one replica by default. Its REST
+resources, two SSE streams and a small gRPC API share port 8080, and every call needs an API key
+with the right scope, except `/api/health` and Quarkus's own `/q/health` and `/q/metrics`. Behind
+the API sit the orchestrators: one for tests, which runs at most three at once and answers 429
+beyond that; one for resilience runs; one for disruption plans, with the safety guard in front of
+it; and the cron schedulers, which fire only on the replica that holds a lease in PostgreSQL.
+
+They share two engines. The load engine is `native` by default, Kafka producers and consumers on
+virtual threads inside the pod, or `trogdor`, a coordinator you run yourself. The fault engine is
+chosen once, the first time a resilience run or disruption plan needs it, and kept until the pod
+restarts. The default, `litmus-crd`, creates ChaosEngine resources that the LitmusChaos operator
+runs, and handles pod deletes, rolling restarts and scale-downs itself through the Kubernetes API,
+the last two by asking the Strimzi operator for them. The alternatives are `kubernetes` and
+`hybrid`, and only `hybrid` switches from LitmusChaos to the Kubernetes API on its own. If the
+configured provider is unknown or unavailable, the backend falls back to `noop` and logs an error,
+and from then on every fault does nothing.
+
+The state lives in PostgreSQL: runs and their per-task results, disruption reports, schedules,
+audit records and webhooks, with the schema migrated by Flyway at startup. When a run changes
+status, the same transaction writes an outbox row; a poller publishes it to the Kafka topic
+`kates-test-events`, and the webhooks fire from that topic. Kafka sees the backend as a client like
+any other: the user `kates-backend`, authenticated with SCRAM-SHA-512 on a plaintext listener,
+running producers and consumers for the load and one AdminClient for topics, leaders, in-sync
+replicas and consumer lag. The default install makes that user a super user, so no ACL limits it. Prometheus scrapes the backend at
+`/q/metrics`, and the backend queries Prometheus only for a disruption plan's broker snapshots before
+and after a fault. Traces go out over OTLP, to a collector the default install does not include.
+
+Follow `kates test create --type LOAD --wait` through it. The CLI posts the request to `/api/tests`.
+The backend checks the key's `test:run` scope, merges the `LOAD` defaults, takes one of the three
+permits, stores the run as `PENDING` and answers 202. On a virtual thread it creates the topic
+through the AdminClient and hands producer and consumer tasks to the native engine, and a reconciler
+polls them every 5 seconds and writes the results. Meanwhile the CLI asks for the run every
+2 seconds. In a terminal it draws the progress and prints the report summary once the run is done;
+without one, as in CI, it prints a line at each status change.
 
 ## What it is not
 
@@ -159,8 +216,8 @@ that. The second line runs a `LOAD` test of 100,000 records and prints the resul
 The lab above runs the published release. To run `main`, or your own changes, build both halves from
 the checkout instead [2]. On top of the lab's prerequisites you need `make`, Go and a JDK at the
 versions in the book's version matrix [1], and about 8 GB of Docker memory for the native image.
-Under the default `GOTOOLCHAIN=auto`, Go downloads the toolchain that `cli/go.mod` names, and
-`./mvnw` downloads Maven.
+Under the default `GOTOOLCHAIN=auto`, Go downloads the toolchain that `cli/go.mod` names, and the
+Maven wrapper, `./mvnw`, downloads Maven itself.
 
 ```bash title="Build and run Kates from the checkout"
 make cli-install               # the CLI, installed to /usr/local/bin (CLI_INSTALL_DIR to change)
