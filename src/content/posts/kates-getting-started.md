@@ -75,16 +75,20 @@ not a management UI: the Kafka UI it deploys next to the cluster is for browsing
 groups, and its Kafka user can only read. And it is not a production monitoring system: it is built
 for testing and validation environments, and production belongs to Prometheus and Grafana directly.
 
-## A local lab in five commands
+## A local lab in four steps
 
-The quickest way in is the lab the README builds on a laptop [2]. It needs a clone of the repository,
-because `kates deploy` reads the charts, the version pins and the Kind cluster definition relative to
-the working directory. Run every command from the repository root. You also need:
+The quickest way in is a lab on a laptop [2]. You need:
 
-- Docker, Kind [5], `kubectl` and Helm, at least at the versions in the Prerequisites section of the
-  book [1];
-- about 16 GB of RAM, with at least 10 GB of it available to Docker;
+- Docker, installed and running, with at least 10 GB of memory available to it, on a machine with
+  about 16 GB of RAM;
+- Kind [5], which `kates deploy` uses to create a local cluster when it finds none;
+- `kubectl` and Helm, which `kates deploy` runs, and checks for before it starts;
 - macOS or Linux, on amd64 or arm64.
+
+Kind, `kubectl` and Helm should be at least at the versions in the Prerequisites section of the
+book [1]. You also need a clone of the repository: `kates deploy` reads the charts, the version pins
+and the cluster topology relative to the working directory, so run every command from the
+repository root.
 
 ```bash title="Quick start"
 # 1. The CLI (macOS or Linux), and a checkout of the same release to run it from
@@ -92,39 +96,35 @@ brew install bmscomp/tap/kates
 git clone https://github.com/bmscomp/kates && cd kates
 git checkout "$(git describe --tags --abbrev=0 --match 'v*')"
 
-# 2. A three-zone Kind cluster named panda, and the release's native backend image loaded into it
-make cluster
-make kates-native
-
-# 3. The stack: a wizard on a terminal; --dry-run prints the plan and installs nothing
+# 2. The stack, on the cluster kubectl reaches; with none, it offers to create a three-zone Kind cluster
 kates deploy
 
-# 4. Port-forwards in the background; a CLI context named ports, with the API URL and key, becomes current
+# 3. Port-forwards in the background; a CLI context named ports, with the API URL and key, becomes current
 kates ports
 
-# 5. A first load test
+# 4. A first load test
 kates health
 kates test create --type LOAD --records 100000 --wait
 ```
 
 **Step 1** checks out the newest release tag, the same release Homebrew installs, so the charts match
 the CLI. Without Homebrew, the release page has a `kates-<os>-<arch>.tar.gz` holding a single binary.
-To run `main` instead, skip the checkout and build both halves from it with `make cli-install` and
-`make kates-image-native-local`.
+To run `main` or your own changes instead, build Kates from the checkout, as the next section shows.
 
-**Step 2** creates a Kind cluster called `panda` whose three nodes, `alpha`, `sigma` and `gamma`, sit
-in separate zones. `kates deploy` later gives each zone its own StorageClass and broker pool and
-turns on rack awareness, so losing a zone is something you can rehearse on a laptop.
-`make kates-native` puts the release's backend image on the nodes ahead of time. Without it, a deploy
-on Kind falls back to the published native image, and the nodes pull it themselves, which needs
-registry access from inside Kind.
+**Step 2** starts by looking for a cluster. It probes every context in your kubeconfig. If only one
+answers, it uses that one, asking first when it is not the current context. If several answer, it
+asks which one. Either way it points `kubectl` at the cluster it installs into. If none answers and
+Docker is running with Kind installed, it offers to create one: a Kind cluster called `panda` whose
+three nodes, `alpha`, `sigma` and `gamma`, sit in separate availability zones. The offer needs a
+terminal; run without one, `kates deploy` prints the `kind create cluster` command instead. On that
+cluster it gives each zone its own StorageClass and broker pool and turns on rack awareness, so
+losing a zone is something you can rehearse on a laptop.
 
-**Step 3** probes every context in your kubeconfig. If only one answers, it uses that one, asking
-first when it is not the current context. If several answer, it asks which one. Either way it points
-`kubectl` at the cluster it installs into. Run `kubectl config current-context` first; after
-`make cluster` it should read `kind-panda`. With the default, isolated topology the operators,
-monitoring, the Kates backend and LitmusChaos each get a namespace of their own, and Kafka shares
-`kafka` with Apicurio Registry and Kafka UI (Table 1).
+For the backend on Kind, `kates deploy` uses a local image when one is there, and otherwise the
+published native image of the release, which the nodes pull themselves; that needs registry access
+from inside Kind. With the default, isolated topology the operators, monitoring, the Kates backend
+and LitmusChaos each get a namespace of their own, and Kafka shares `kafka` with Apicurio Registry
+and Kafka UI (Table 1).
 
 | Component | Helm release | Namespace |
 |:--|:--|:--|
@@ -143,16 +143,37 @@ If the deploy fails, fix the cause and run it again: it skips or upgrades what i
 `kates deploy status` checks each component, and `kates deploy --verbose` prints every `helm` and
 `kubectl` command it runs.
 
-**Step 4** matters because the Kind cluster publishes no NodePorts on the host. `kates ports` first
+**Step 3** matters because the Kind cluster publishes no NodePorts on the host. `kates ports` first
 stops every `kubectl port-forward` running on the machine, Kates or not. It then starts its own in
 the background, writes the API URL and the key from the Secret `kates-api-key` into a CLI context
 named `ports`, and makes that context current. The Kates API is then on `localhost:8080`, Kafka UI on
 `localhost:8085` and Grafana on `localhost:3000`.
 
-**Step 5** has a trap in its first line. `/api/health` is the one `/api` endpoint that needs no key,
+**Step 4** has a trap in its first line. `/api/health` is the one `/api` endpoint that needs no key,
 so a green `kates health` proves the backend is up, not that your key works; `kates test list` proves
 that. The second line runs a `LOAD` test of 100,000 records and prints the results when it finishes.
 `kates report show <id>` shows them again later: throughput, latency percentiles and error rate.
+
+## Building Kates from the repository
+
+The lab above runs the published release. To run `main`, or your own changes, build both halves from
+the checkout instead [2]. On top of the lab's prerequisites you need `make`, Go and a JDK at the
+versions in the book's version matrix [1], and about 8 GB of Docker memory for the native image.
+Under the default `GOTOOLCHAIN=auto`, Go downloads the toolchain that `cli/go.mod` names, and
+`./mvnw` downloads Maven.
+
+```bash title="Build and run Kates from the checkout"
+make cli-install               # the CLI, installed to /usr/local/bin (CLI_INSTALL_DIR to change)
+kates deploy                   # finds or creates the cluster; installs the stack with the published backend
+make kates-image-native-local  # the native backend image kates:native-local, loaded into the Kind cluster
+kates deploy                   # again: on Kind it prefers kates:native-local, and upgrades the backend to it
+```
+
+The image build loads into the Kind cluster, so the first `kates deploy` is there to create it; every
+component is installed with `helm upgrade --install`, so the second run converges on the new image.
+`make kates-local` builds a JVM image instead, which is quicker, and deploys it in place of the
+native one. On Linux, `make cli-install` ends with a `codesign` error, a macOS-only step, after the
+binary is already installed; the binary works.
 
 ## A first broker crash
 
@@ -226,8 +247,8 @@ cluster. For faults in CI, use a disruption plan with SLA thresholds and run it 
 ## Clean up, and where to go next
 
 ```bash title="Tear down"
-kates clean --force   # uninstall the stack and keep the cluster; without --force it asks first
-make destroy          # delete the Kind cluster panda; it asks first, FORCE=1 skips that
+kates clean --force                # uninstall the stack and keep the cluster; without --force it asks first
+kind delete cluster --name panda   # delete the Kind cluster
 ```
 
 `kates clean` works on `kubectl`'s current context and names it before it asks.
