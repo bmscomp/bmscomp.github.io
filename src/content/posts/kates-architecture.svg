@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 740" width="440" height="740" role="img" aria-labelledby="t d">
   <title id="t">Kates architecture</title>
-  <desc id="d">On your machine, the kates CLI: commands, terminal views and an MCP server, with contexts in ~/.kates.yaml. It calls the Kates backend in the cluster over REST and SSE with an API key, through kates ports or a NodePort, and runs kubectl and helm straight against Kubernetes. The backend is one Quarkus pod: an API with REST, SSE and gRPC on port 8080, orchestrators for tests, resilience runs, disruption plans and schedules, a load engine and a fault engine. It stores runs in PostgreSQL and is scraped by Prometheus. It reaches the Kafka brokers as a client: load producers and consumers, an AdminClient and outbox events. The fault engine goes through the Kubernetes API, to the LitmusChaos operator, or to the brokers for pod deletes, with rolling restarts and scale-downs carried out by Strimzi.</desc>
+  <desc id="d">On your machine, the kates CLI: commands, terminal views and an MCP server, with contexts in ~/.kates.yaml. It calls the Kates backend in the cluster over REST and SSE with an API key, through the port-forward that kates ports starts, and runs kubectl and helm straight against Kubernetes. The backend is one Quarkus pod: an API with REST, SSE and gRPC on port 8080, orchestrators for tests, resilience runs, disruption plans and schedules, a load engine and a fault engine. It stores runs in PostgreSQL and is scraped by Prometheus. It reaches the Kafka brokers as a client: load producers and consumers, an AdminClient and outbox events. The fault engine goes through the Kubernetes API, to the LitmusChaos operator, or to the brokers for pod deletes, with rolling restarts and scale-downs carried out by Strimzi.</desc>
   <style>
     .zone { fill: #f4efe5; }
     .box { fill: #fffdf8; stroke: #6a6358; stroke-width: 1; }
@@ -57,7 +57,7 @@
   <!-- CLI to the backend, and straight to Kubernetes -->
   <path class="api" d="M200,146 V226" marker-end="url(#a)"/>
   <text class="small" x="208" y="206">REST and SSE, with the API key,</text>
-  <text class="small" x="208" y="220">through kates ports or a NodePort</text>
+  <text class="small" x="208" y="220">through a kates ports port-forward</text>
   <path class="direct" d="M404,146 V501 H395" marker-end="url(#k)"/>
   <text class="small" x="418" y="330" text-anchor="middle" transform="rotate(-90 418 330)">kubectl · helm</text>
 

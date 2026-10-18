@@ -7,7 +7,7 @@ abstract: |
   fault, and measures what the fault cost in throughput, latency and recovery time.
 
   We look at what Kates is and how it is built, install it on a three-zone Kind cluster on a laptop,
-  run a first load test, crash a broker under that load, and turn load tests into CI gates. The post
+  run a first load test, crash a broker under load, and turn load tests into CI gates. The post
   is for platform engineers, developers, DevOps engineers and SREs who run Kafka on Kubernetes.
 pubDate: 2026-10-17
 tags: [kafka, kubernetes, testing, chaos]
@@ -71,14 +71,14 @@ The Kates book, _Kates — The Definitive Guide_ [1], lists the jobs Kates leave
 Kates has no web front end. The CLI is the front end, and the backend does the work in the cluster.
 Figure 1 shows how the pieces talk to each other [2].
 
-![Two zones. On your machine, the kates CLI, with its commands, terminal views and MCP server, and contexts in ~/.kates.yaml that hold the API URL and key. From the CLI, a solid arrow labelled REST and SSE with the API key, through kates ports or a NodePort, goes into the Kubernetes cluster to the Kates backend, one Quarkus pod with an API layer (REST, SSE and gRPC on port 8080), orchestrators (tests, resilience, plans, schedules), a load engine (native by default, or trogdor) and a fault engine (litmus-crd by default, kubernetes or hybrid, and noop when the configured one is unavailable). The backend connects to PostgreSQL, which holds runs, reports and schedules, and to Prometheus, which scrapes /q/metrics. It reaches the Kafka cluster krafter, three rack-aware brokers in zones alpha, sigma and gamma, with load producers and consumers, an AdminClient and outbox events. The fault engine goes through the Kubernetes API, to the LitmusChaos operator, or to the brokers for pod deletes, with rolling restarts and scale-downs carried out by Strimzi. A dashed arrow labelled kubectl and helm runs from the CLI straight to the Kubernetes API.](./kates-architecture.svg "The kates CLI on your machine, and the backend, Kafka and LitmusChaos in the cluster.")
+![Two zones. On your machine, the kates CLI, with its commands, terminal views and MCP server, and contexts in ~/.kates.yaml that hold the API URL and key. From the CLI, a solid arrow labelled REST and SSE with the API key, through the port-forward that kates ports starts, goes into the Kubernetes cluster to the Kates backend, one Quarkus pod with an API layer (REST, SSE and gRPC on port 8080), orchestrators (tests, resilience, plans, schedules), a load engine (native by default, or trogdor) and a fault engine (litmus-crd by default, kubernetes or hybrid, and noop when the configured one is unavailable). The backend connects to PostgreSQL, which holds runs, reports and schedules, and to Prometheus, which scrapes /q/metrics. It reaches the Kafka cluster krafter, three rack-aware brokers in zones alpha, sigma and gamma, with load producers and consumers, an AdminClient and outbox events. The fault engine goes through the Kubernetes API, to the LitmusChaos operator, or to the brokers for pod deletes, with rolling restarts and scale-downs carried out by Strimzi. A dashed arrow labelled kubectl and helm runs from the CLI straight to the Kubernetes API.](./kates-architecture.svg "The kates CLI on your machine, and the backend, Kafka and LitmusChaos in the cluster.")
 
 ### The CLI
 
 Most commands, such as `test`, `report`, `disruption` and `security`, call the Kates API over REST.
 They send the API key as a Bearer token, read from a named context in `~/.kates.yaml`. A flag or a
 `KATES_*` variable overrides the context, which is how a pipeline points the CLI at the API. On Kind
-the CLI reaches the API through the port-forward that `kates ports` starts, or through a NodePort.
+the CLI reaches the API through the port-forward that `kates ports` starts.
 
 The terminal views use the same API. `kates kafka tui` and `kates lab` are full-screen programs, and
 `kates dashboard` and `kates top` redraw the screen in a loop. Only `kates disruption watch` streams
@@ -93,8 +93,9 @@ the clusters you allow.
 
 ### The backend
 
-The backend is one Quarkus process, the Deployment `kates`, with one replica by default. REST, two
-SSE streams and a small gRPC API share port 8080. Every call needs an API key with the right scope,
+The backend is one Quarkus process, the Deployment `kates`. The chart allows exactly one replica,
+because the pod keeps its runs, its run limit and its disruption lease in memory. REST, two SSE
+streams and a small gRPC API share port 8080. Every call needs an API key with the right scope,
 except `/api/health` and Quarkus's own `/q/health` and `/q/metrics`, which stay open.
 
 Behind the API sit the orchestrators for tests, resilience runs and disruption plans, and the cron
@@ -104,8 +105,9 @@ disruption orchestrator puts a safety guard in front of every plan. They share t
 - The **load engine** is `native` by default: Kafka producers and consumers on virtual threads inside
   the pod. The alternative, `trogdor`, hands the load to a Trogdor coordinator you run yourself.
 - The **fault engine** is chosen the first time a fault needs it. The default, `litmus-crd`, creates
-  ChaosEngine resources for the LitmusChaos operator. It deletes pods itself, and asks the Strimzi
-  operator for rolling restarts and scale-downs. The alternatives are `kubernetes` and `hybrid`.
+  ChaosEngine resources for the LitmusChaos operator, for pod kills among other faults. It sends
+  graceful pod deletes (`POD_DELETE`) straight to the Kubernetes API, and asks the Strimzi operator
+  for rolling restarts and scale-downs. The alternatives are `kubernetes` and `hybrid`.
 
 The backend keeps runs, reports, schedules, audit records and webhooks in PostgreSQL. Prometheus
 scrapes it at `/q/metrics`, and it queries Prometheus only for a disruption plan's broker snapshots,
@@ -123,8 +125,8 @@ Two defaults to check before you rely on it:
 The quickest way in is a lab on your laptop [2]. You need:
 
 - Docker, running, with at least 10 GB of memory for it, on a machine with about 16 GB of RAM;
-- Kind [5], `kubectl` and Helm, at least at the versions the book lists [1]. `kates deploy` creates
-  the cluster with Kind when it finds none, and checks for `kubectl` and Helm before it starts;
+- Kind [5], `kubectl` and Helm, at least at the versions the book lists [1]. `kates deploy` offers
+  to create the cluster with Kind when it finds none, but checks for Helm only after that;
 - macOS or Linux, on amd64 or arm64;
 - a clone of the repository, because `kates deploy` reads the charts and the cluster topology from
   it: run every command from the repository root.
@@ -178,8 +180,8 @@ gets installed.
 Table: What `kates deploy` installs with the default, isolated topology [2].
 
 If the deploy fails, fix the cause and run it again: it skips or upgrades what is already there.
-`kates deploy status` checks each component, and `kates deploy --verbose` prints every `helm` and
-`kubectl` command it runs.
+`kates deploy status` checks each component, and `kates deploy --verbose` prints each `helm` and
+`kubectl` command that installs or changes something.
 
 **Step 3** is needed because the Kind cluster publishes no NodePorts on the host. `kates ports`
 starts port-forwards in the background and writes the API URL and key into a CLI context named
@@ -193,9 +195,14 @@ of 100,000 records and prints the results, and `kates report show <id>` shows th
 ## Building Kates from the repository
 
 To run `main` or your own changes, build both halves from the checkout [2]. Besides the lab's
-prerequisites, you need `make`, Go and a JDK at the versions in the book's version matrix [1], and
-about 8 GB of Docker memory for the native image. Under the default `GOTOOLCHAIN=auto`, Go fetches
-the toolchain that `cli/go.mod` names, and the Maven wrapper, `./mvnw`, fetches Maven.
+prerequisites, you need `make` and Go at the versions in the book's version matrix [1], and about
+8 GB of Docker memory for the native image. Under the default `GOTOOLCHAIN=auto`, Go fetches the
+toolchain that `cli/go.mod` names. The backend images compile inside Docker, so you need no local
+JDK or Maven.
+
+If the lab's Homebrew install is still there, run `brew uninstall kates` first. Otherwise
+`make cli-install` refuses to overwrite Homebrew's link, or Homebrew's copy stays first on your
+`PATH` and runs instead of your build.
 
 ```bash title="Build and run Kates from the checkout"
 make cli-install               # the CLI, installed to /usr/local/bin (CLI_INSTALL_DIR to change)
@@ -205,8 +212,9 @@ kates deploy                   # again: on Kind it prefers kates:native-local, a
 ```
 
 The first `kates deploy` is there to create the cluster, because the image build loads its result
-into it. The second run switches the backend to the local image, since every component is installed
-with `helm upgrade --install`. `make kates-local` instead builds a JVM image, which is quicker to
+into it. The second run switches the backend to the local image, because `kates deploy` runs
+`helm upgrade --install` for the backend on every run, even when its release already exists.
+`make kates-local` instead builds a JVM image, which is quicker to
 build, and deploys it in place of the native one. On Linux, `make cli-install` ends with a harmless
 `codesign` error, after the binary is already installed.
 
@@ -236,8 +244,8 @@ mind when you compare the report with that:
   both probes pass, which allows up to 50 under-replicated partitions. It is not the time the ISR
   takes to get back to 3 of 3.
 - The report compares the figures measured up to the fault ("Pre-Chaos Baseline") with the same
-  figures over the whole run, read after the recovery wait ("Post-Chaos Impact"). The 30 seconds
-  before the fault are part of both, so they soften the change.
+  figures over the run so far, read after the recovery wait ("Post-Chaos Impact"), while the load
+  may still be running. The 30 seconds before the fault are part of both, so they soften the change.
 - A resilience run checks no SLA, so the comparison with the hypothesis is yours to make. And only an
   `INTEGRITY` test measures data loss; this example's `LOAD` test does not.
 
@@ -278,7 +286,7 @@ thresholds, so put your own numbers in a scenario.
 
 A resilience run cannot fail a pipeline, because `kates resilience run` exits 0 whatever happens to
 the cluster. For faults in CI, run a disruption plan with SLA thresholds through
-`kates disruption run --fail-on-sla-breach`, which exits 1 on a breach.
+`kates disruption run --config plan.json --fail-on-sla-breach`, which exits 1 on a breach.
 
 ## Clean up, and where to go next
 
@@ -290,9 +298,12 @@ kind delete cluster --name panda   # delete the Kind cluster
 `kates clean` works on `kubectl`'s current context and names it before it asks.
 
 On another cluster, `kates deploy` works the same way, with the published image and the charts'
-generic overlays. Those add an external Kafka listener on port 9094, behind a load balancer with no
-internal-only annotation on EKS and GKE. Run `kates deploy --dry-run` first: it writes the values to
-`.build/values-detected.yaml` and installs nothing.
+generic overlays. The values it generates add an external Kafka listener on port 9094: a NodePort
+on most clusters, an internal load balancer on AKS, and a load balancer with no internal-only
+annotation on EKS and GKE.
+
+A dry run does not switch `kubectl`'s context, so point `kubectl` at that cluster first, then run
+`kates deploy --dry-run`: it writes the values to `.build/values-detected.yaml` and installs nothing.
 
 The book [1] goes further. Its chapters on architecture, chaos engineering in practice and
 deployment are the next stops, and its troubleshooting index maps symptoms to causes.
