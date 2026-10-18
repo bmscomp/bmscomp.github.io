@@ -208,3 +208,16 @@ const jsonLd = JSON.stringify({
     </ArticleEnd>
   </article>
 </Base>
+
+<script>
+  // Safari won't focus a scroll box by itself, so only overflowing equations get a tab stop (axe: scrollable-region-focusable).
+  const displays = document.querySelectorAll<HTMLElement>('.math-display');
+  function mark() {
+    for (const d of displays) {
+      if (d.scrollWidth > d.clientWidth) d.tabIndex = 0;
+      else d.removeAttribute('tabindex');
+    }
+  }
+  document.fonts.ready.then(mark);
+  addEventListener('resize', mark);
+</script>
