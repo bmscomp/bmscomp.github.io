@@ -189,7 +189,8 @@
     *,
     *::before,
     *::after {
-      transition-duration: 0.01ms !important;
+      /* none, not a short duration: transition-property defaults to all, so a duration made every style change a transition and cold deep links landed 9px short. */
+      transition: none !important;
       animation-duration: 0.01ms !important;
     }
   }

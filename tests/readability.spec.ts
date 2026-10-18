@@ -956,15 +956,18 @@ test.describe('W8 accessibility', () => {
   }
 
   test('W8.2 no axe violations on any page', async ({ page }, info) => {
-    for (const path of PAGES) {
-      await open(page, path, desktop);
-      const results = await new AxeBuilder({ page }).analyze();
-      record(
-        info,
-        `W8.2 axe ${path}`,
-        results.violations.map((v) => v.id),
-      );
-      expect.soft(results.violations.map((v) => `${v.id}: ${v.nodes.length}`), path).toEqual([]);
+    // The phone pass is where wide equations and tables scroll sideways.
+    for (const vp of [desktop, phone]) {
+      for (const path of PAGES) {
+        await open(page, path, vp);
+        const results = await new AxeBuilder({ page }).analyze();
+        record(
+          info,
+          `W8.2 axe ${path} ${vp.width}`,
+          results.violations.map((v) => v.id),
+        );
+        expect.soft(results.violations.map((v) => `${v.id}: ${v.nodes.length}`), `${path} ${vp.width}`).toEqual([]);
+      }
     }
   });
 
