@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 740" width="440" height="740" role="img" aria-labelledby="t d">
+  <title id="t">Kates architecture</title>
+  <desc id="d">On your machine, the kates CLI: commands, terminal views and an MCP server, with contexts in ~/.kates.yaml. It calls the Kates backend in the cluster over REST and SSE with an API key, through the port-forward that kates ports starts, and runs kubectl and helm straight against Kubernetes. The backend is one Quarkus pod: an API with REST, SSE and gRPC on port 8080, orchestrators for tests, resilience runs, disruption plans and schedules, a load engine and a fault engine. It stores runs in PostgreSQL and is scraped by Prometheus. It reaches the Kafka brokers as a client: load producers and consumers, an AdminClient and outbox events. The fault engine goes through the Kubernetes API, to the LitmusChaos operator, or to the brokers for pod deletes, with rolling restarts and scale-downs carried out by Strimzi.</desc>
+  <style>
+    .zone { fill: #f4efe5; }
+    .box { fill: #fffdf8; stroke: #6a6358; stroke-width: 1; }
+    .key { fill: #fffdf8; stroke: #2a4a88; stroke-width: 1.5; }
+    text { font-family: 'EB Garamond', 'Iowan Old Style', Georgia, 'Times New Roman', serif; font-size: 13px; fill: #221f1a; }
+    .title { font-size: 14.5px; font-weight: 600; fill: #2a4a88; }
+    .small { font-size: 12px; fill: #6a6358; }
+    .label { font-size: 11px; letter-spacing: 0.12em; fill: #6a6358; }
+    .api { stroke: #2a4a88; stroke-width: 1.5; fill: none; }
+    .k8s { stroke: #6a6358; stroke-width: 1.2; fill: none; }
+    .direct { stroke: #6a6358; stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+    .head-api { fill: #2a4a88; }
+    .head-k8s { fill: #6a6358; }
+    @media screen and (prefers-color-scheme: dark) {
+      .zone { fill: #1e2128; }
+      .box, .key { fill: #16181d; }
+      .box { stroke: #a59e92; }
+      .key { stroke: #9bc1f1; }
+      text { fill: #ebe6dc; }
+      .title { fill: #9bc1f1; }
+      .small, .label { fill: #a59e92; }
+      .api { stroke: #9bc1f1; }
+      .k8s, .direct { stroke: #a59e92; }
+      .head-api { fill: #9bc1f1; }
+      .head-k8s { fill: #a59e92; }
+    }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head-api" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+    <marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head-k8s" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+
+  <!-- Your machine -->
+  <rect class="zone" x="8" y="8" width="424" height="150" rx="6"/>
+  <text class="label" x="20" y="28">YOUR MACHINE</text>
+  <rect class="key" x="20" y="38" width="400" height="108" rx="5"/>
+  <text x="34" y="61"><tspan class="title">kates CLI</tspan><tspan class="small"> · one Go binary</tspan></text>
+  <rect class="box" x="34" y="72" width="118" height="28" rx="4"/>
+  <text x="93" y="91" text-anchor="middle">commands</text>
+  <rect class="box" x="161" y="72" width="118" height="28" rx="4"/>
+  <text x="220" y="91" text-anchor="middle">terminal views</text>
+  <rect class="box" x="288" y="72" width="118" height="28" rx="4"/>
+  <text x="347" y="91" text-anchor="middle">kates mcp</text>
+  <text class="small" x="34" y="126">contexts in ~/.kates.yaml hold the API URL and key</text>
+
+  <!-- Kubernetes cluster -->
+  <rect class="zone" x="8" y="166" width="424" height="544" rx="6"/>
+  <text class="label" x="20" y="186">KUBERNETES CLUSTER</text>
+
+  <!-- CLI to the backend, and straight to Kubernetes -->
+  <path class="api" d="M200,146 V226" marker-end="url(#a)"/>
+  <text class="small" x="208" y="206">REST and SSE, with the API key,</text>
+  <text class="small" x="208" y="220">through a kates ports port-forward</text>
+  <path class="direct" d="M404,146 V501 H395" marker-end="url(#k)"/>
+  <text class="small" x="418" y="330" text-anchor="middle" transform="rotate(-90 418 330)">kubectl · helm</text>
+
+  <!-- Backend -->
+  <rect class="key" x="20" y="230" width="262" height="236" rx="5"/>
+  <text x="32" y="252"><tspan class="title">Kates backend</tspan><tspan class="small"> · Quarkus, one pod</tspan></text>
+  <rect class="box" x="32" y="262" width="238" height="30" rx="4"/>
+  <text x="44" y="282">API: REST, SSE and gRPC on :8080</text>
+  <rect class="box" x="32" y="302" width="238" height="56" rx="4"/>
+  <text x="44" y="324">Orchestrators</text>
+  <text class="small" x="44" y="343">tests, resilience, plans, schedules</text>
+  <rect class="box" x="32" y="368" width="113" height="88" rx="4"/>
+  <text x="88.5" y="388" text-anchor="middle">Load engine</text>
+  <text class="small" x="88.5" y="406" text-anchor="middle">native, default:</text>
+  <text class="small" x="88.5" y="420" text-anchor="middle">clients on</text>
+  <text class="small" x="88.5" y="434" text-anchor="middle">virtual threads</text>
+  <text class="small" x="88.5" y="448" text-anchor="middle">or trogdor</text>
+  <rect class="box" x="157" y="368" width="113" height="88" rx="4"/>
+  <text x="213.5" y="388" text-anchor="middle">Fault engine</text>
+  <text class="small" x="213.5" y="406" text-anchor="middle">litmus-crd, default</text>
+  <text class="small" x="213.5" y="420" text-anchor="middle">kubernetes</text>
+  <text class="small" x="213.5" y="434" text-anchor="middle">hybrid</text>
+  <text class="small" x="213.5" y="448" text-anchor="middle">noop if unavailable</text>
+
+  <!-- PostgreSQL and Prometheus -->
+  <path class="box" d="M313,240 v58 a39,7 0 0 0 78,0 v-58"/>
+  <ellipse class="box" cx="352" cy="240" rx="39" ry="7"/>
+  <text x="352" y="266" text-anchor="middle">PostgreSQL</text>
+  <text class="small" x="352" y="282" text-anchor="middle">runs, reports,</text>
+  <text class="small" x="352" y="296" text-anchor="middle">schedules</text>
+  <path class="api" d="M285,270 H309" marker-start="url(#a)" marker-end="url(#a)"/>
+  <rect class="box" x="313" y="326" width="78" height="62" rx="4"/>
+  <text x="352" y="346" text-anchor="middle">Prometheus</text>
+  <text class="small" x="352" y="362" text-anchor="middle">scrapes</text>
+  <text class="small" x="352" y="376" text-anchor="middle">/q/metrics</text>
+  <path class="api" d="M285,357 H309" marker-start="url(#a)" marker-end="url(#a)"/>
+
+  <!-- Kubernetes API and LitmusChaos -->
+  <rect class="box" x="200" y="486" width="192" height="30" rx="4"/>
+  <text x="296" y="506" text-anchor="middle">Kubernetes API</text>
+  <path class="api" d="M213.5,456 V483" marker-end="url(#a)"/>
+  <text class="small" x="221" y="479">ChaosEngine, delete, roll, scale</text>
+  <rect class="box" x="200" y="536" width="150" height="34" rx="4"/>
+  <text x="275" y="558" text-anchor="middle">LitmusChaos operator</text>
+  <path class="k8s" d="M275,516 V533" marker-end="url(#k)"/>
+  <path class="k8s" d="M275,570 V597" marker-end="url(#k)"/>
+  <text class="small" x="282" y="588">faults</text>
+  <path class="k8s" d="M362,516 V597" marker-end="url(#k)"/>
+  <text class="small" x="368" y="544">pod delete;</text>
+  <text class="small" x="368" y="558">roll, scale</text>
+  <text class="small" x="368" y="572">via Strimzi</text>
+
+  <!-- Load to Kafka -->
+  <path class="api" d="M88.5,466 V597" marker-end="url(#a)"/>
+  <text class="small" x="98" y="526">load producers</text>
+  <text class="small" x="98" y="540">and consumers,</text>
+  <text class="small" x="98" y="554">AdminClient,</text>
+  <text class="small" x="98" y="568">outbox events</text>
+
+  <!-- Kafka -->
+  <rect class="key" x="20" y="600" width="392" height="98" rx="5"/>
+  <text x="32" y="622"><tspan class="title">Kafka</tspan><tspan class="small"> · Strimzi cluster krafter, rack-aware</tspan></text>
+  <rect class="box" x="32" y="636" width="110" height="48" rx="4"/>
+  <text x="87" y="656" text-anchor="middle">broker</text>
+  <text class="small" x="87" y="673" text-anchor="middle">zone alpha</text>
+  <rect class="box" x="151" y="636" width="110" height="48" rx="4"/>
+  <text x="206" y="656" text-anchor="middle">broker</text>
+  <text class="small" x="206" y="673" text-anchor="middle">zone sigma</text>
+  <rect class="box" x="270" y="636" width="110" height="48" rx="4"/>
+  <text x="325" y="656" text-anchor="middle">broker</text>
+  <text class="small" x="325" y="673" text-anchor="middle">zone gamma</text>
+
+  <!-- Legend -->
+  <path class="api" d="M20,727 H44"/>
+  <text class="small" x="50" y="731">Kates traffic</text>
+  <path class="direct" d="M180,727 H204"/>
+  <text class="small" x="210" y="731">CLI straight to Kubernetes</text>
+</svg>

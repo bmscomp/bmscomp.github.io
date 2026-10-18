@@ -9,6 +9,7 @@ export const PAGES = [
   '/',
   '/blog/',
   '/blog/evolutionary-algorithms/',
+  '/blog/kates-getting-started/',
   '/mathematics/',
   '/mathematics/basel-problem/',
   '/lab/',
@@ -20,6 +21,7 @@ export const PAGES = [
 
 export const ARTICLES = [
   '/blog/evolutionary-algorithms/',
+  '/blog/kates-getting-started/',
   '/mathematics/basel-problem/',
   '/dev/kitchen-sink/',
 ] as const;
